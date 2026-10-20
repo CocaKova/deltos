@@ -1,0 +1,500 @@
+{"qid": "conv-26-q001", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2758, "prompt_tokens": 829, "seconds": 17.0, "tool_calls": 0}
+{"qid": "conv-26-q004", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4185, "prompt_tokens": 1099, "seconds": 18.2, "tool_calls": 0}
+{"qid": "conv-26-q005", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2665, "prompt_tokens": 806, "seconds": 25.2, "tool_calls": 0}
+{"qid": "conv-26-q008", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3835, "prompt_tokens": 1063, "seconds": 62.5, "tool_calls": 0}
+{"qid": "conv-26-q049", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3352, "prompt_tokens": 975, "seconds": 100.7, "tool_calls": 0}
+{"qid": "conv-26-q050", "type": "open-domain", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2983, "prompt_tokens": 850, "seconds": 52.5, "tool_calls": 0}
+{"qid": "conv-26-q042", "type": "open-domain", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3792, "prompt_tokens": 1036, "seconds": 116.5, "tool_calls": 0}
+{"qid": "conv-26-q057", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4047, "prompt_tokens": 1128, "seconds": 45.0, "tool_calls": 0}
+{"qid": "conv-26-q059", "type": "open-domain", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3593, "prompt_tokens": 979, "seconds": 48.3, "tool_calls": 0}
+{"qid": "conv-26-q062", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3479, "prompt_tokens": 997, "seconds": 49.2, "tool_calls": 0}
+{"qid": "conv-26-q067", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3710, "prompt_tokens": 1060, "seconds": 33.3, "tool_calls": 0}
+{"qid": "conv-26-q090", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3303, "prompt_tokens": 954, "seconds": 24.8, "tool_calls": 0}
+{"qid": "conv-26-q095", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3561, "prompt_tokens": 994, "seconds": 25.4, "tool_calls": 0}
+{"qid": "conv-26-q098", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4047, "prompt_tokens": 1045, "seconds": 38.7, "tool_calls": 0}
+{"qid": "conv-26-q096", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4423, "prompt_tokens": 1133, "seconds": 40.3, "tool_calls": 0}
+{"qid": "conv-26-q099", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4422, "prompt_tokens": 1136, "seconds": 54.0, "tool_calls": 0}
+{"qid": "conv-26-q102", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3429, "prompt_tokens": 981, "seconds": 38.2, "tool_calls": 0}
+{"qid": "conv-26-q103", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3429, "prompt_tokens": 969, "seconds": 39.1, "tool_calls": 0}
+{"qid": "conv-26-q106", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3113, "prompt_tokens": 905, "seconds": 34.3, "tool_calls": 0}
+{"qid": "conv-26-q109", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3033, "prompt_tokens": 902, "seconds": 24.8, "tool_calls": 0}
+{"qid": "conv-26-q117", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3514, "prompt_tokens": 1002, "seconds": 24.0, "tool_calls": 0}
+{"qid": "conv-26-q119", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4026, "prompt_tokens": 1098, "seconds": 44.7, "tool_calls": 0}
+{"qid": "conv-26-q122", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3943, "prompt_tokens": 1089, "seconds": 52.1, "tool_calls": 0}
+{"qid": "conv-26-q124", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3512, "prompt_tokens": 1018, "seconds": 52.1, "tool_calls": 0}
+{"qid": "conv-26-q125", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3586, "prompt_tokens": 1029, "seconds": 42.2, "tool_calls": 0}
+{"qid": "conv-26-q126", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3582, "prompt_tokens": 1026, "seconds": 50.6, "tool_calls": 0}
+{"qid": "conv-26-q136", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3771, "prompt_tokens": 1034, "seconds": 50.2, "tool_calls": 0}
+{"qid": "conv-26-q150", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4166, "prompt_tokens": 1112, "seconds": 118.6, "tool_calls": 0}
+{"qid": "conv-26-q163_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4423, "prompt_tokens": 1133, "seconds": 102.3, "tool_calls": 0}
+{"qid": "conv-26-q166_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4103, "prompt_tokens": 1069, "seconds": 121.8, "tool_calls": 0}
+{"qid": "conv-26-q168_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3113, "prompt_tokens": 905, "seconds": 60.4, "tool_calls": 0}
+{"qid": "conv-26-q183_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3141, "prompt_tokens": 887, "seconds": 34.4, "tool_calls": 0}
+{"qid": "conv-26-q182_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2953, "prompt_tokens": 856, "seconds": 54.2, "tool_calls": 0}
+{"qid": "conv-26-q185_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2825, "prompt_tokens": 821, "seconds": 38.7, "tool_calls": 0}
+{"qid": "conv-26-q187_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4146, "prompt_tokens": 1111, "seconds": 41.3, "tool_calls": 0}
+{"qid": "conv-26-q189_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3771, "prompt_tokens": 1034, "seconds": 72.7, "tool_calls": 0}
+{"qid": "conv-26-q195_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4181, "prompt_tokens": 1125, "seconds": 39.8, "tool_calls": 0}
+{"qid": "conv-30-q000", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3023, "prompt_tokens": 919, "seconds": 41.6, "tool_calls": 0}
+{"qid": "conv-30-q007", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4021, "prompt_tokens": 1145, "seconds": 42.3, "tool_calls": 0}
+{"qid": "conv-30-q008", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3241, "prompt_tokens": 941, "seconds": 47.6, "tool_calls": 0}
+{"qid": "conv-30-q012", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2848, "prompt_tokens": 861, "seconds": 45.6, "tool_calls": 0}
+{"qid": "conv-30-q013", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3259, "prompt_tokens": 943, "seconds": 44.3, "tool_calls": 0}
+{"qid": "conv-30-q014", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3011, "prompt_tokens": 842, "seconds": 39.7, "tool_calls": 0}
+{"qid": "conv-30-q018", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3393, "prompt_tokens": 981, "seconds": 45.0, "tool_calls": 0}
+{"qid": "conv-30-q020", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2846, "prompt_tokens": 862, "seconds": 50.9, "tool_calls": 0}
+{"qid": "conv-30-q031", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3877, "prompt_tokens": 1111, "seconds": 50.6, "tool_calls": 0}
+{"qid": "conv-30-q033", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3199, "prompt_tokens": 924, "seconds": 50.8, "tool_calls": 0}
+{"qid": "conv-30-q048", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3090, "prompt_tokens": 894, "seconds": 52.4, "tool_calls": 0}
+{"qid": "conv-30-q051", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3181, "prompt_tokens": 907, "seconds": 60.0, "tool_calls": 0}
+{"qid": "conv-30-q044", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3673, "prompt_tokens": 1043, "seconds": 74.8, "tool_calls": 0}
+{"qid": "conv-30-q053", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3416, "prompt_tokens": 962, "seconds": 50.0, "tool_calls": 0}
+{"qid": "conv-30-q054", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2983, "prompt_tokens": 903, "seconds": 32.8, "tool_calls": 0}
+{"qid": "conv-30-q062", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3349, "prompt_tokens": 933, "seconds": 32.7, "tool_calls": 0}
+{"qid": "conv-30-q065", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3406, "prompt_tokens": 962, "seconds": 47.8, "tool_calls": 0}
+{"qid": "conv-30-q064", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3778, "prompt_tokens": 1069, "seconds": 49.2, "tool_calls": 0}
+{"qid": "conv-30-q072", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3174, "prompt_tokens": 939, "seconds": 56.3, "tool_calls": 0}
+{"qid": "conv-30-q076", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2415, "prompt_tokens": 752, "seconds": 35.3, "tool_calls": 0}
+{"qid": "conv-30-q084_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 4271, "prompt_tokens": 1180, "seconds": 48.0, "tool_calls": 0}
+{"qid": "conv-30-q093_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "sure", "context_chars": 2282, "prompt_tokens": 740, "seconds": 54.1, "tool_calls": 0}
+{"qid": "conv-30-q094_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3544, "prompt_tokens": 997, "seconds": 76.0, "tool_calls": 0}
+{"qid": "conv-41-q000", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3684, "prompt_tokens": 984, "seconds": 48.8, "tool_calls": 0}
+{"qid": "conv-30-q099_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3406, "prompt_tokens": 962, "seconds": 100.0, "tool_calls": 0}
+{"qid": "conv-41-q002", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2978, "prompt_tokens": 842, "seconds": 62.4, "tool_calls": 0}
+{"qid": "conv-41-q003", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3195, "prompt_tokens": 897, "seconds": 62.4, "tool_calls": 0}
+{"qid": "conv-41-q017", "type": "open-domain", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2823, "prompt_tokens": 803, "seconds": 74.5, "tool_calls": 0}
+{"qid": "conv-41-q008", "type": "open-domain", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2790, "prompt_tokens": 802, "seconds": 76.2, "tool_calls": 0}
+{"qid": "conv-41-q007", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3046, "prompt_tokens": 871, "seconds": 117.9, "tool_calls": 0}
+{"qid": "conv-41-q025", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3459, "prompt_tokens": 939, "seconds": 50.9, "tool_calls": 0}
+{"qid": "conv-41-q018", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3560, "prompt_tokens": 961, "seconds": 52.5, "tool_calls": 0}
+{"qid": "conv-41-q029", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3597, "prompt_tokens": 977, "seconds": 41.3, "tool_calls": 0}
+{"qid": "conv-41-q034", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3165, "prompt_tokens": 895, "seconds": 67.2, "tool_calls": 0}
+{"qid": "conv-41-q035", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3641, "prompt_tokens": 979, "seconds": 72.4, "tool_calls": 0}
+{"qid": "conv-41-q032", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3095, "prompt_tokens": 861, "seconds": 80.3, "tool_calls": 0}
+{"qid": "conv-41-q039", "type": "open-domain", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3354, "prompt_tokens": 944, "seconds": 119.6, "tool_calls": 0}
+{"qid": "conv-41-q040", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3400, "prompt_tokens": 956, "seconds": 176.3, "tool_calls": 0}
+{"qid": "conv-41-q046", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 4152, "prompt_tokens": 1117, "seconds": 176.4, "tool_calls": 0}
+{"qid": "conv-41-q047", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2927, "prompt_tokens": 832, "seconds": 123.9, "tool_calls": 0}
+{"qid": "conv-41-q049", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3422, "prompt_tokens": 939, "seconds": 68.7, "tool_calls": 0}
+{"qid": "conv-41-q050", "type": "open-domain", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2803, "prompt_tokens": 813, "seconds": 102.3, "tool_calls": 0}
+{"qid": "conv-41-q056", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 4219, "prompt_tokens": 1129, "seconds": 88.4, "tool_calls": 0}
+{"qid": "conv-41-q062", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3831, "prompt_tokens": 1044, "seconds": 84.8, "tool_calls": 0}
+{"qid": "conv-41-q065", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3197, "prompt_tokens": 875, "seconds": 54.5, "tool_calls": 0}
+{"qid": "conv-41-q066", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3535, "prompt_tokens": 879, "seconds": 37.7, "tool_calls": 0}
+{"qid": "conv-41-q068", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3118, "prompt_tokens": 866, "seconds": 36.2, "tool_calls": 0}
+{"qid": "conv-41-q070", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3575, "prompt_tokens": 973, "seconds": 49.0, "tool_calls": 0}
+{"qid": "conv-41-q077", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3527, "prompt_tokens": 966, "seconds": 46.5, "tool_calls": 0}
+{"qid": "conv-41-q072", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3670, "prompt_tokens": 1001, "seconds": 66.2, "tool_calls": 0}
+{"qid": "conv-41-q083", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3396, "prompt_tokens": 901, "seconds": 43.1, "tool_calls": 0}
+{"qid": "conv-41-q084", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4645, "prompt_tokens": 1244, "seconds": 40.2, "tool_calls": 0}
+{"qid": "conv-41-q088", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3693, "prompt_tokens": 968, "seconds": 29.4, "tool_calls": 0}
+{"qid": "conv-41-q089", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4014, "prompt_tokens": 1019, "seconds": 36.4, "tool_calls": 0}
+{"qid": "conv-41-q090", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3550, "prompt_tokens": 970, "seconds": 40.0, "tool_calls": 0}
+{"qid": "conv-41-q092", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3819, "prompt_tokens": 1031, "seconds": 47.8, "tool_calls": 0}
+{"qid": "conv-41-q108", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3651, "prompt_tokens": 999, "seconds": 47.4, "tool_calls": 0}
+{"qid": "conv-41-q112", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2982, "prompt_tokens": 836, "seconds": 31.1, "tool_calls": 0}
+{"qid": "conv-41-q125", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3649, "prompt_tokens": 960, "seconds": 36.4, "tool_calls": 0}
+{"qid": "conv-41-q123", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3398, "prompt_tokens": 943, "seconds": 52.2, "tool_calls": 0}
+{"qid": "conv-41-q127", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3486, "prompt_tokens": 930, "seconds": 39.4, "tool_calls": 0}
+{"qid": "conv-41-q133", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3386, "prompt_tokens": 943, "seconds": 32.3, "tool_calls": 0}
+{"qid": "conv-41-q134", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3661, "prompt_tokens": 983, "seconds": 27.7, "tool_calls": 0}
+{"qid": "conv-41-q137", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3084, "prompt_tokens": 853, "seconds": 26.0, "tool_calls": 0}
+{"qid": "conv-41-q139", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3995, "prompt_tokens": 1075, "seconds": 33.6, "tool_calls": 0}
+{"qid": "conv-41-q142", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3914, "prompt_tokens": 1044, "seconds": 34.2, "tool_calls": 0}
+{"qid": "conv-41-q150", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2829, "prompt_tokens": 812, "seconds": 38.7, "tool_calls": 0}
+{"qid": "conv-41-q164_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 4077, "prompt_tokens": 1111, "seconds": 69.4, "tool_calls": 0}
+{"qid": "conv-41-q167_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3763, "prompt_tokens": 1032, "seconds": 73.0, "tool_calls": 0}
+{"qid": "conv-41-q168_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3665, "prompt_tokens": 969, "seconds": 222.3, "tool_calls": 0}
+{"qid": "conv-41-q169_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "sure", "context_chars": 3225, "prompt_tokens": 886, "seconds": 170.2, "tool_calls": 0}
+{"qid": "conv-41-q183_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3987, "prompt_tokens": 1060, "seconds": 78.0, "tool_calls": 0}
+{"qid": "conv-41-q190_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3607, "prompt_tokens": 1024, "seconds": 95.3, "tool_calls": 0}
+{"qid": "conv-41-q191_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3333, "prompt_tokens": 951, "seconds": 79.8, "tool_calls": 0}
+{"qid": "conv-41-q171_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3789, "prompt_tokens": 1061, "seconds": 320.4, "tool_calls": 0}
+{"qid": "conv-42-q004", "type": "open-domain", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2551, "prompt_tokens": 774, "seconds": 73.3, "tool_calls": 0}
+{"qid": "conv-42-q010", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3807, "prompt_tokens": 1040, "seconds": 58.8, "tool_calls": 0}
+{"qid": "conv-42-q015", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2652, "prompt_tokens": 804, "seconds": 58.5, "tool_calls": 0}
+{"qid": "conv-42-q019", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2961, "prompt_tokens": 866, "seconds": 47.8, "tool_calls": 0}
+{"qid": "conv-42-q028", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2934, "prompt_tokens": 872, "seconds": 51.9, "tool_calls": 0}
+{"qid": "conv-42-q031", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3818, "prompt_tokens": 1043, "seconds": 52.0, "tool_calls": 0}
+{"qid": "conv-42-q034", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2839, "prompt_tokens": 822, "seconds": 52.1, "tool_calls": 0}
+{"qid": "conv-42-q039", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3395, "prompt_tokens": 965, "seconds": 47.9, "tool_calls": 0}
+{"qid": "conv-42-q044", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3972, "prompt_tokens": 1096, "seconds": 47.2, "tool_calls": 0}
+{"qid": "conv-42-q042", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2437, "prompt_tokens": 751, "seconds": 66.4, "tool_calls": 0}
+{"qid": "conv-42-q049", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3229, "prompt_tokens": 904, "seconds": 44.0, "tool_calls": 0}
+{"qid": "conv-42-q053", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3633, "prompt_tokens": 1040, "seconds": 51.9, "tool_calls": 0}
+{"qid": "conv-42-q055", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3176, "prompt_tokens": 881, "seconds": 42.2, "tool_calls": 0}
+{"qid": "conv-42-q058", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2754, "prompt_tokens": 819, "seconds": 38.4, "tool_calls": 0}
+{"qid": "conv-42-q062", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3866, "prompt_tokens": 1053, "seconds": 31.1, "tool_calls": 0}
+{"qid": "conv-42-q072", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2898, "prompt_tokens": 881, "seconds": 32.7, "tool_calls": 0}
+{"qid": "conv-42-q074", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2715, "prompt_tokens": 791, "seconds": 50.2, "tool_calls": 0}
+{"qid": "conv-42-q073", "type": "open-domain", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2434, "prompt_tokens": 756, "seconds": 54.9, "tool_calls": 0}
+{"qid": "conv-42-q075", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2919, "prompt_tokens": 847, "seconds": 43.8, "tool_calls": 0}
+{"qid": "conv-42-q087", "type": "open-domain", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2359, "prompt_tokens": 743, "seconds": 37.9, "tool_calls": 0}
+{"qid": "conv-42-q076", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3515, "prompt_tokens": 1021, "seconds": 41.8, "tool_calls": 0}
+{"qid": "conv-42-q091", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2958, "prompt_tokens": 875, "seconds": 38.8, "tool_calls": 0}
+{"qid": "conv-42-q104", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2840, "prompt_tokens": 809, "seconds": 35.2, "tool_calls": 0}
+{"qid": "conv-42-q105", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3507, "prompt_tokens": 1029, "seconds": 35.1, "tool_calls": 0}
+{"qid": "conv-42-q110", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2598, "prompt_tokens": 823, "seconds": 29.6, "tool_calls": 0}
+{"qid": "conv-42-q112", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3191, "prompt_tokens": 941, "seconds": 29.6, "tool_calls": 0}
+{"qid": "conv-42-q103", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2465, "prompt_tokens": 770, "seconds": 85.2, "tool_calls": 0}
+{"qid": "conv-42-q113", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3385, "prompt_tokens": 966, "seconds": 28.0, "tool_calls": 0}
+{"qid": "conv-42-q116", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3056, "prompt_tokens": 896, "seconds": 30.9, "tool_calls": 0}
+{"qid": "conv-42-q119", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2543, "prompt_tokens": 786, "seconds": 30.7, "tool_calls": 0}
+{"qid": "conv-42-q117", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3272, "prompt_tokens": 959, "seconds": 39.9, "tool_calls": 0}
+{"qid": "conv-42-q122", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2397, "prompt_tokens": 769, "seconds": 46.8, "tool_calls": 0}
+{"qid": "conv-42-q124", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2876, "prompt_tokens": 866, "seconds": 24.5, "tool_calls": 0}
+{"qid": "conv-42-q125", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3511, "prompt_tokens": 986, "seconds": 24.5, "tool_calls": 0}
+{"qid": "conv-42-q131", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2575, "prompt_tokens": 785, "seconds": 38.2, "tool_calls": 0}
+{"qid": "conv-42-q142", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3044, "prompt_tokens": 912, "seconds": 48.1, "tool_calls": 0}
+{"qid": "conv-42-q140", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3148, "prompt_tokens": 892, "seconds": 71.9, "tool_calls": 0}
+{"qid": "conv-42-q145", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3799, "prompt_tokens": 1057, "seconds": 39.2, "tool_calls": 0}
+{"qid": "conv-42-q146", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3293, "prompt_tokens": 926, "seconds": 38.4, "tool_calls": 0}
+{"qid": "conv-42-q155", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2663, "prompt_tokens": 821, "seconds": 30.0, "tool_calls": 0}
+{"qid": "conv-42-q168", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2900, "prompt_tokens": 826, "seconds": 32.6, "tool_calls": 0}
+{"qid": "conv-42-q181", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3053, "prompt_tokens": 905, "seconds": 30.9, "tool_calls": 0}
+{"qid": "conv-42-q184", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3052, "prompt_tokens": 885, "seconds": 37.2, "tool_calls": 0}
+{"qid": "conv-42-q185", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2753, "prompt_tokens": 833, "seconds": 45.4, "tool_calls": 0}
+{"qid": "conv-42-q189", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2857, "prompt_tokens": 830, "seconds": 34.0, "tool_calls": 0}
+{"qid": "conv-42-q190", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3110, "prompt_tokens": 902, "seconds": 42.8, "tool_calls": 0}
+{"qid": "conv-42-q193", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3089, "prompt_tokens": 900, "seconds": 35.0, "tool_calls": 0}
+{"qid": "conv-42-q200_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3353, "prompt_tokens": 979, "seconds": 35.7, "tool_calls": 0}
+{"qid": "conv-42-q203_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4121, "prompt_tokens": 1136, "seconds": 41.3, "tool_calls": 0}
+{"qid": "conv-42-q202_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3204, "prompt_tokens": 934, "seconds": 72.4, "tool_calls": 0}
+{"qid": "conv-42-q204_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2679, "prompt_tokens": 796, "seconds": 76.0, "tool_calls": 0}
+{"qid": "conv-42-q208_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3288, "prompt_tokens": 966, "seconds": 65.3, "tool_calls": 0}
+{"qid": "conv-42-q210_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 3199, "prompt_tokens": 954, "seconds": 78.5, "tool_calls": 0}
+{"qid": "conv-42-q216_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 2986, "prompt_tokens": 890, "seconds": 115.4, "tool_calls": 0}
+{"qid": "conv-42-q222_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3708, "prompt_tokens": 1026, "seconds": 55.3, "tool_calls": 0}
+{"qid": "conv-42-q223_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "sure", "context_chars": 3222, "prompt_tokens": 942, "seconds": 74.9, "tool_calls": 0}
+{"qid": "conv-42-q229_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3618, "prompt_tokens": 1025, "seconds": 74.0, "tool_calls": 0}
+{"qid": "conv-42-q231_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 3313, "prompt_tokens": 941, "seconds": 89.7, "tool_calls": 0}
+{"qid": "conv-42-q233_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3341, "prompt_tokens": 969, "seconds": 94.3, "tool_calls": 0}
+{"qid": "conv-42-q234_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3696, "prompt_tokens": 1033, "seconds": 147.5, "tool_calls": 0}
+{"qid": "conv-42-q249_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 2912, "prompt_tokens": 862, "seconds": 148.2, "tool_calls": 0}
+{"qid": "conv-42-q253_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3091, "prompt_tokens": 919, "seconds": 94.9, "tool_calls": 0}
+{"qid": "conv-42-q219_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "sure", "context_chars": 2689, "prompt_tokens": 816, "seconds": 499.8, "tool_calls": 0}
+{"qid": "conv-42-q257_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3450, "prompt_tokens": 997, "seconds": 116.6, "tool_calls": 0}
+{"qid": "conv-42-q258_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3008, "prompt_tokens": 885, "seconds": 48.7, "tool_calls": 0}
+{"qid": "conv-43-q001", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 4140, "prompt_tokens": 1063, "seconds": 39.8, "tool_calls": 0}
+{"qid": "conv-42-q259_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2332, "prompt_tokens": 729, "seconds": 74.2, "tool_calls": 0}
+{"qid": "conv-43-q006", "type": "temporal", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3519, "prompt_tokens": 996, "seconds": 53.6, "tool_calls": 0}
+{"qid": "conv-43-q004", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3156, "prompt_tokens": 892, "seconds": 92.5, "tool_calls": 0}
+{"qid": "conv-43-q007", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3183, "prompt_tokens": 912, "seconds": 71.6, "tool_calls": 0}
+{"qid": "conv-43-q009", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3050, "prompt_tokens": 885, "seconds": 48.6, "tool_calls": 0}
+{"qid": "conv-43-q010", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4118, "prompt_tokens": 1083, "seconds": 62.2, "tool_calls": 0}
+{"qid": "conv-43-q011", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 4011, "prompt_tokens": 1045, "seconds": 61.3, "tool_calls": 0}
+{"qid": "conv-43-q012", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2982, "prompt_tokens": 842, "seconds": 77.9, "tool_calls": 0}
+{"qid": "conv-43-q024", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3216, "prompt_tokens": 901, "seconds": 57.9, "tool_calls": 0}
+{"qid": "conv-43-q016", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 4296, "prompt_tokens": 1196, "seconds": 104.8, "tool_calls": 0}
+{"qid": "conv-43-q025", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3511, "prompt_tokens": 951, "seconds": 67.8, "tool_calls": 0}
+{"qid": "conv-43-q033", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3842, "prompt_tokens": 1057, "seconds": 59.3, "tool_calls": 0}
+{"qid": "conv-43-q037", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3609, "prompt_tokens": 1035, "seconds": 85.2, "tool_calls": 0}
+{"qid": "conv-43-q051", "type": "open-domain", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3490, "prompt_tokens": 937, "seconds": 77.6, "tool_calls": 0}
+{"qid": "conv-43-q055", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3969, "prompt_tokens": 1048, "seconds": 54.8, "tool_calls": 0}
+{"qid": "conv-43-q059", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3655, "prompt_tokens": 987, "seconds": 61.3, "tool_calls": 0}
+{"qid": "conv-43-q062", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3557, "prompt_tokens": 1010, "seconds": 30.5, "tool_calls": 0}
+{"qid": "conv-43-q063", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4567, "prompt_tokens": 1171, "seconds": 45.8, "tool_calls": 0}
+{"qid": "conv-43-q068", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3314, "prompt_tokens": 909, "seconds": 146.1, "tool_calls": 0}
+{"qid": "conv-43-q074", "type": "single-hop", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3248, "prompt_tokens": 948, "seconds": 142.8, "tool_calls": 0}
+{"qid": "conv-43-q076", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3368, "prompt_tokens": 982, "seconds": 79.4, "tool_calls": 0}
+{"qid": "conv-43-q082", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2825, "prompt_tokens": 825, "seconds": 84.5, "tool_calls": 0}
+{"qid": "conv-43-q087", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2890, "prompt_tokens": 823, "seconds": 51.9, "tool_calls": 0}
+{"qid": "conv-43-q092", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3378, "prompt_tokens": 953, "seconds": 26.6, "tool_calls": 0}
+{"qid": "conv-43-q098", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3126, "prompt_tokens": 873, "seconds": 17.0, "tool_calls": 0}
+{"qid": "conv-43-q101", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3495, "prompt_tokens": 951, "seconds": 30.7, "tool_calls": 0}
+{"qid": "conv-43-q111", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3681, "prompt_tokens": 1014, "seconds": 27.1, "tool_calls": 0}
+{"qid": "conv-43-q114", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4088, "prompt_tokens": 1130, "seconds": 25.7, "tool_calls": 0}
+{"qid": "conv-43-q116", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3159, "prompt_tokens": 877, "seconds": 25.7, "tool_calls": 0}
+{"qid": "conv-43-q126", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3215, "prompt_tokens": 877, "seconds": 30.7, "tool_calls": 0}
+{"qid": "conv-43-q127", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4335, "prompt_tokens": 1146, "seconds": 31.6, "tool_calls": 0}
+{"qid": "conv-43-q133", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3408, "prompt_tokens": 968, "seconds": 43.2, "tool_calls": 0}
+{"qid": "conv-43-q128", "type": "single-hop", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3669, "prompt_tokens": 1027, "seconds": 52.1, "tool_calls": 0}
+{"qid": "conv-43-q135", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3667, "prompt_tokens": 969, "seconds": 39.0, "tool_calls": 0}
+{"qid": "conv-43-q136", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2904, "prompt_tokens": 859, "seconds": 52.8, "tool_calls": 0}
+{"qid": "conv-43-q137", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4146, "prompt_tokens": 1096, "seconds": 31.1, "tool_calls": 0}
+{"qid": "conv-43-q139", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3221, "prompt_tokens": 890, "seconds": 40.9, "tool_calls": 0}
+{"qid": "conv-43-q145", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3034, "prompt_tokens": 854, "seconds": 75.5, "tool_calls": 0}
+{"qid": "conv-43-q150", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3424, "prompt_tokens": 981, "seconds": 201.2, "tool_calls": 0}
+{"qid": "conv-43-q154", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2885, "prompt_tokens": 825, "seconds": 163.7, "tool_calls": 0}
+{"qid": "conv-43-q161", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3196, "prompt_tokens": 915, "seconds": 64.6, "tool_calls": 0}
+{"qid": "conv-43-q162", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3160, "prompt_tokens": 897, "seconds": 59.1, "tool_calls": 0}
+{"qid": "conv-43-q168", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3442, "prompt_tokens": 973, "seconds": 118.3, "tool_calls": 0}
+{"qid": "conv-43-q165", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 4185, "prompt_tokens": 1117, "seconds": 120.7, "tool_calls": 0}
+{"qid": "conv-43-q177", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2950, "prompt_tokens": 843, "seconds": 98.5, "tool_calls": 0}
+{"qid": "conv-43-q181_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3339, "prompt_tokens": 904, "seconds": 109.5, "tool_calls": 0}
+{"qid": "conv-43-q193_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3598, "prompt_tokens": 996, "seconds": 49.9, "tool_calls": 0}
+{"qid": "conv-43-q204_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3857, "prompt_tokens": 1025, "seconds": 160.5, "tool_calls": 0}
+{"qid": "conv-43-q209_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3623, "prompt_tokens": 987, "seconds": 73.9, "tool_calls": 0}
+{"qid": "conv-43-q215_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3669, "prompt_tokens": 1027, "seconds": 68.7, "tool_calls": 0}
+{"qid": "conv-43-q219_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3300, "prompt_tokens": 953, "seconds": 85.3, "tool_calls": 0}
+{"qid": "conv-43-q222_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4039, "prompt_tokens": 1067, "seconds": 71.8, "tool_calls": 0}
+{"qid": "conv-43-q223_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3902, "prompt_tokens": 1039, "seconds": 36.1, "tool_calls": 0}
+{"qid": "conv-43-q191_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "sure", "context_chars": 3163, "prompt_tokens": 901, "seconds": 627.0, "tool_calls": 0}
+{"qid": "conv-43-q224_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3878, "prompt_tokens": 1034, "seconds": 105.8, "tool_calls": 0}
+{"qid": "conv-43-q226_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 2815, "prompt_tokens": 847, "seconds": 120.5, "tool_calls": 0}
+{"qid": "conv-43-q040", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3579, "prompt_tokens": 939, "seconds": 1988.6, "tool_calls": 0}
+{"qid": "conv-43-q236_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3442, "prompt_tokens": 973, "seconds": 59.6, "tool_calls": 0}
+{"qid": "conv-44-q010", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3203, "prompt_tokens": 902, "seconds": 49.2, "tool_calls": 0}
+{"qid": "conv-44-q021", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3165, "prompt_tokens": 939, "seconds": 32.3, "tool_calls": 0}
+{"qid": "conv-44-q026", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3843, "prompt_tokens": 1063, "seconds": 73.8, "tool_calls": 0}
+{"qid": "conv-44-q033", "type": "open-domain", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2893, "prompt_tokens": 857, "seconds": 72.9, "tool_calls": 0}
+{"qid": "conv-43-q225_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 3455, "prompt_tokens": 935, "seconds": 323.9, "tool_calls": 0}
+{"qid": "conv-44-q034", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3032, "prompt_tokens": 873, "seconds": 47.6, "tool_calls": 0}
+{"qid": "conv-44-q035", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3330, "prompt_tokens": 974, "seconds": 62.7, "tool_calls": 0}
+{"qid": "conv-44-q043", "type": "open-domain", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2520, "prompt_tokens": 762, "seconds": 62.9, "tool_calls": 0}
+{"qid": "conv-44-q047", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2656, "prompt_tokens": 784, "seconds": 39.5, "tool_calls": 0}
+{"qid": "conv-44-q045", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3120, "prompt_tokens": 908, "seconds": 81.9, "tool_calls": 0}
+{"qid": "conv-44-q049", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2960, "prompt_tokens": 860, "seconds": 81.1, "tool_calls": 0}
+{"qid": "conv-44-q057", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3110, "prompt_tokens": 899, "seconds": 92.0, "tool_calls": 0}
+{"qid": "conv-44-q058", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3261, "prompt_tokens": 951, "seconds": 68.9, "tool_calls": 0}
+{"qid": "conv-44-q059", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3889, "prompt_tokens": 1089, "seconds": 65.5, "tool_calls": 0}
+{"qid": "conv-44-q068", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3804, "prompt_tokens": 1060, "seconds": 50.4, "tool_calls": 0}
+{"qid": "conv-44-q070", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4709, "prompt_tokens": 1279, "seconds": 61.3, "tool_calls": 0}
+{"qid": "conv-44-q071", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4000, "prompt_tokens": 1123, "seconds": 65.9, "tool_calls": 0}
+{"qid": "conv-44-q078", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4105, "prompt_tokens": 1148, "seconds": 57.0, "tool_calls": 0}
+{"qid": "conv-44-q079", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3352, "prompt_tokens": 981, "seconds": 45.9, "tool_calls": 0}
+{"qid": "conv-44-q082", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3629, "prompt_tokens": 1030, "seconds": 33.9, "tool_calls": 0}
+{"qid": "conv-44-q086", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3208, "prompt_tokens": 933, "seconds": 18.0, "tool_calls": 0}
+{"qid": "conv-44-q099", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3802, "prompt_tokens": 1077, "seconds": 18.0, "tool_calls": 0}
+{"qid": "conv-44-q100", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4003, "prompt_tokens": 1121, "seconds": 17.6, "tool_calls": 0}
+{"qid": "conv-44-q102", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3674, "prompt_tokens": 1008, "seconds": 40.1, "tool_calls": 0}
+{"qid": "conv-44-q107", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3460, "prompt_tokens": 996, "seconds": 47.3, "tool_calls": 0}
+{"qid": "conv-44-q118", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3721, "prompt_tokens": 1070, "seconds": 46.2, "tool_calls": 0}
+{"qid": "conv-44-q122", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2933, "prompt_tokens": 871, "seconds": 37.9, "tool_calls": 0}
+{"qid": "conv-44-q119", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3554, "prompt_tokens": 1007, "seconds": 49.7, "tool_calls": 0}
+{"qid": "conv-44-q126_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3782, "prompt_tokens": 1055, "seconds": 53.1, "tool_calls": 0}
+{"qid": "conv-44-q136_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3366, "prompt_tokens": 977, "seconds": 47.3, "tool_calls": 0}
+{"qid": "conv-44-q130_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3252, "prompt_tokens": 915, "seconds": 57.4, "tool_calls": 0}
+{"qid": "conv-44-q139_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "sure", "context_chars": 3481, "prompt_tokens": 986, "seconds": 56.4, "tool_calls": 0}
+{"qid": "conv-44-q141_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3422, "prompt_tokens": 972, "seconds": 92.8, "tool_calls": 0}
+{"qid": "conv-44-q143_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 3302, "prompt_tokens": 962, "seconds": 75.8, "tool_calls": 0}
+{"qid": "conv-44-q140_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3389, "prompt_tokens": 958, "seconds": 118.7, "tool_calls": 0}
+{"qid": "conv-44-q144_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 2578, "prompt_tokens": 796, "seconds": 34.5, "tool_calls": 0}
+{"qid": "conv-44-q145_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 2960, "prompt_tokens": 858, "seconds": 46.9, "tool_calls": 0}
+{"qid": "conv-44-q147_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3600, "prompt_tokens": 993, "seconds": 91.2, "tool_calls": 0}
+{"qid": "conv-44-q157_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 3721, "prompt_tokens": 1070, "seconds": 97.5, "tool_calls": 0}
+{"qid": "conv-47-q000", "type": "open-domain", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3032, "prompt_tokens": 825, "seconds": 90.5, "tool_calls": 0}
+{"qid": "conv-47-q003", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2993, "prompt_tokens": 876, "seconds": 76.0, "tool_calls": 0}
+{"qid": "conv-47-q004", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2522, "prompt_tokens": 788, "seconds": 63.2, "tool_calls": 0}
+{"qid": "conv-44-q146_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3878, "prompt_tokens": 1097, "seconds": 273.3, "tool_calls": 0}
+{"qid": "conv-47-q005", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2581, "prompt_tokens": 739, "seconds": 69.2, "tool_calls": 0}
+{"qid": "conv-47-q009", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2923, "prompt_tokens": 845, "seconds": 51.9, "tool_calls": 0}
+{"qid": "conv-47-q011", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3245, "prompt_tokens": 913, "seconds": 48.2, "tool_calls": 0}
+{"qid": "conv-47-q018", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2867, "prompt_tokens": 846, "seconds": 52.1, "tool_calls": 0}
+{"qid": "conv-47-q021", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2802, "prompt_tokens": 831, "seconds": 39.7, "tool_calls": 0}
+{"qid": "conv-47-q029", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3060, "prompt_tokens": 888, "seconds": 28.4, "tool_calls": 0}
+{"qid": "conv-47-q024", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3285, "prompt_tokens": 933, "seconds": 59.1, "tool_calls": 0}
+{"qid": "conv-47-q040", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3392, "prompt_tokens": 1016, "seconds": 26.8, "tool_calls": 0}
+{"qid": "conv-47-q034", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2652, "prompt_tokens": 789, "seconds": 38.6, "tool_calls": 0}
+{"qid": "conv-47-q043", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2583, "prompt_tokens": 767, "seconds": 37.0, "tool_calls": 0}
+{"qid": "conv-47-q044", "type": "open-domain", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2741, "prompt_tokens": 815, "seconds": 36.9, "tool_calls": 0}
+{"qid": "conv-47-q046", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3063, "prompt_tokens": 882, "seconds": 72.7, "tool_calls": 0}
+{"qid": "conv-47-q047", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2614, "prompt_tokens": 788, "seconds": 48.6, "tool_calls": 0}
+{"qid": "conv-47-q051", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2760, "prompt_tokens": 806, "seconds": 90.8, "tool_calls": 0}
+{"qid": "conv-47-q057", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2814, "prompt_tokens": 838, "seconds": 87.4, "tool_calls": 0}
+{"qid": "conv-47-q054", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3619, "prompt_tokens": 956, "seconds": 110.0, "tool_calls": 0}
+{"qid": "conv-47-q064", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2955, "prompt_tokens": 850, "seconds": 66.8, "tool_calls": 0}
+{"qid": "conv-47-q065", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2585, "prompt_tokens": 780, "seconds": 56.3, "tool_calls": 0}
+{"qid": "conv-47-q068", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2751, "prompt_tokens": 790, "seconds": 62.6, "tool_calls": 0}
+{"qid": "conv-47-q069", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2691, "prompt_tokens": 805, "seconds": 62.3, "tool_calls": 0}
+{"qid": "conv-47-q078", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2727, "prompt_tokens": 789, "seconds": 69.7, "tool_calls": 0}
+{"qid": "conv-47-q089", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3516, "prompt_tokens": 988, "seconds": 43.3, "tool_calls": 0}
+{"qid": "conv-47-q098", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3107, "prompt_tokens": 891, "seconds": 63.0, "tool_calls": 0}
+{"qid": "conv-47-q108", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2816, "prompt_tokens": 816, "seconds": 66.6, "tool_calls": 0}
+{"qid": "conv-47-q088", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2569, "prompt_tokens": 772, "seconds": 135.6, "tool_calls": 0}
+{"qid": "conv-47-q109", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2661, "prompt_tokens": 808, "seconds": 78.8, "tool_calls": 0}
+{"qid": "conv-47-q117", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3757, "prompt_tokens": 1006, "seconds": 75.8, "tool_calls": 0}
+{"qid": "conv-47-q129", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2735, "prompt_tokens": 798, "seconds": 57.0, "tool_calls": 0}
+{"qid": "conv-47-q132", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3338, "prompt_tokens": 940, "seconds": 31.3, "tool_calls": 0}
+{"qid": "conv-47-q141", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3403, "prompt_tokens": 945, "seconds": 44.1, "tool_calls": 0}
+{"qid": "conv-47-q142", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3326, "prompt_tokens": 945, "seconds": 52.4, "tool_calls": 0}
+{"qid": "conv-47-q155_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3516, "prompt_tokens": 988, "seconds": 66.6, "tool_calls": 0}
+{"qid": "conv-47-q156_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3077, "prompt_tokens": 896, "seconds": 63.7, "tool_calls": 0}
+{"qid": "conv-47-q157_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3669, "prompt_tokens": 995, "seconds": 86.5, "tool_calls": 0}
+{"qid": "conv-47-q170_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3377, "prompt_tokens": 934, "seconds": 91.6, "tool_calls": 0}
+{"qid": "conv-47-q171_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2683, "prompt_tokens": 780, "seconds": 103.9, "tool_calls": 0}
+{"qid": "conv-47-q172_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2887, "prompt_tokens": 825, "seconds": 71.1, "tool_calls": 0}
+{"qid": "conv-47-q173_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 2817, "prompt_tokens": 821, "seconds": 90.6, "tool_calls": 0}
+{"qid": "conv-47-q176_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 2864, "prompt_tokens": 810, "seconds": 78.4, "tool_calls": 0}
+{"qid": "conv-47-q178_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3204, "prompt_tokens": 864, "seconds": 81.9, "tool_calls": 0}
+{"qid": "conv-48-q002", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2626, "prompt_tokens": 800, "seconds": 43.9, "tool_calls": 0}
+{"qid": "conv-47-q179_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3529, "prompt_tokens": 959, "seconds": 65.3, "tool_calls": 0}
+{"qid": "conv-48-q011", "type": "open-domain", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2158, "prompt_tokens": 709, "seconds": 48.3, "tool_calls": 0}
+{"qid": "conv-47-q187_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3447, "prompt_tokens": 983, "seconds": 103.1, "tool_calls": 0}
+{"qid": "conv-48-q009", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3287, "prompt_tokens": 955, "seconds": 65.6, "tool_calls": 0}
+{"qid": "conv-48-q013", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3067, "prompt_tokens": 899, "seconds": 45.6, "tool_calls": 0}
+{"qid": "conv-48-q015", "type": "single-hop", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2506, "prompt_tokens": 783, "seconds": 44.4, "tool_calls": 0}
+{"qid": "conv-48-q016", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2925, "prompt_tokens": 857, "seconds": 36.1, "tool_calls": 0}
+{"qid": "conv-48-q021", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3260, "prompt_tokens": 966, "seconds": 40.4, "tool_calls": 0}
+{"qid": "conv-48-q026", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2591, "prompt_tokens": 798, "seconds": 40.4, "tool_calls": 0}
+{"qid": "conv-48-q023", "type": "open-domain", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2924, "prompt_tokens": 871, "seconds": 65.8, "tool_calls": 0}
+{"qid": "conv-48-q034", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3233, "prompt_tokens": 954, "seconds": 30.1, "tool_calls": 0}
+{"qid": "conv-48-q035", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2823, "prompt_tokens": 847, "seconds": 29.2, "tool_calls": 0}
+{"qid": "conv-48-q038", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3533, "prompt_tokens": 1014, "seconds": 47.2, "tool_calls": 0}
+{"qid": "conv-48-q039", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2549, "prompt_tokens": 763, "seconds": 45.9, "tool_calls": 0}
+{"qid": "conv-48-q041", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4209, "prompt_tokens": 1123, "seconds": 40.8, "tool_calls": 0}
+{"qid": "conv-48-q042", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3399, "prompt_tokens": 960, "seconds": 39.4, "tool_calls": 0}
+{"qid": "conv-48-q048", "type": "open-domain", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2658, "prompt_tokens": 780, "seconds": 39.5, "tool_calls": 0}
+{"qid": "conv-48-q049", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3610, "prompt_tokens": 1007, "seconds": 57.2, "tool_calls": 0}
+{"qid": "conv-48-q051", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2881, "prompt_tokens": 900, "seconds": 59.5, "tool_calls": 0}
+{"qid": "conv-48-q058", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2684, "prompt_tokens": 802, "seconds": 55.6, "tool_calls": 0}
+{"qid": "conv-48-q052", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2852, "prompt_tokens": 869, "seconds": 75.0, "tool_calls": 0}
+{"qid": "conv-48-q061", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2893, "prompt_tokens": 812, "seconds": 26.8, "tool_calls": 0}
+{"qid": "conv-48-q064", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2479, "prompt_tokens": 792, "seconds": 34.9, "tool_calls": 0}
+{"qid": "conv-48-q070", "type": "open-domain", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3007, "prompt_tokens": 880, "seconds": 47.5, "tool_calls": 0}
+{"qid": "conv-48-q071", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3184, "prompt_tokens": 904, "seconds": 43.1, "tool_calls": 0}
+{"qid": "conv-48-q072", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3310, "prompt_tokens": 958, "seconds": 35.1, "tool_calls": 0}
+{"qid": "conv-48-q073", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2508, "prompt_tokens": 791, "seconds": 49.3, "tool_calls": 0}
+{"qid": "conv-48-q074", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2719, "prompt_tokens": 844, "seconds": 55.3, "tool_calls": 0}
+{"qid": "conv-48-q076", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3445, "prompt_tokens": 998, "seconds": 107.8, "tool_calls": 0}
+{"qid": "conv-48-q084", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3561, "prompt_tokens": 942, "seconds": 84.0, "tool_calls": 0}
+{"qid": "conv-48-q087", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3207, "prompt_tokens": 913, "seconds": 81.1, "tool_calls": 0}
+{"qid": "conv-48-q096", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3604, "prompt_tokens": 1029, "seconds": 31.5, "tool_calls": 0}
+{"qid": "conv-48-q100", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3509, "prompt_tokens": 1021, "seconds": 29.4, "tool_calls": 0}
+{"qid": "conv-48-q114", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2867, "prompt_tokens": 879, "seconds": 57.6, "tool_calls": 0}
+{"qid": "conv-48-q118", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3142, "prompt_tokens": 916, "seconds": 36.5, "tool_calls": 0}
+{"qid": "conv-48-q126", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3767, "prompt_tokens": 1020, "seconds": 51.6, "tool_calls": 0}
+{"qid": "conv-48-q123", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3777, "prompt_tokens": 1083, "seconds": 53.3, "tool_calls": 0}
+{"qid": "conv-48-q117", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3175, "prompt_tokens": 939, "seconds": 124.3, "tool_calls": 0}
+{"qid": "conv-48-q127", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3325, "prompt_tokens": 971, "seconds": 35.4, "tool_calls": 0}
+{"qid": "conv-48-q129", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2950, "prompt_tokens": 883, "seconds": 35.5, "tool_calls": 0}
+{"qid": "conv-48-q136", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2878, "prompt_tokens": 884, "seconds": 66.1, "tool_calls": 0}
+{"qid": "conv-48-q137", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3101, "prompt_tokens": 899, "seconds": 67.5, "tool_calls": 0}
+{"qid": "conv-48-q135", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2675, "prompt_tokens": 831, "seconds": 82.5, "tool_calls": 0}
+{"qid": "conv-48-q138", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3075, "prompt_tokens": 892, "seconds": 30.9, "tool_calls": 0}
+{"qid": "conv-48-q139", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2278, "prompt_tokens": 760, "seconds": 31.8, "tool_calls": 0}
+{"qid": "conv-48-q143", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2736, "prompt_tokens": 844, "seconds": 26.2, "tool_calls": 0}
+{"qid": "conv-48-q145", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2982, "prompt_tokens": 845, "seconds": 25.1, "tool_calls": 0}
+{"qid": "conv-48-q147", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2831, "prompt_tokens": 817, "seconds": 24.1, "tool_calls": 0}
+{"qid": "conv-48-q152", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3622, "prompt_tokens": 1033, "seconds": 39.5, "tool_calls": 0}
+{"qid": "conv-48-q153", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3987, "prompt_tokens": 1112, "seconds": 26.9, "tool_calls": 0}
+{"qid": "conv-48-q163", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2621, "prompt_tokens": 829, "seconds": 50.1, "tool_calls": 0}
+{"qid": "conv-48-q164", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2351, "prompt_tokens": 738, "seconds": 27.8, "tool_calls": 0}
+{"qid": "conv-48-q169", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3232, "prompt_tokens": 909, "seconds": 34.4, "tool_calls": 0}
+{"qid": "conv-48-q180", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4132, "prompt_tokens": 1091, "seconds": 34.6, "tool_calls": 0}
+{"qid": "conv-48-q184", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3195, "prompt_tokens": 955, "seconds": 67.8, "tool_calls": 0}
+{"qid": "conv-48-q186", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3661, "prompt_tokens": 1046, "seconds": 79.9, "tool_calls": 0}
+{"qid": "conv-48-q188", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3030, "prompt_tokens": 881, "seconds": 73.6, "tool_calls": 0}
+{"qid": "conv-48-q197_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 2597, "prompt_tokens": 819, "seconds": 52.9, "tool_calls": 0}
+{"qid": "conv-48-q205_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2547, "prompt_tokens": 775, "seconds": 36.6, "tool_calls": 0}
+{"qid": "conv-48-q206_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 3190, "prompt_tokens": 949, "seconds": 50.3, "tool_calls": 0}
+{"qid": "conv-48-q213_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3075, "prompt_tokens": 893, "seconds": 42.7, "tool_calls": 0}
+{"qid": "conv-48-q216_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2831, "prompt_tokens": 816, "seconds": 53.6, "tool_calls": 0}
+{"qid": "conv-48-q207_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 3192, "prompt_tokens": 951, "seconds": 104.9, "tool_calls": 0}
+{"qid": "conv-48-q218_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2622, "prompt_tokens": 786, "seconds": 68.0, "tool_calls": 0}
+{"qid": "conv-48-q220_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3622, "prompt_tokens": 1034, "seconds": 60.1, "tool_calls": 0}
+{"qid": "conv-48-q223_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2387, "prompt_tokens": 738, "seconds": 47.8, "tool_calls": 0}
+{"qid": "conv-48-q224_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3753, "prompt_tokens": 1050, "seconds": 89.6, "tool_calls": 0}
+{"qid": "conv-48-q236_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3661, "prompt_tokens": 1047, "seconds": 54.0, "tool_calls": 0}
+{"qid": "conv-48-q237_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2606, "prompt_tokens": 819, "seconds": 87.7, "tool_calls": 0}
+{"qid": "conv-49-q004", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3143, "prompt_tokens": 907, "seconds": 51.1, "tool_calls": 0}
+{"qid": "conv-49-q006", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3084, "prompt_tokens": 916, "seconds": 51.3, "tool_calls": 0}
+{"qid": "conv-49-q011", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3833, "prompt_tokens": 1056, "seconds": 61.9, "tool_calls": 0}
+{"qid": "conv-49-q021", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3971, "prompt_tokens": 1100, "seconds": 47.8, "tool_calls": 0}
+{"qid": "conv-49-q017", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3786, "prompt_tokens": 1077, "seconds": 73.3, "tool_calls": 0}
+{"qid": "conv-49-q023", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3109, "prompt_tokens": 915, "seconds": 30.3, "tool_calls": 0}
+{"qid": "conv-49-q031", "type": "open-domain", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3520, "prompt_tokens": 993, "seconds": 43.7, "tool_calls": 0}
+{"qid": "conv-49-q033", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4048, "prompt_tokens": 1103, "seconds": 40.6, "tool_calls": 0}
+{"qid": "conv-49-q035", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3670, "prompt_tokens": 1047, "seconds": 52.7, "tool_calls": 0}
+{"qid": "conv-49-q037", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 4269, "prompt_tokens": 1169, "seconds": 72.3, "tool_calls": 0}
+{"qid": "conv-49-q042", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3182, "prompt_tokens": 917, "seconds": 59.6, "tool_calls": 0}
+{"qid": "conv-49-q046", "type": "open-domain", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3382, "prompt_tokens": 967, "seconds": 44.5, "tool_calls": 0}
+{"qid": "conv-49-q047", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2877, "prompt_tokens": 861, "seconds": 40.3, "tool_calls": 0}
+{"qid": "conv-49-q055", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3177, "prompt_tokens": 917, "seconds": 36.6, "tool_calls": 0}
+{"qid": "conv-49-q059", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2645, "prompt_tokens": 816, "seconds": 43.0, "tool_calls": 0}
+{"qid": "conv-49-q050", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3237, "prompt_tokens": 940, "seconds": 75.2, "tool_calls": 0}
+{"qid": "conv-49-q064", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3882, "prompt_tokens": 1080, "seconds": 61.3, "tool_calls": 0}
+{"qid": "conv-49-q065", "type": "open-domain", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2708, "prompt_tokens": 813, "seconds": 67.6, "tool_calls": 0}
+{"qid": "conv-49-q060", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 2713, "prompt_tokens": 820, "seconds": 131.7, "tool_calls": 0}
+{"qid": "conv-49-q067", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3485, "prompt_tokens": 1011, "seconds": 37.8, "tool_calls": 0}
+{"qid": "conv-49-q068", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3175, "prompt_tokens": 945, "seconds": 46.3, "tool_calls": 0}
+{"qid": "conv-49-q070", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2822, "prompt_tokens": 862, "seconds": 45.4, "tool_calls": 0}
+{"qid": "conv-49-q082", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3159, "prompt_tokens": 891, "seconds": 35.6, "tool_calls": 0}
+{"qid": "conv-49-q071", "type": "open-domain", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3487, "prompt_tokens": 1007, "seconds": 80.7, "tool_calls": 0}
+{"qid": "conv-49-q076", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3163, "prompt_tokens": 924, "seconds": 80.7, "tool_calls": 0}
+{"qid": "conv-49-q086", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3375, "prompt_tokens": 984, "seconds": 33.8, "tool_calls": 0}
+{"qid": "conv-49-q093", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3481, "prompt_tokens": 1006, "seconds": 31.0, "tool_calls": 0}
+{"qid": "conv-49-q094", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3489, "prompt_tokens": 1012, "seconds": 16.3, "tool_calls": 0}
+{"qid": "conv-49-q096", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3142, "prompt_tokens": 902, "seconds": 48.1, "tool_calls": 0}
+{"qid": "conv-49-q104", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3485, "prompt_tokens": 1016, "seconds": 46.8, "tool_calls": 0}
+{"qid": "conv-49-q102", "type": "single-hop", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 2791, "prompt_tokens": 828, "seconds": 71.9, "tool_calls": 0}
+{"qid": "conv-49-q105", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3563, "prompt_tokens": 1016, "seconds": 25.9, "tool_calls": 0}
+{"qid": "conv-49-q110", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2727, "prompt_tokens": 807, "seconds": 70.0, "tool_calls": 0}
+{"qid": "conv-49-q120", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3059, "prompt_tokens": 895, "seconds": 49.3, "tool_calls": 0}
+{"qid": "conv-49-q114", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3703, "prompt_tokens": 1041, "seconds": 69.3, "tool_calls": 0}
+{"qid": "conv-49-q124", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2929, "prompt_tokens": 852, "seconds": 48.0, "tool_calls": 0}
+{"qid": "conv-49-q123", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3765, "prompt_tokens": 1055, "seconds": 54.7, "tool_calls": 0}
+{"qid": "conv-49-q125", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3472, "prompt_tokens": 989, "seconds": 61.7, "tool_calls": 0}
+{"qid": "conv-49-q127", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3797, "prompt_tokens": 1091, "seconds": 74.4, "tool_calls": 0}
+{"qid": "conv-49-q135", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3209, "prompt_tokens": 935, "seconds": 77.4, "tool_calls": 0}
+{"qid": "conv-49-q136", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3198, "prompt_tokens": 924, "seconds": 51.4, "tool_calls": 0}
+{"qid": "conv-49-q139", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3451, "prompt_tokens": 980, "seconds": 49.7, "tool_calls": 0}
+{"qid": "conv-49-q140", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3274, "prompt_tokens": 968, "seconds": 45.8, "tool_calls": 0}
+{"qid": "conv-49-q142", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3316, "prompt_tokens": 955, "seconds": 46.2, "tool_calls": 0}
+{"qid": "conv-49-q148", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3508, "prompt_tokens": 1002, "seconds": 46.1, "tool_calls": 0}
+{"qid": "conv-49-q151", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4189, "prompt_tokens": 1155, "seconds": 45.4, "tool_calls": 0}
+{"qid": "conv-49-q154", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3364, "prompt_tokens": 986, "seconds": 50.3, "tool_calls": 0}
+{"qid": "conv-49-q162_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3396, "prompt_tokens": 972, "seconds": 73.0, "tool_calls": 0}
+{"qid": "conv-49-q167_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3972, "prompt_tokens": 1090, "seconds": 73.4, "tool_calls": 0}
+{"qid": "conv-49-q158_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3652, "prompt_tokens": 1045, "seconds": 128.0, "tool_calls": 0}
+{"qid": "conv-49-q174_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 2856, "prompt_tokens": 862, "seconds": 61.2, "tool_calls": 0}
+{"qid": "conv-49-q175_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3423, "prompt_tokens": 961, "seconds": 51.7, "tool_calls": 0}
+{"qid": "conv-49-q179_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 3447, "prompt_tokens": 970, "seconds": 90.0, "tool_calls": 0}
+{"qid": "conv-49-q190_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3874, "prompt_tokens": 1092, "seconds": 101.5, "tool_calls": 0}
+{"qid": "conv-49-q181_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2623, "prompt_tokens": 789, "seconds": 116.7, "tool_calls": 0}
+{"qid": "conv-49-q192_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "sure", "context_chars": 3579, "prompt_tokens": 989, "seconds": 42.8, "tool_calls": 0}
+{"qid": "conv-49-q191_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3508, "prompt_tokens": 1002, "seconds": 63.7, "tool_calls": 0}
+{"qid": "conv-50-q004", "type": "open-domain", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3942, "prompt_tokens": 1060, "seconds": 33.7, "tool_calls": 0}
+{"qid": "conv-50-q005", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 2890, "prompt_tokens": 843, "seconds": 32.1, "tool_calls": 0}
+{"qid": "conv-50-q011", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3708, "prompt_tokens": 1020, "seconds": 31.4, "tool_calls": 0}
+{"qid": "conv-50-q029", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 4001, "prompt_tokens": 1083, "seconds": 42.3, "tool_calls": 0}
+{"qid": "conv-50-q033", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4130, "prompt_tokens": 1126, "seconds": 17.1, "tool_calls": 0}
+{"qid": "conv-50-q044", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3744, "prompt_tokens": 1014, "seconds": 23.8, "tool_calls": 0}
+{"qid": "conv-50-q046", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3626, "prompt_tokens": 976, "seconds": 22.5, "tool_calls": 0}
+{"qid": "conv-50-q050", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3634, "prompt_tokens": 980, "seconds": 14.9, "tool_calls": 0}
+{"qid": "conv-50-q048", "type": "temporal", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 3689, "prompt_tokens": 1040, "seconds": 25.1, "tool_calls": 0}
+{"qid": "conv-50-q051", "type": "temporal", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 4151, "prompt_tokens": 1126, "seconds": 27.9, "tool_calls": 0}
+{"qid": "conv-50-q055", "type": "temporal", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4873, "prompt_tokens": 1297, "seconds": 25.2, "tool_calls": 0}
+{"qid": "conv-50-q066", "type": "multi-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3947, "prompt_tokens": 1093, "seconds": 27.1, "tool_calls": 0}
+{"qid": "conv-50-q069", "type": "temporal", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3508, "prompt_tokens": 982, "seconds": 26.4, "tool_calls": 0}
+{"qid": "conv-50-q077", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3342, "prompt_tokens": 934, "seconds": 27.2, "tool_calls": 0}
+{"qid": "conv-50-q078", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3206, "prompt_tokens": 908, "seconds": 34.3, "tool_calls": 0}
+{"qid": "conv-50-q054", "type": "multi-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3161, "prompt_tokens": 878, "seconds": 99.9, "tool_calls": 0}
+{"qid": "conv-50-q083", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3964, "prompt_tokens": 1054, "seconds": 19.1, "tool_calls": 0}
+{"qid": "conv-50-q079", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3575, "prompt_tokens": 974, "seconds": 28.2, "tool_calls": 0}
+{"qid": "conv-50-q086", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4018, "prompt_tokens": 1105, "seconds": 16.4, "tool_calls": 0}
+{"qid": "conv-50-q087", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4024, "prompt_tokens": 1123, "seconds": 27.1, "tool_calls": 0}
+{"qid": "conv-50-q093", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3177, "prompt_tokens": 885, "seconds": 22.2, "tool_calls": 0}
+{"qid": "conv-50-q095", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4633, "prompt_tokens": 1265, "seconds": 13.1, "tool_calls": 0}
+{"qid": "conv-50-q100", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2629, "prompt_tokens": 800, "seconds": 11.0, "tool_calls": 0}
+{"qid": "conv-50-q091", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 4104, "prompt_tokens": 1142, "seconds": 49.8, "tool_calls": 0}
+{"qid": "conv-50-q101", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3665, "prompt_tokens": 990, "seconds": 12.1, "tool_calls": 0}
+{"qid": "conv-50-q102", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 3234, "prompt_tokens": 939, "seconds": 14.5, "tool_calls": 0}
+{"qid": "conv-50-q105", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 2779, "prompt_tokens": 844, "seconds": 20.7, "tool_calls": 0}
+{"qid": "conv-50-q106", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4059, "prompt_tokens": 1140, "seconds": 20.0, "tool_calls": 0}
+{"qid": "conv-50-q111", "type": "single-hop", "abstention": false, "correct": true, "doubt": "unsure", "context_chars": 3575, "prompt_tokens": 1008, "seconds": 32.9, "tool_calls": 0}
+{"qid": "conv-50-q114", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4548, "prompt_tokens": 1228, "seconds": 18.7, "tool_calls": 0}
+{"qid": "conv-50-q119", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4109, "prompt_tokens": 1125, "seconds": 25.9, "tool_calls": 0}
+{"qid": "conv-50-q121", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3028, "prompt_tokens": 885, "seconds": 12.6, "tool_calls": 0}
+{"qid": "conv-50-q120", "type": "single-hop", "abstention": false, "correct": false, "doubt": "sure", "context_chars": 4817, "prompt_tokens": 1268, "seconds": 22.7, "tool_calls": 0}
+{"qid": "conv-50-q125", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3140, "prompt_tokens": 896, "seconds": 24.2, "tool_calls": 0}
+{"qid": "conv-50-q136", "type": "single-hop", "abstention": false, "correct": false, "doubt": "unsure", "context_chars": 3755, "prompt_tokens": 1054, "seconds": 26.1, "tool_calls": 0}
+{"qid": "conv-50-q137", "type": "single-hop", "abstention": false, "correct": false, "doubt": "no answer", "context_chars": 2743, "prompt_tokens": 815, "seconds": 23.9, "tool_calls": 0}
+{"qid": "conv-50-q142", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3658, "prompt_tokens": 1018, "seconds": 18.8, "tool_calls": 0}
+{"qid": "conv-50-q143", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 4004, "prompt_tokens": 1081, "seconds": 13.0, "tool_calls": 0}
+{"qid": "conv-50-q150", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3556, "prompt_tokens": 1021, "seconds": 13.7, "tool_calls": 0}
+{"qid": "conv-50-q155", "type": "single-hop", "abstention": false, "correct": true, "doubt": "sure", "context_chars": 3995, "prompt_tokens": 1104, "seconds": 16.0, "tool_calls": 0}
+{"qid": "conv-50-q158_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3962, "prompt_tokens": 1093, "seconds": 61.3, "tool_calls": 0}
+{"qid": "conv-50-q162_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3342, "prompt_tokens": 934, "seconds": 76.1, "tool_calls": 0}
+{"qid": "conv-50-q166_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4018, "prompt_tokens": 1105, "seconds": 31.8, "tool_calls": 0}
+{"qid": "conv-50-q159_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "unsure", "context_chars": 3574, "prompt_tokens": 1000, "seconds": 90.3, "tool_calls": 0}
+{"qid": "conv-50-q175_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 2467, "prompt_tokens": 748, "seconds": 33.4, "tool_calls": 0}
+{"qid": "conv-50-q178_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3724, "prompt_tokens": 1048, "seconds": 35.9, "tool_calls": 0}
+{"qid": "conv-50-q176_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 2779, "prompt_tokens": 844, "seconds": 45.2, "tool_calls": 0}
+{"qid": "conv-50-q182_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4128, "prompt_tokens": 1171, "seconds": 25.9, "tool_calls": 0}
+{"qid": "conv-50-q183_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4032, "prompt_tokens": 1101, "seconds": 21.0, "tool_calls": 0}
+{"qid": "conv-50-q187_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3751, "prompt_tokens": 1034, "seconds": 36.2, "tool_calls": 0}
+{"qid": "conv-50-q198_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 4115, "prompt_tokens": 1123, "seconds": 30.6, "tool_calls": 0}
+{"qid": "conv-50-q201_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "sure", "context_chars": 3557, "prompt_tokens": 986, "seconds": 28.7, "tool_calls": 0}
+{"qid": "conv-50-q203_abs", "type": "adversarial", "abstention": true, "correct": true, "doubt": "no answer", "context_chars": 2971, "prompt_tokens": 884, "seconds": 33.5, "tool_calls": 0}
+{"qid": "conv-50-q199_abs", "type": "adversarial", "abstention": true, "correct": false, "doubt": "unsure", "context_chars": 3556, "prompt_tokens": 1021, "seconds": 74.2, "tool_calls": 0}

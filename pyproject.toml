@@ -1,0 +1,17 @@
+[project]
+name = "deltos"
+version = "0.1.0"
+description = "Memory that knows what is true now, and what it used to be: markdown files, no index server, an MCP server and harness adapters."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = []
+
+[project.scripts]
+deltos = "deltos.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["deltos*"]
+
+[tool.setuptools.package-data]
+deltos = ["words.txt.gz", "words.LICENSE"]

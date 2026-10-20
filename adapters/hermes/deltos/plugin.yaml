@@ -1,0 +1,3 @@
+name: deltos
+version: 0.1.0
+description: "deltos memory provider — dated facts per thing (what is true now, what it was) plus plain-text search over your notes pages and Claude Code's memory dir. No index server, no embeddings, no auto-capture."
