@@ -129,6 +129,39 @@ TOOLS = [
         {"ref": S}, ["ref"]),
 ]
 
+# WHEN each tool is for, said in its own description (10-22). Models read a tool's
+# schema at the moment they pick a tool; the instructions are far away in the system
+# prompt. An agent on deltos wrote 0 facts in 3 days and missed plain news in its own
+# chats (a version drift fixed and shipped). A schema is a prompt, so this is
+# [tools] descriptions = "when" (or $DELTOS_TOOL_DESCRIPTIONS) until bench/writeornot.py
+# scores it on two models; "plain" keeps what each tool does only.
+WHEN = {
+    "remember": "Use it the moment a value changes or you learn one, before you answer: a version shipped, "
+                "a host or port moved, a model swapped, a status changed, a decision made. ",
+    "name_thing": "Use it first when memory doesn't know the thing yet, then remember. ",
+    "memory_recall": "Use it before saying something isn't known, and when the memory block doesn't cover "
+                     "what is asked. ",
+    "page_search": "Use it before saying something isn't known. ",
+    "page_write": "Use it after finished work worth a write-up (a fix, a setup, a decision and why). ",
+    "forget": "Use it when the user says to forget something, or for junk you made by mistake. ",
+}
+
+
+def tools_for(descriptions: str = "plain") -> list[dict]:
+    """The tools an agent is given: TOOLS, with WHEN in front of their
+    descriptions when descriptions == "when"."""
+    if descriptions != "when":
+        return TOOLS
+    return [dict(t, description=WHEN.get(t["name"], "") + t["description"]) for t in TOOLS]
+
+
+def _switch(env: str, value, default=False) -> bool:
+    v = os.environ.get(env)
+    if v not in (None, ""):
+        return v not in ("0", "false", "off")
+    return default if value is None else bool(value)
+
+
 # How to read a memory block: the agent's instructions carry it, and a reader
 # that gets only the block (a benchmark) gets it with the block.
 READING = "The newest `since` wins; a `was:` line is\n  history, not the current value."
@@ -207,7 +240,9 @@ class Memory:
         self.today = today
         self.root = self.config.root
         (self.root / "notes").mkdir(parents=True, exist_ok=True)
-        self.tools = TOOLS
+        self.tools = tools_for(os.environ.get("DELTOS_TOOL_DESCRIPTIONS")
+                               or str(self.config.tools.get("descriptions", "plain")))
+        self.cues = _switch("DELTOS_CUES", self.config.recall.get("cues"))   # deltos/cues.py; off by default
 
     # -- the parts ------------------------------------------------------------
 
@@ -217,6 +252,8 @@ class Memory:
     def recall(self) -> Recall:
         r = Recall.open(self.root, self.config.owner)
         r.today = self.today
+        days = os.environ.get("DELTOS_DOUBT_DAYS")
+        r.doubt_days = int(days if days not in (None, "") else self.config.recall.get("doubt_days", 0) or 0)
         return r
 
     def pages(self) -> Pages:
@@ -266,6 +303,11 @@ class Memory:
             parts.append("Pages (page_read for the whole page):\n" + "\n".join(
                 f"[{ref} · {d}{' · ' + old if old else ''}]\n" + "\n".join(f"  {ln}" for ln in lines)
                 for (ref, d, lines), old in zip(hits, olds)))
+        if self.cues and parts:   # the tool this turn may need, said where the agent is reading
+            from .cues import cues
+            lines = cues(r, message, "\n\n".join(parts))
+            if lines:
+                parts.append("\n".join(lines))
         return "\n\n".join(parts)
 
     def recent(self, days: int = RECENT_DAYS) -> str:

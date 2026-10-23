@@ -288,6 +288,21 @@ VALUE_KINDS = {"status", "state", "setting", "settings", "version", "latest rele
                "result", "score", "error", "value", "percentage"}
 
 
+# Kind words that name one kind of thing ("server" for a machine kept as "Machine").
+KIND_KIN = [{"machine", "server", "host", "computer", "box", "node", "workstation", "laptop", "desktop", "vm"},
+            {"repo", "repository", "codebase"}, {"app", "application"}, {"person", "people", "human", "user"}]
+
+
+def _other_kind(a: str, b: str) -> bool:
+    """Two kinds with no word in common and no kin: "component" and "model" are, "memory
+    layer" and "memory layer service" or "server" and "Machine" are not (kinds are free text).
+    b may carry the thing's name too: "memory layer" is the kind "gbrain memory layer" names."""
+    wa, wb = (set(re.findall(r"[a-z0-9]+", k.lower())) for k in (a, b))
+    if not wa or not wb or wa & wb:
+        return False
+    return not any(wa & g and wb & g for g in KIND_KIN)
+
+
 class _Line(list):
     """A line's columns, and what the model wrote (a refused line goes back
     to the model as written: cleanup puts "-" where a date was expected)."""
@@ -806,6 +821,12 @@ class Migrator:
             for p in lines:
                 if not p[0].startswith("=") and len(p) >= 4:
                     values.setdefault((_key(p[0]), _attr_key(p[1])), set()).add(_key(p[2]))
+            # A name the store has only as another thing's nickname, registered here as another
+            # kind with a name of its own: a different thing (10-23: "= Breeze | Breeze.astro |
+            # component", a site's wind effect, was filed onto the voice "Breeze TTS 2", also
+            # called Breeze, and moved it from down to deployed). Its lines in this unit go to
+            # the new thing, under that name.
+            moved: dict[str, str] = {}
             for parts in lines:
                 ln = "|".join(parts)
                 try:
@@ -843,9 +864,28 @@ class Migrator:
                                 if not (owner and _key(base_name(x)) in {_key(n) for n in [owner.name, *owner.aliases]}):
                                     names.remove(x)
                                     st["alias_ungrounded"] = st.get("alias_ungrounded", 0) + 1
+                        nm = base_name(parts[0].lstrip("= ").strip())
+                        have = s.find(nm)
+                        own = [x.strip() for x in names if x.strip() and s.find(x) is None]
+                        if (have and _key(nm) != _key(have.name) and kind.strip() and have.kind
+                                and _other_kind(kind, f"{have.kind} {have.name}") and own):
+                            moved[_key(nm)] = own[0]
+                            st["nickname_split"] = st.get("nickname_split", 0) + 1
+                            st.setdefault("refusals", []).append(
+                                f"{ln[:160]} -> {nm} is also {have.name}'s name ({have.kind}); "
+                                f"this {kind.strip()} is filed as {own[0]}")
+                            s.name(own[0], own[1:], kind)
+                            st["things"] += 1
+                            continue
                         s.name(parts[0].lstrip("= ").strip(), names, kind)
                         st["things"] += 1
                     elif len(parts) >= 4 and parts[0] and parts[1]:
+                        if _key(base_name(parts[0])) in moved:
+                            old = parts
+                            parts = _Line([moved[_key(base_name(old[0]))]] + old[1:])
+                            parts.raw = getattr(old, "raw", "")
+                            if id(old) in ok:
+                                ok[id(parts)] = ok[id(old)]   # same grounding verdict
                         dated = bool(re.fullmatch(r"\d{4}-\d\d-\d\d", parts[3]))
                         if g and not ok.get(id(parts), True):
                             # The unit doesn't state this value: the model's guess, or memory's own

@@ -53,6 +53,11 @@ PREV_GAP = 30 * 60     # seconds: a turn after a longer pause is a new topic, so
 KICK_EVERY = 60        # seconds: at most one learn start per gateway process this often
 # A profile's header in the block (bench/gate.py PROFILE), and a page's label line
 # under "Pages (": "[memory/foo.md · 2026-07-10]".
+# Hermes opens a cron job's prompt with its own "[IMPORTANT: …]" blocks (delivery, [SILENT],
+# recursion; skills it could not find). The same words come every run, so as a query they
+# matched the same six unrelated things in every cron block (10-22: "The Day", Hyperframes,
+# LLM bench …). A cron query drops them; the job's own prompt starts after them.
+CRON_NOTICE = re.compile(r"\A\s*\[IMPORTANT: .*?\](?:\s*\n\n|\s*\Z)", re.S)
 PROFILE = re.compile(r"^Profile entries \[([^ \]·]+)")
 PAGE = re.compile(r"^\[([^\]·\n]+?) · ")
 
@@ -97,6 +102,7 @@ class DeltosProvider(MemoryProvider):
         self._memory = None
         self._takes_previous = False
         self._sid = ""
+        self._cron = False   # a scheduled job's agent (set in initialize)
         self._turn = 0
         # session id -> (its last query cut to PREV_CHARS, the turn and a hash of the
         # whole query, the block given for it); the least recently used session goes first.
@@ -122,6 +128,9 @@ class DeltosProvider(MemoryProvider):
 
     def initialize(self, session_id: str, **kwargs) -> None:
         self._sid = session_id
+        # Hermes builds one provider per agent and says what runs it: a scheduled job
+        # comes as platform / agent_context "cron" ([hermes] cron_block decides its block).
+        self._cron = "cron" in (kwargs.get("agent_context"), kwargs.get("platform"))
         logger.info("deltos memory ready (root=%s, lib=%s)", self._m().root, SRC)
         self._kick("startup")   # sessions that ended while no gateway ran
 
@@ -144,6 +153,9 @@ class DeltosProvider(MemoryProvider):
         previous query goes along (a follow-up like "I mean on the other box" names
         little itself); it is set here, so it never waits on Hermes' write-behind worker."""
         q = (query or "").strip()
+        if self._cron:
+            while CRON_NOTICE.match(q):
+                q = CRON_NOTICE.sub("", q, count=1).strip()
         if not q:
             return ""
         key = f"{self._turn}:{hashlib.sha1(q.encode()).hexdigest()}"
@@ -156,7 +168,14 @@ class DeltosProvider(MemoryProvider):
             prev = ""
         try:
             m = self._m()
-            block = m.context(q, previous=prev) if self._takes_previous else m.context(q)
+            # A cron job's prompt is the same every run, so its page matches are too
+            # (10-20..22: the same 5-7k chars of unrelated pages every morning).
+            mode = str(m.config.hermes.get("cron_block", "full")).lower() if self._cron else "full"
+            kw = {"pages": 0} if mode == "facts" else {}
+            if mode == "off":
+                block = ""
+            else:
+                block = m.context(q, previous=prev, **kw) if self._takes_previous else m.context(q, **kw)
         except Exception as exc:   # fail-soft: no memory beats a failed turn
             logger.warning("deltos recall failed: %s", exc)
             block = ""

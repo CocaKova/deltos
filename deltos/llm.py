@@ -203,11 +203,19 @@ def chat(messages, tools=None, max_tokens=8192, timeout=None, extra=None, _retri
             time.sleep(3 * (attempt + 1))
 
 
+class StreamError(RuntimeError):
+    """The server failed an answer after its 200: an error event in the stream, or a
+    stream that ended before the answer did. chat() asks again, then raises."""
+
+
 def _streamed(req, timeout, stop) -> tuple[dict, dict]:
     """A streamed answer (server-sent events), with `stop` asked at each line end.
     Without the server's usage (stopped early, or no include_usage), the token
-    counts are the streamed pieces, about one token each."""
-    parts, think, usage, finish = [], 0, {}, None
+    counts are the streamed pieces, about one token each.
+    A failure after the 200 raises StreamError. Read as an answer, it was a short
+    or empty one, logged with no error and never asked again (10-21: the brain
+    restarted mid-import, 4 of 5 pieces stored nothing, "errors 0")."""
+    parts, think, usage, finish, ended = [], 0, {}, None, False
     with urllib.request.urlopen(req, timeout=timeout) as r:
         for line in r:
             line = line.strip()
@@ -215,8 +223,13 @@ def _streamed(req, timeout, stop) -> tuple[dict, dict]:
                 continue
             data = line[5:].strip()
             if data == b"[DONE]":
+                ended = True
                 break
             ev = json.loads(data)
+            # {"error": {...}} (TensorFold, OpenAI) or {"object": "error", "message": ...} (vLLM)
+            if ev.get("error") or ev.get("object") == "error":
+                err = ev.get("error") or ev
+                raise StreamError(str(err.get("message") if isinstance(err, dict) else err)[:300])
             if ev.get("usage"):
                 usage = dict(ev["usage"])
             for ch in ev.get("choices") or []:
@@ -232,6 +245,8 @@ def _streamed(req, timeout, stop) -> tuple[dict, dict]:
                                                                  **({"reasoning_tokens": think} if think else {})}
                 if ch.get("finish_reason"):
                     finish = ch["finish_reason"]
+    if finish is None and not ended:
+        raise StreamError(f"the stream ended before the answer did ({len(parts)} pieces in)")
     if not usage:
         usage = {"completion_tokens": len(parts) + think, **({"reasoning_tokens": think} if think else {})}
     usage["finish_reason"] = finish

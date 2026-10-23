@@ -36,6 +36,17 @@ DOUBT_DAYS = 30      # unconfirmed this long
 DOUBT_CHURN = 0.8    # mean older values per entry for the label's most volatile word
 DOUBT_SUPPORT = 5    # entries a word needs before its churn counts
 DOUBT_LATER = 5      # changes on the same thing since the entry was set
+# "Not confirmed in 5 weeks": a current entry of a kind that drifts in live state
+# (where a thing runs, what model or version it is, its status), whose newest date
+# (since, or confirmed) is at least doubt_days old ([recall] doubt_days in
+# deltos.toml, or $DELTOS_DOUBT_DAYS; 0 = off, the default until it is scored on two
+# models). The age is said, not judged: the reader decides whether to check. 10-22:
+# "what model is the brain running?" got a five-week-old Model line, said as current.
+# A setting is a chosen value, not live state; a kind doesn't drift. Not "location":
+# on a live store it is mostly a home town or a file path ("Location: Austin, TX ...
+# not confirmed in 4 weeks" on the owner, 10-22), not where something runs (host).
+VOLATILE = {"status", "version", "latest release", "model", "host", "port", "service", "url",
+            "container", "branch", "ip"}
 MAX_PINNED = 80  # profile lines, trails and linked history included
 MAX_OTHERS = 3   # other things' profiles opened: named in the question or pointed at
 OTHER_LINES = 12 # current lines shown from each of those
@@ -291,6 +302,7 @@ class Recall:
         self.root = Path(root)
         self.owner = owner   # whose memory this is: "my" in a question names them
         self.today = ""      # YYYY-MM-DD for a replayed world; default the real date
+        self.doubt_days = 0  # "not confirmed in N weeks" on volatile entries this old; 0 = off
         self._q, self._tally, self._kinds, self._list = "", False, [], False
         self._sig = _signature(self.root / "notes")
         self.reload()
@@ -391,6 +403,28 @@ class Recall:
         if age < DOUBT_DAYS or churn < DOUBT_CHURN or later < DOUBT_LATER:
             return ""
         return f" [may be outdated: unconfirmed {age} days; {later} later changes on this thing]"
+
+    def unconfirmed(self, line: str) -> str:
+        """The current line with "; not confirmed in N weeks" in its (since ...) when
+        it is a volatile entry whose newest date is doubt_days old or more."""
+        if self.doubt_days <= 0:
+            return line
+        lab = line.split(":**")[0].removeprefix("- **").lower().strip()
+        if lab.startswith("setting ") or not (lab in VOLATILE or lab.rsplit(" ", 1)[-1] in VOLATILE):
+            return line
+        when = re.search(r"\(since (\d{4}-\d\d-\d\d)[^)]*\)", line)
+        if not when:
+            return line
+        dates = [when.group(1)] + re.findall(r"confirmed (\d{4}-\d\d-\d\d)", when.group(0))
+        try:
+            n = (datetime.date.fromisoformat(self.today or datetime.date.today().isoformat())
+                 - datetime.date.fromisoformat(max(dates))).days
+        except ValueError:
+            return line
+        if n < self.doubt_days:
+            return line
+        ago = f"{n} days" if n < 14 else f"{n // 7} weeks" if n < 60 else f"{n // 30} months"
+        return line[:when.end() - 1] + f"; not confirmed in {ago}" + line[when.end() - 1:]
 
     def _build_index(self):
         """Every name, by its lowercased key, for span lookups: one dict per
@@ -641,7 +675,8 @@ class Recall:
         chosen = chosen + [b for b in blocks if label(b) in LINKS and b not in chosen]
         chosen = _same_slot(chosen, terms, label)
         d = self.dates.get(prof, "")
-        out = [(prof, d, x.rstrip() + (self.doubt(prof, x) if j == 0 else "")) for b in chosen for j, x in enumerate(b)]
+        out = [(prof, d, self.unconfirmed(x.rstrip()) + self.doubt(prof, x) if j == 0 else x.rstrip())
+               for b in chosen for j, x in enumerate(b)]
         values = [re.sub(r" \(since .*$| / decommissioned.*$", "", b[0].split(":** ", 1)[-1]) for b in chosen]
         if not main:   # another thing the question touches: its current lines only
             return [x for x in out if x[2].startswith("- **")][:OTHER_LINES], []
@@ -817,8 +852,11 @@ class Recall:
     def _render(self, q: str, pinned, hits) -> tuple[str, int]:
         parts: list[str] = []
         groups: list[list[tuple[str, str, str]]] = []
-        for x in pinned:   # one block per profile; a linked history note stays with its profile
-            if not groups or (x[0] != groups[-1][0][0] and not x[0].endswith("-history.md")):
+        # One block per profile. A linked history note and the thing's moved-out lines
+        # (<thing>-extra.md) stay with its profile: under a header of their own they read
+        # as another thing (10-22: "Profile entries [brain-2-extra ...]" under the Brain).
+        for x in pinned:
+            if not groups or (x[0] != groups[-1][0][0] and not x[0].endswith(("-history.md", "-extra.md"))):
                 groups.append([])
             groups[-1].append(x)
         for g in groups:

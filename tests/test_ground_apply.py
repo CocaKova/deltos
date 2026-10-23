@@ -90,6 +90,22 @@ class ApplyTest(unittest.TestCase):
         self.assertNotIn("alias_ungrounded", st)
         self.assertEqual(Store(self.root).find("Nimbus").aliases, ["nb"])
 
+    def test_another_kind_under_a_nickname_is_another_thing(self):
+        # Nimbus (an app) is also called nb; "= nb | nb.astro | component" is something else
+        st = self.note("--- memory/a.md\n- nb (src/nb.astro) is deployed on the site\n",
+                       "= nb | nb.astro | component\nnb | status | deployed | 2026-10-04")
+        s = Store(self.root)
+        self.assertNotIn("status", s.find("Nimbus").attrs)
+        self.assertEqual(s.find("nb.astro").attrs["status"].value, "deployed")
+        self.assertEqual(s.find("nb.astro").kind, "component")
+        self.assertEqual(s.find("nb").name, "Nimbus")   # the nickname stays Nimbus's
+        self.assertEqual(st["nickname_split"], 1)
+        # the same kind, or no name of its own: still Nimbus
+        for i, decl in enumerate(["= nb | | component", "= nb | nimbus-app | app"]):
+            self.note(f"--- memory/b{i}.md\n- nb (nimbus-app) uses port 91{i}0\n",
+                      f"{decl}\nnb | port | 91{i}0 | -")
+            self.assertEqual(Store(self.root).find("Nimbus").attrs["port"].value, f"91{i}0")
+
     def test_a_new_thing_the_note_never_names_is_not_made(self):
         st = self.note("--- memory/a.md\n- the gateway listens on port 9100\n",
                        "Zephyr | port | 9100 | -\n= Orion | | service\nOrion | port | 9100 | -")

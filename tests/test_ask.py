@@ -210,6 +210,23 @@ class RequestTest(unittest.TestCase):
         self.assertEqual([b["temperature"] for b in self.bodies], [0.0, 0.5])
         self.assertEqual((a.text, a.cut, a.recovered, a.tries[0]["finish"]), ("Nimbus | port | 8000 | -", "", True, "repeat"))
 
+    def test_an_error_event_mid_stream_is_asked_again_not_read_as_an_answer(self):
+        # 10-21: the brain restarted mid-import; the event after the 200 was read as a short answer.
+        failed = [b"data: " + json.dumps({"choices": [{"delta": {"content": "Nimbus | port"}}]}).encode() + b"\n",
+                  b"data: " + json.dumps({"error": {"message": "rank 0 failed; both ranks are restarting"}}).encode() + b"\n"]
+        self.serve(failed, sse(["Nimbus | port | 8000 | -"]))
+        with mock.patch.object(llm.time, "sleep"):
+            msg, usage = llm.chat([{"role": "user", "content": "x"}], stop=llm.repeating)
+        self.assertEqual((msg["content"], usage["finish_reason"], len(self.bodies)), ("Nimbus | port | 8000 | -", "stop", 2))
+
+    def test_vllms_error_object_and_a_cut_stream_are_errors_too(self):
+        vllm = [b"data: " + json.dumps({"object": "error", "message": "out of memory"}).encode() + b"\n"]
+        cut = [b"data: " + json.dumps({"choices": [{"delta": {"content": "half an ans"}}]}).encode() + b"\n"]
+        for bad in (vllm, cut):
+            self.serve(bad, bad, bad)
+            with mock.patch.object(llm.time, "sleep"), self.assertRaises(llm.StreamError):
+                llm.chat([{"role": "user", "content": "x"}], stop=llm.repeating)
+
     def test_the_cli_asker_still_works_through_chat(self):
         self.serve(sse(["1. another\n", "2 same"]))
         got = items.ask(ItemsAskTest.EV, llm.chat)

@@ -14,6 +14,22 @@ $DELTOS_ROOT or ~/deltos. Every key is optional:
     extra_block = "~/.hermes/extra_block.py"   # optional: a file whose build_block() adds to the instructions
     skip_ids = "^(probe-|check_)"        # optional: a regex of session ids not to learn from (a bench's
                                          # probe sessions); unset = none
+    cron_block = "full"                  # a scheduled (cron) run's per-turn block: "full" (default), "facts"
+                                         # (no pages: a job's prompt is the same every day, so are its page
+                                         # matches) or "off"
+
+    [recall]
+    doubt_days = 21                      # "(since ...; not confirmed in 5 weeks)" on a current entry that drifts
+                                         # in live state (status, host, port, model, version, ...) when its
+                                         # newest date is this old; 0 or unset = off ($DELTOS_DOUBT_DAYS wins)
+    cues = true                          # one line at the end of the block when the message may change a known
+                                         # thing ("remember it before answering") or the block shows "not
+                                         # confirmed" lines (deltos/cues.py); unset = off ($DELTOS_CUES wins)
+
+    [tools]
+    descriptions = "when"                # tool descriptions that also say WHEN to use each tool (remember: the
+                                         # moment a value changes); "plain" (default) = what each tool does
+                                         # ($DELTOS_TOOL_DESCRIPTIONS wins)
 
     [sessions]                           # chat digests under <root>/sessions
     hermes = "~/.hermes"
@@ -81,6 +97,8 @@ class Config:
     hermes: dict = field(default_factory=dict)   # the Hermes adapter's own keys ([hermes])
     llm: dict = field(default_factory=dict)
     learn: dict = field(default_factory=dict)    # chat learning ([learn]: auto, days, max_units)
+    recall: dict = field(default_factory=dict)   # reading ([recall]: doubt_days, cues)
+    tools: dict = field(default_factory=dict)    # what the agent is given ([tools]: descriptions)
 
     @classmethod
     def load(cls, root: str | Path | None = None) -> "Config":
@@ -106,6 +124,8 @@ class Config:
             agent=str(d.get("agent", "")),
             hermes=dict(d.get("hermes", {})),
             learn=dict(d.get("learn", {})),
+            recall=dict(d.get("recall", {})),
+            tools=dict(d.get("tools", {})),
             llm={"url": llm.get("url", ""), "model": llm.get("model", ""), "key": key,
                  **{k: dict(llm[k]) for k in ("extra", "thinking_off", "thinking_on") if llm.get(k)},
                  **({"thinking": str(llm["thinking"])} if llm.get("thinking") else {})},

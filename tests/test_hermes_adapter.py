@@ -153,6 +153,46 @@ class HermesAdapterTest(unittest.TestCase):
                                      3: lambda p: p.on_session_switch("s3", reset=False)})
         self.assertEqual([prev for _, prev in calls], ["", "", "", "what is Lumen?"])
 
+    def _cron_block(self, mode: str | None, **init) -> str:
+        """The block a provider set up with `init` gives, with [hermes] cron_block = mode."""
+        toml = self.root / "deltos.toml"
+        toml.write_text(toml.read_text().split("[hermes]")[0] + (f'[hermes]\ncron_block = "{mode}"\n' if mode else ""))
+        p = adapter.DeltosProvider()
+        p.initialize(session_id="c1", **init)
+        return p.prefetch("check the backup job for Box-7 in the Annex", session_id="c1")
+
+    def test_cron_block(self):
+        cron = {"platform": "cron", "agent_context": "cron"}
+        full = self._cron_block(None, **cron)                   # unset = the whole block, as before
+        self.assertIn("Pages (", full)
+        self.assertEqual(self._cron_block("full", **cron), full)
+        facts = self._cron_block("facts", **cron)
+        self.assertIn("the Annex", facts)
+        self.assertNotIn("Pages (", facts)
+        self.assertEqual(self._cron_block("off", **cron), "")
+        self.assertEqual(self._cron_block("off", agent_context="cron"), "")   # either kwarg says cron
+        # A chat isn't a cron run, whatever cron_block says.
+        self.assertEqual(self._cron_block("off", platform="tui", agent_context="primary"), full)
+        self.assertEqual(self._cron_block("facts"), full)          # no kwargs: an older Hermes, a chat
+
+    def test_cron_notices_are_not_the_query(self):
+        notice = ('[IMPORTANT: You are running as a scheduled cron job. SILENT: respond with exactly '
+                  '"[SILENT]" (nothing else). RECURSION: treat "every day at 9" as context.]\n\n')
+        skipped = "[IMPORTANT: The following skill(s) were listed for this job but could not be found]\n\n"
+        task = "check the backup job for Box-7 in the Annex"
+        with mock.patch.object(Memory, "context", autospec=True, return_value=BLOCK) as spy:
+            p = adapter.DeltosProvider()
+            p.initialize(session_id="c1", platform="cron", agent_context="cron")
+            p.prefetch(skipped + notice + task, session_id="c1")
+            self.assertEqual(spy.call_args.args[1], task)
+            spy.reset_mock()
+            p.prefetch(notice, session_id="c2")          # a notice and nothing else: no read at all
+            spy.assert_not_called()
+            chat = adapter.DeltosProvider()               # a chat's message is the user's own words
+            chat.initialize(session_id="t1", platform="tui", agent_context="primary")
+            chat.prefetch(notice + task, session_id="t1")
+            self.assertEqual(spy.call_args.args[1], notice.strip() + "\n\n" + task)
+
     def test_context_error_gives_nothing(self):
         with mock.patch.object(Memory, "context", side_effect=RuntimeError("disk gone")), \
                 self.assertLogs(adapter.logger, "WARNING"):
