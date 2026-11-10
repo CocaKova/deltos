@@ -138,7 +138,9 @@ disagrees with, one recorded by mistake. Start Hermes with
 - **Network: none by default.** Reading memory, writing facts, `/deltos` and the
   page never call anything. Two optional features call the one model endpoint you
   configure under `[llm]` (its key is read from an environment variable you name):
-  `deltos import` (your notes into facts) and learning from chats.
+  `deltos import` (your notes into facts) and learning from chats. When the plugin
+  starts learning itself, it takes that key from Hermes' own secret lookup, so a
+  gateway serving several profiles gives each one only its own key.
 - **Commands it runs.** `rg` for search when installed, and `git` when a note
   folder or the memory folder is a git repo. A `check:` line is text for the
   agent; Deltos never runs it.

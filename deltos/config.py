@@ -114,6 +114,7 @@ class Config:
     recall: dict = field(default_factory=dict)   # reading ([recall]: doubt_days, cues)
     tools: dict = field(default_factory=dict)    # what the agent is given ([tools]: descriptions)
     checks: dict = field(default_factory=dict)   # looking again ([checks]: on)
+    llm_key_env: str = "DELTOS_LLM_KEY"          # the variable [llm] key_env names (the key itself: llm["key"])
 
     @classmethod
     def load(cls, root: str | Path | None = None) -> "Config":
@@ -121,7 +122,8 @@ class Config:
         f = _path(os.environ["DELTOS_CONFIG"]) if os.environ.get("DELTOS_CONFIG") else root / "deltos.toml"
         d = tomllib.loads(f.read_text()) if f.is_file() else {}
         pages, imp, llm = d.get("pages", {}), d.get("import", {}), d.get("llm", {})
-        key = os.environ.get(llm.get("key_env", "DELTOS_LLM_KEY"), "")
+        key_env = llm.get("key_env", "DELTOS_LLM_KEY")
+        key = os.environ.get(key_env, "")
         return cls(
             root=root,
             owner=d.get("owner", ""),
@@ -142,6 +144,7 @@ class Config:
             recall=dict(d.get("recall", {})),
             tools=dict(d.get("tools", {})),
             checks=dict(d.get("checks", {})),
+            llm_key_env=key_env,
             llm={"url": llm.get("url", ""), "model": llm.get("model", ""), "key": key,
                  **{k: dict(llm[k]) for k in ("extra", "thinking_off", "thinking_on") if llm.get(k)},
                  **({"thinking": str(llm["thinking"])} if llm.get("thinking") else {})},

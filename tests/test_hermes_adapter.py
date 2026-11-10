@@ -256,6 +256,26 @@ class HermesAdapterTest(unittest.TestCase):
             self.p.on_session_end([])
             self.assertEqual(self.popen.call_count, 2)
 
+    def test_the_child_gets_the_key_hermes_gives_this_profile(self):
+        (self.root / "deltos.toml").write_text('[llm]\nurl = "http://127.0.0.1:1/v1"\nkey_env = "STUDIO_KEY"\n')
+        scope = types.ModuleType("agent.secret_scope")
+        scope.get_secret = lambda name, default=None: {"STUDIO_KEY": "this-profile"}.get(name, default)
+        hermes = {"agent": types.ModuleType("agent"), "agent.secret_scope": scope, "deltos.learn": fake_learn(True)}
+        with mock.patch.dict(sys.modules, hermes), mock.patch.dict(os.environ, {"STUDIO_KEY": "another-profile"}):
+            adapter.DeltosProvider().on_session_end([])
+            self.assertEqual(self.popen.call_args[1]["env"]["STUDIO_KEY"], "this-profile")
+            adapter._last_kick = None
+            scope.get_secret = mock.Mock(side_effect=RuntimeError("no profile in scope"))
+            adapter.DeltosProvider().on_session_end([])
+            self.assertNotIn("STUDIO_KEY", self.popen.call_args[1]["env"])
+        self.assertEqual(self.popen.call_count, 2)
+
+    def test_outside_hermes_the_child_keeps_its_environment(self):
+        with mock.patch.dict(sys.modules, {"deltos.learn": fake_learn(True)}), \
+                mock.patch.dict(os.environ, {"DELTOS_LLM_KEY": "from-the-shell"}):
+            self.p.on_session_end([])
+        self.assertEqual(self.popen.call_args[1]["env"]["DELTOS_LLM_KEY"], "from-the-shell")
+
     def test_kick_failure_is_soft(self):
         self.popen.side_effect = OSError("no exec")
         with mock.patch.dict(sys.modules, {"deltos.learn": fake_learn(True)}), \

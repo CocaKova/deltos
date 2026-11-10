@@ -22,7 +22,8 @@ time bound (8 s) and hands the query with skill scaffolding stripped and secrets
 redacted. Each read is logged to <root>/reads/<YYYY-MM>.jsonl (sizes, timing
 and the things and pages shown; never message text). When a session ends or a
 gateway starts, `python3 -m deltos.learn --wait` is started in the background
-if learning is on (deltos.learn decides; it waits until the agent is idle).
+if learning is on (deltos.learn decides; it waits until the agent is idle). Its
+model key comes from Hermes' own lookup for the active profile (_profile_key).
 """
 from __future__ import annotations
 
@@ -124,6 +125,25 @@ def read_record(session_id: str, query: str, ms: int, block: str) -> dict:
     return {"at": datetime.now().isoformat(timespec="seconds"),
             "s": hashlib.sha1(session_id.encode()).hexdigest()[:8],
             "q_chars": len(query), "ms": ms, "block_chars": len(block), "things": things, "pages": pages}
+
+
+def _profile_key(env: dict, name: str) -> None:
+    """Give a child the model key the way Hermes hands a plugin its secrets: the active
+    profile's own (agent.secret_scope), never one another profile left in the gateway's
+    environment. No key for this profile, or no profile in scope on a gateway that
+    serves several: the child gets none."""
+    try:
+        from agent.secret_scope import get_secret
+    except ImportError:   # a Hermes without it: the environment as it is
+        return
+    try:
+        val = get_secret(name)
+    except Exception:
+        val = None
+    if val:
+        env[name] = val
+    else:
+        env.pop(name, None)
 
 
 class DeltosProvider(MemoryProvider):
@@ -337,6 +357,7 @@ class DeltosProvider(MemoryProvider):
                 return
             env = {**os.environ, "DELTOS_ROOT": str(m.root),
                    "PYTHONPATH": os.pathsep.join(p for p in (SRC, os.environ.get("PYTHONPATH", "")) if p)}
+            _profile_key(env, getattr(m.config, "llm_key_env", "DELTOS_LLM_KEY"))
             with open(Path(m.root) / "learn.log", "a") as log:
                 p = subprocess.Popen([sys.executable, "-m", "deltos.learn", "--wait"], cwd=SRC, env=env,
                                      stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
