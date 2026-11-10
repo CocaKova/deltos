@@ -74,6 +74,10 @@ background run.
 /deltos due                   what is worth a fresh look, most pressing first
 ```
 
+Hermes loads memory with a conversation's first message, so in a Hermes that has
+just started, `/deltos` answers once you have sent one. `hermes deltos view` in a
+terminal shows the same at any time.
+
 ```
 **Memory** · 7 things, 23 entries, 16 past values kept
 8 not confirmed in 3 weeks or more · 4 seen with a check · 1 a note disagrees with
