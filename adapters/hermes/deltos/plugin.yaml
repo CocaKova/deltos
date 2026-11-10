@@ -1,3 +1,9 @@
 name: deltos
-version: 0.1.0
-description: "deltos memory provider — dated facts per thing (what is true now, what it was) plus plain-text search over your notes pages and Claude Code's memory dir. No index server, no embeddings, no auto-capture."
+label: Deltos
+version: "0.2.0"
+description: "Memory that knows what is true now, what it was before, and when it has not checked lately. Dated facts per thing in plain markdown: no embeddings, no index server, no model on the read path."
+author: CocaKova
+requires_hermes: ">=0.22.5"
+# The memory provider gives the agent its tools (named in README.md); register() adds none itself.
+provides_tools: []
+provides_hooks: []

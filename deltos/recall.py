@@ -15,14 +15,26 @@ import datetime
 import gzip
 import os
 import re
-import subprocess
 from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
 
-from .store import ITEM_KINDS, kind_words, name_problem
+from . import rg
+from .entrytypes import VOLATILE, entry_type
+from .store import ITEM_KINDS, PEOPLE, dormant, kind_words, name_problem
 
 MAX_LINES = 20  # non-profile lines
+# Links (deltos/links.py): an entry whose value names another thing links the two.
+# On, the block shows both ends of a link, resolves a role word through the owner's
+# links, follows dependencies and paths, and says when a linked thing changed after
+# the entry pointing at it was set. Off by default until the reader is scored on two
+# models ([recall] links = true in deltos.toml, or DELTOS_LINKS=1).
+LINKS_ON = os.environ.get("DELTOS_LINKS") == "1"
+INCOMING_EACH = 3     # entries pointing at a thing shown one by one under one label; more: a list of names
+INCOMING_LINES = 6    # lines about what points at the thing asked about
+NAMES_LISTED = 24     # names in one list line
+DEPENDENTS = 10       # things two links away listed
+WHO = re.compile(r"\bwho(m|se)?\b", re.I)   # a question asking for a person
 # "May be outdated": an entry set long ago, never confirmed, of a kind that
 # changes often in this memory (its label words' entries have long trails),
 # on a thing that changed a lot since. Learned from the store, no word list.
@@ -45,8 +57,8 @@ DOUBT_LATER = 5      # changes on the same thing since the entry was set
 # A setting is a chosen value, not live state; a kind doesn't drift. Not "location":
 # on a live store it is mostly a home town or a file path ("Location: Austin, TX ...
 # not confirmed in 4 weeks" on the owner, 10-22), not where something runs (host).
-VOLATILE = {"status", "version", "latest release", "model", "host", "port", "service", "url",
-            "container", "branch", "ip"}
+RULES_SHOWN = 3       # a thing's standing rules shown with it, whatever the question (Recall._pin)
+DECISIONS_SHOWN = 8   # its decisions, when the question asks what was decided
 MAX_PINNED = 80  # profile lines, trails and linked history included
 MAX_OTHERS = 3   # other things' profiles opened: named in the question or pointed at
 OTHER_LINES = 12 # current lines shown from each of those
@@ -75,6 +87,12 @@ def _words() -> set[str]:
 
 WORDS = _words()   # lowercase English words
 # Words that say what kind of thing a name is, not which one ("vendor courier").
+# Names matched by their letters alone (Recall._compact): long enough not to be a word.
+# Spaces and hyphens only: "reasoning_effort" is a config key, not the code class ReasoningEffort
+# (gate import:effort-main, 11-06), and a dotted word is a key or a file.
+_SEPS = str.maketrans("", "", " -")
+COMPACT_MIN = 6
+COMPACT_SLACK = 4   # separators a written name may add
 GENERIC_WORDS = {"the", "vendor", "service", "server", "project", "machine", "team", "our", "main", "box", "app"}
 ALSO = re.compile(r"^(.+?) \(also called ([^)]+)\)")
 DESCRIBED = 2
@@ -111,6 +129,10 @@ NOW = re.compile(r"\b(currently|current|right now|now|at the moment|still|anymor
 PAST = re.compile(r"\b(before|previous(ly)?|used to|history|histor|earlier|originally|first|ago|until|"
                   r"when did|what was|was it|were|changed?|change[sd]?|since when|how long|"
                   r"20\d\d-\d\d|on \w+ \d|in (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))", re.I)
+# "What did we decide for X?" asks for all that was settled about X (its price, timeline,
+# hardware), in entries the question names by no label word (11-05: "...the Phase 1 scope?"
+# showed the project's "Out of scope" and "Scope notes", not its price).
+DECIDED = re.compile(r"\b(decided?|decisions?|agreed?|settled?|chose|chosen)\b", re.I)
 LINK = re.compile(r"\[\[[^\]]*\]\]")
 # Questions about what has been happening lately, not about one thing.
 # "I", "my": the person whose memory this is (config owner).
@@ -152,6 +174,28 @@ def _same_word(term: str, word: str) -> bool:
     return len(term) >= 5 and len(word) >= 5 and term[:5] == word[:5] and abs(len(term) - len(word)) <= 3
 
 
+def _words_naming(terms, words) -> dict[str, set]:
+    """{word: the terms _same_word says name it}, comparing only the words that
+    can: _same_word needs the same stem (or one more "e"), or, both at least 5
+    letters, the same first 5 letters of the stem."""
+    by_stem, by_five = defaultdict(list), defaultdict(list)
+    for w in words:
+        s = _stem(w)
+        by_stem[s].append(w)
+        if len(s) >= 5:
+            by_five[s[:5]].append(w)
+    out: dict[str, set] = {}
+    for t in dict.fromkeys(terms):
+        s = _stem(t)
+        maybe = by_stem.get(s, []) + by_stem.get(s + "e", []) + (by_stem.get(s[:-1], []) if s.endswith("e") else [])
+        if len(s) >= 5:
+            maybe += by_five.get(s[:5], [])
+        for w in maybe:
+            if _same_word(t, w):
+                out.setdefault(w, set()).add(t)
+    return out
+
+
 def _loose(term: str, word: str) -> bool:
     """A list question's word inside an entry's words: "raise" in "Fundraising",
     "EPs" for "EP", "antique" in "antique tea set"."""
@@ -164,6 +208,19 @@ def _loose(term: str, word: str) -> bool:
         return y.rstrip("e") or y
     t, w = base(term), base(word)
     return t == w or (len(t) >= 4 and t in w) or (len(w) >= 4 and w in t)
+
+
+def _role_word(term: str, word: str) -> bool:
+    """A role word and the word a link says it with: "own" / "owner", "grandma" /
+    "grandmother", "clients" / "client". Only ever checked against the few things
+    linked to one thing, never across memory."""
+    if _same_word(term, word):
+        return True
+    if len(term) < 3 or len(word) < 3:
+        return False
+    n = len(os.path.commonprefix([term, word]))
+    # most of the shorter word and half of the longer: "grandma" is not "gray"
+    return n >= 3 and n >= 0.75 * min(len(term), len(word)) and n >= 0.5 * max(len(term), len(word))
 
 
 def _also(b: list[str]) -> list[str]:
@@ -303,7 +360,13 @@ class Recall:
         self.owner = owner   # whose memory this is: "my" in a question names them
         self.today = ""      # YYYY-MM-DD for a replayed world; default the real date
         self.doubt_days = 0  # "not confirmed in N weeks" on volatile entries this old; 0 = off
+        self.checks_on = False   # a "check:" line under a "not confirmed" line (deltos/checks.py)
+        self.links_on = LINKS_ON   # deltos/links.py in the block (Memory sets it from [recall] links)
         self._q, self._tally, self._kinds, self._list = "", False, [], False
+        self._linked: list[str] = []   # the block's lines about links, for the question being read
+        self._shown_links: set = set()  # (profile, line) of the links those lines show
+        self._structure: set = set()    # the subject's link entries shown because the question named none of its entries
+        self._structure_values: list = []
         self._sig = _signature(self.root / "notes")
         self.reload()
 
@@ -317,6 +380,7 @@ class Recall:
         self.about: dict[str, str] = {}                    # profile -> names, kind, status (lowercased)
         self.kinds: dict[str, set] = {}                    # profile -> stems of its kind and its name's last word
         self.changes: dict[str, list[str]] = {}            # profile -> dates a value became true
+        self.kind_of: dict[str, str] = {}                  # profile -> its kind, lowercased
         self._churn_n: dict[str, int] = defaultdict(int)   # label word -> entries
         self._churn_old: dict[str, int] = defaultdict(int)  # label word -> their older values
         for p in sorted((self.root / "notes").glob("*.md")):
@@ -367,6 +431,8 @@ class Recall:
                     elif m2 := re.match(r"^  - (\d+) older value", ln):
                         old_n += int(m2.group(1))
             t = re.search(r'^title: "?(.+?)"?$', text, re.M)
+            kd = re.search(r'^kind: "?(.*?)"?$', text.split("\n---", 1)[0], re.M)
+            self.kind_of[f"notes/{p.name}"] = (kd.group(1) if kd else "").strip().lower()
             if "\n## Details\n" in text:
                 # What the thing is, for questions that describe it instead of
                 # naming it: its names, kind, and kind/status entries.
@@ -383,7 +449,32 @@ class Recall:
                 self.names.append([t.group(1)])
                 self.profile_of[t.group(1).lower()] = f"notes/{p.name}"
         self.churn = {w: self._churn_old[w] / n for w, n in self._churn_n.items() if n >= DOUBT_SUPPORT}
+        self.title_of: dict[str, str] = {}    # profile -> its name
+        for g in self.names:
+            prof = self.profile_of.get(g[0].lower())
+            if prof:
+                self.title_of.setdefault(prof, g[0])
+        self.status_line: dict[str, str] = {}   # profile -> its current Status line
+        for prof, _, ln in self.facts:
+            if ln.startswith("- **Status:**"):
+                self.status_line[prof] = ln
+        # Things no longer in use: found when named, not by an entry's words (_elsewhere). 11-06: a
+        # model stopped since July sat in 66 of 270 blocks through scraps like "Setting
+        # Live-verified: post-restart" matching "verified" and "restart".
+        self.dormant = {p for p, ln in self.status_line.items() if dormant(_value(ln))}
+        self._graph = None
         self._build_index()
+
+    @property
+    def graph(self):
+        """The links between things (deltos/links.py), read on first use."""
+        if self._graph is None:
+            from .links import Graph
+            self._graph = Graph(self)
+        return self._graph
+
+    def title(self, prof: str) -> str:
+        return self.title_of.get(prof) or prof.removeprefix("notes/").removesuffix(".md")
 
     def doubt(self, prof: str, line: str) -> str:
         """" [may be outdated: ...]" for a current line memory should not be sure of, else ""."""
@@ -432,6 +523,11 @@ class Recall:
         "vendor courier"). Built once per load instead of a regex per name per
         question (7,700 names: ~55 ms a question, now well under 1)."""
         self._index = ({}, {})
+        # The same name written with or without spaces and hyphens ("river of glass" for
+        # riverofglass, "red kite" for redkite, "Box-7"): one more lookup in the
+        # full-name pass, for a span with a separator, by its letters alone. 10-20 a
+        # session about "the river of glass re-design" got no memory of riverofglass.
+        self._compact: dict[str, list] = {}
         for gi, group in enumerate(self.names):
             # A thing whose name breaks the store's name rules ("35.9%", "15 min":
             # made before the rules) names nothing in a question. Store.find,
@@ -439,7 +535,7 @@ class Recall:
             # its Kind is still named: leaving it out was measured (10-19 gate:
             # 2 fixed, 2 broken), its name is still a search word. That half of the
             # junk-thing rule is off pending the owner's decision, not tuned away.
-            if name_problem(group[0]):
+            if name_problem(group[0], person=self.kind_of.get(self.profile_of.get(group[0].lower()), "") in PEOPLE):
                 continue
             for n in group:
                 key = re.sub(r"^the ", "", n.lower())  # "our parts vendor" == "the parts vendor"
@@ -450,18 +546,30 @@ class Recall:
                 plain = bool(re.fullmatch(r"[A-Z][a-z]+", n)) and n.lower() in WORDS and \
                     self.size.get(self.profile_of.get(n.lower()), 0) < 3
                 self._index[0].setdefault(key, []).append((gi, n, plain))
+                c = key.translate(_SEPS)
+                if len(c) >= COMPACT_MIN and not plain and c not in WORDS:
+                    self._compact.setdefault(c, []).append((gi, n, plain))
                 short = " ".join(w for w in key.split() if w not in GENERIC_WORDS)
                 if len(short) >= 4 and short != key:
                     self._index[1].setdefault(short, []).append((gi, n, plain))
-        self._longest = max((len(k) for d in self._index for k in d), default=0)
+        self._longest = max([len(k) for d in self._index for k in d]
+                            + [len(k) + COMPACT_SLACK for k in self._compact], default=0)
         self._seen = {}
+        self._spans_seen: dict[str, list[tuple[int, int, int]]] = {}
+        self._role_seen: dict[str, tuple] = {}
 
-    def entities(self, q: str) -> list[list[str]]:
-        """Every thing the question names, in the order it names them. The
-        subject usually comes first: in "When did BFZ move onto Wadrast?" the
-        value is a thing too, and the longer name isn't the one being asked about."""
-        if q in self._seen:
-            return self._seen[q]
+    def name_spans(self, q: str, value: bool = False, skip: frozenset = frozenset()) -> list[tuple[int, int, int]]:
+        """Where a text names things: [(name group, start, end)], in text order. Full
+        names first, short names only when none; a name inside a longer name of
+        another thing doesn't count. A question's subject and a value's link (deltos/
+        links.py) are found the same way.
+        value: the text is an entry's value, not a sentence: a thing named by a plain
+        word counts wherever the value writes it as its name ("Runs on: Quarry").
+        skip: name groups not to find (a value's own thing: "Ivo's dad" on Rowan, who
+        is also called that, names Ivo)."""
+        key = (q, value, skip)
+        if key in self._spans_seen:
+            return self._spans_seen[key]
         ql = q.lower()
         edge = lambda i: i < 0 or i >= len(ql) or not (ql[i].isascii() and ql[i].isalnum())
         starts = [i for i in range(len(ql)) if edge(i - 1)]
@@ -475,19 +583,48 @@ class Recall:
                     if j - i > self._longest:
                         break
                     for gi, n, plain in index.get(ql[i:j], ()):
-                        if plain and (q[i:j] != n or _sentence_start(q, i)):
+                        if gi in skip:
+                            continue
+                        if plain and (q[i:j] != n or (_sentence_start(q, i) and not value)):
                             continue   # "Run the weekly update" names nothing; "what does Run do" does
                         if gi not in found or (i, -(j - i)) < found[gi][:2]:
                             found[gi] = (i, -(j - i), j)
             if found:
                 break
+        if self._compact:
+            # Written another way: only where no name was found as written (10-20 "the garden
+            # of null"), so an exact name keeps its place ("Breeze TTS" = Breeze + TTS).
+            exact = [(v[0], v[2]) for v in found.values()]
+            for i in starts:
+                for j in ends:
+                    if j <= i:
+                        continue
+                    if j - i > self._longest:
+                        break
+                    for gi, n, plain in self._compact.get(ql[i:j].translate(_SEPS), ()):
+                        if gi in skip or gi in found or any(i < e and s < j for s, e in exact):
+                            continue
+                        found[gi] = (i, -(j - i), j)
         spans = sorted((v[0], v[1], v[2], gi) for gi, v in found.items())
-        out, owners, taken = [], [], []
+        out, taken = [], []
         for start, _, end, gi in spans:
             # A name inside a longer name of another thing doesn't count.
             if any(s <= start and end <= e and (s, e) != (start, end) for s, e in taken):
                 continue
             taken.append((start, end))
+            out.append((gi, start, end))
+        self._spans_seen[key] = out
+        return out
+
+    def entities(self, q: str) -> list[list[str]]:
+        """Every thing the question names, in the order it names them. The
+        subject usually comes first: in "When did BFZ move onto Wadrast?" the
+        value is a thing too, and the longer name isn't the one being asked about."""
+        if q in self._seen:
+            return self._seen[q]
+        ql = q.lower()
+        out, owners = [], []
+        for gi, start, end in self.name_spans(q):
             # An owner ("Alex's dotfiles PR", "Ava's Flash-Next brain") is not
             # what is asked about when the question names something after it,
             # and every line that mentions the owner is noise.
@@ -550,6 +687,158 @@ class Recall:
         best = sorted(score, key=lambda p: score[p], reverse=True)[:DESCRIBED]
         return [group_of[p] for p in best]
 
+    # -- links (deltos/links.py) --------------------------------------------------------
+
+    def _owner_prof(self) -> str | None:
+        return self.profile_of.get(self.owner.lower()) if self.owner else None
+
+    def _link_words(self, prof: str, links) -> set[str]:
+        """What a linked thing is to the thing it links to: the link's label and value,
+        and the thing's kind ("Relationship: Ivo's grandmother", kind machine). Not its
+        name: a question that says a name finds the thing by it, and a name's words are
+        ordinary words elsewhere ("a quick memory check" is not memory-bench)."""
+        from .links import value_of
+        text = " ".join([lk.label + " " + value_of(lk.line) for lk in links] + [self.kind_of.get(prof, "")])
+        return {w for w in re.findall(r"[a-z]+", text.lower()) if w not in STOP and len(w) > 1}
+
+    def role(self, q: str) -> tuple[list[list[str]], list[str]]:
+        """A question in the first person that names no thing, asking by what
+        something is to the owner ("my grandma", "the machines I own", "my
+        clients"): the things linked to the owner whose link says the question's
+        word, as name groups (subject first). A "who" question no link word fits
+        gets the people linked to the owner. ([], []) when links are off, or nothing
+        fits. The second list: lines naming every one, when there are more than
+        a block pins."""
+        if not self.links_on:
+            return [], []
+        if q in self._role_seen:
+            return self._role_seen[q]
+        out: tuple = ([], [])
+        owner = self._owner_prof()
+        if owner and FIRST_PERSON.search(q):
+            terms = [t for t in self._terms(q, [self.owner]) if t not in TALLY_STOP]
+            partners = self.graph.partners(owner)
+            score = {}
+            for p, links in partners.items():
+                ws = self._link_words(p, links)
+                hit = {t for t in terms if any(_role_word(t, w) for w in ws)}
+                if hit:
+                    score[p] = (len(hit), any(lk.exact for lk in links))
+            people = sorted((p for p in partners if self.kind_of.get(p, "") in PEOPLE), key=lambda p: self.title(p).lower())
+            group_of = {self.profile_of.get(g[0].lower()): g for g in self.names}
+            groups, lines = [], []
+            if score:
+                top = max(score.values())[0]
+                best = sorted((p for p in score if score[p][0] == top),
+                              key=lambda p: (-score[p][1], self.title(p).lower()))
+                groups = [group_of[p] for p in best if p in group_of]
+                if len(best) > 1 + MAX_OTHERS:
+                    lines = [f"[{self.title(lk.src)}] {lk.line}" for p in best for lk in partners[p][:1]]
+            if WHO.search(q):
+                # A "who" question: besides the things its words fit, the people linked to
+                # the owner, each with the entry that links them ("who is in my family" fits
+                # no link word, or a stray one), so the reader sees who each is to the owner.
+                pinned = {self.profile_of.get(g[0].lower()) for g in groups[:1 + MAX_OTHERS]}
+                lines += [f"[{self.title(lk.src)}] {lk.line}" for p in people if p not in pinned
+                          for lk in partners[p][:1]][:NAMES_LISTED]
+                if not groups:
+                    groups = [group_of[p] for p in people[:1 + MAX_OTHERS] if p in group_of]
+            out = (groups, lines) if groups or lines else ([], [])
+        self._role_seen[q] = out
+        return out
+
+    def subjects(self, q: str) -> list[list[str]]:
+        """The things a question is about: the ones it names, else the ones it
+        describes, else (links on) the ones a role word reaches through the owner's links."""
+        return self.entities(q) or self.described(q) or self.role(q)[0]
+
+    def _incoming(self, prof: str, terms: list[str], asked: bool, owner: bool) -> list[str]:
+        """Lines about what points at the thing asked about: other things' entries
+        whose value names it, grouped by label. A few under one label are shown as
+        they are ("[Teo] - **Relationship:** Mira's partner"); many become one list
+        ("- **12 things with host Halden:** Quarry, Ploverd, ..."). When the
+        question asks for one of the thing's own entries (asked), only labels it
+        names; for the owner, only links the question's words fit (everything in
+        memory points at its owner). Then what depends on it two links away."""
+        from .links import since_of
+        g = self.graph
+        inc = g.inc.get(prof, [])
+        hits = lambda lk: sum(1 for t in set(terms) if any(_role_word(t, w) for w in self._link_words(lk.src, [lk])))
+        fits = lambda lk: hits(lk) > 0
+        if asked or owner:
+            # the links that fit most of the question's words: "machines I own" is the
+            # machines among the things Ivo owns, not everything with an owner
+            best = max((hits(lk) for lk in inc), default=0)
+            inc = [lk for lk in inc if best and hits(lk) == best]
+        groups: dict[str, list] = {}
+        for lk in inc:
+            groups.setdefault(lk.key, []).append(lk)
+        newest = lambda ls: sorted(ls, key=lambda lk: (since_of(lk.line), self.title(lk.src)), reverse=True)
+        names = lambda ls, n: ", ".join(self.title(lk.src) for lk in ls[:n]) + (f" (+{len(ls) - n})" if len(ls) > n else "")
+        lines, me = [], self.title(prof)
+        # Labels the question's words fit ("hosted" / host, "own" / owner, "partner"):
+        # their entries as they are, a few, then the rest by name.
+        # One sentence per label, in the entry's own words: "Host is Halden on 12 things: ...",
+        # "Relationship names Mira on 1 thing: Teo".
+        said = lambda ls: (f"- **{ls[0].label} {'is' if all(lk.exact for lk in ls) else 'names'} {me} on {len(ls)} "
+                           f"thing{'' if len(ls) == 1 else 's'}:** " + names(ls, NAMES_LISTED))
+        # A few under one label: the entries as they are (with their dates). Many: one line of
+        # names; the labels the question's words fit first ("hosted" / host, "own" / owner).
+        fit = lambda k: any(fits(lk) for lk in groups[k])
+        for k in sorted(groups, key=lambda k: (not fit(k), len(groups[k]) > INCOMING_EACH, -len(groups[k]), k)):
+            ls = newest(groups[k])
+            if len(ls) <= INCOMING_EACH:
+                lines += [f"[{self.title(lk.src)}] {lk.line}" for lk in ls]
+                full = ls
+            else:
+                lines.append(said(ls))
+                full = []
+            if len(lines) <= INCOMING_LINES:   # shown whole here: not again under Other notes
+                self._shown_links |= {(lk.src, lk.line) for lk in full}
+        lines = lines[:INCOMING_LINES]
+        if not asked and not owner:
+            far = [(p, chain) for p, chain in g.dependents(prof) if len(chain) == 2]
+            if far:
+                lines.append(f"- **Two links from {me} (each points at one of those):** " + ", ".join(
+                    f"{self.title(p)} ({chain[0].label.lower()} {self.title(chain[0].dst)})"
+                    for p, chain in far[:DEPENDENTS]) + (f" (+{len(far) - DEPENDENTS})" if len(far) > DEPENDENTS else ""))
+        return lines
+
+    def _path_line(self, a: str, b: str) -> str:
+        """Two things the question puts together, linked only through others: the
+        chain, each step the entry it rests on. Worked out, not stored."""
+        from .links import value_of
+        chain = self.graph.path(a, b, avoid={p for p in [self._owner_prof()] if p and p not in (a, b)})
+        if len(chain) < 2:
+            return ""
+        nodes, cur = [a], a
+        for lk in chain:
+            cur = lk.dst if lk.src == cur else lk.src
+            nodes.append(cur)
+        steps = "; ".join(f"[{self.title(lk.src)}] {lk.label}: {value_of(lk.line)}" for lk in chain)
+        return (f"- **{self.title(a)} is linked to {self.title(b)} through {len(chain) - 1} other thing(s):** "
+                + " → ".join(self.title(n) for n in nodes) + f" ({steps})")
+
+    def _linked_state(self, prof: str, line: str, asked: bool) -> list[str]:
+        """Sub-lines for an entry whose value names a thing that has since changed
+        state: retired ("Model: Corvid-7" written in April; Corvid-7 retired in
+        September), or, on an entry the question asks about, a status set after this
+        entry was last set or confirmed. Statuses are free text ("restarted for X",
+        "WON"), so a change alone is said only where it is asked about."""
+        from .links import since_of
+        out = []
+        for lk in self.graph.of_line.get((prof, line), []):
+            st = self.status_line.get(lk.dst)
+            if not st:
+                continue
+            when, mine = since_of(st), since_of(line)
+            if "retired / decommissioned" in st or (asked and when and mine and when > mine):
+                state = re.sub(r" \((since|confirmed|source:) [^()]*\)$", "", st.split(":** ", 1)[-1])
+                out.append(f"  - linked: {self.title(lk.dst)} status {state}"
+                           + (f" (since {when}, after this entry)" if when and mine and when > mine
+                              and "since" not in state else ""))
+        return out
+
     def changed(self, since: str) -> list[tuple[str, list[str]]]:
         """Things whose entries changed on or after `since`, by day, newest first:
         [(day, [thing, ...])], the busiest things first within a day."""
@@ -601,8 +890,9 @@ class Recall:
         # ("Setting deferred: Matrix threads" is not how Notely talks to Matrix).
         names_other = lambda b: not label(b).startswith("setting ") and any(p.search(_value(b[0]).lower()) for p in pats)
         if len(blocks) <= SMALL:
-            chosen = [b for b in blocks if names_other(b) or any(_same_word(t, w) for t in terms
-                                                                 for w in lab_words(b))] or blocks
+            chosen = [] if DECIDED.search(self._q) else \
+                [b for b in blocks if names_other(b) or any(_same_word(t, w) for t in terms for w in lab_words(b))]
+            chosen = chosen or blocks
             deep = chosen if PAST.search(self._q) or self._tally else []   # cold history: the past, or a count over it
         else:
             # A big profile: the entries the question names, rarest word
@@ -650,6 +940,15 @@ class Recall:
             # the past: "what is X now" gets the current value, its two latest
             # old values and a count, not every value it ever had.
             deep = [blocks[i] for i in named] if PAST.search(self._q) or self._tally else []
+        # What the entries are (deltos/entrytypes.py): a thing's standing rules come with it
+        # whatever the question's words ("draft the dossier email" and "never touch real
+        # patient data"), and its decisions when the question asks what was decided.
+        kind = self.kind_of.get(prof, "")
+        typed = lambda b, want: entry_type(label(b), _value(b[0]), kind) == want
+        more = [b for b in blocks if b not in chosen and typed(b, "rule")][:RULES_SHOWN]
+        if DECIDED.search(self._q):
+            more += [b for b in blocks if b not in chosen and b not in more and typed(b, "decision")][:DECISIONS_SHOWN]
+        chosen = chosen + more
         if self._list:
             # Every item of a kind the question counts or lists: entries holding
             # several current items whose label, value or items say a question
@@ -673,13 +972,46 @@ class Recall:
             asked = lambda b: any(_same_word(t, w) for t in terms for w in lab_words(b))
             chosen = [_cap_also(b, ALSO_SHOWN) if _also(b) and not asked(b) else b for b in chosen]
         chosen = chosen + [b for b in blocks if label(b) in LINKS and b not in chosen]
+        if self.links_on and not any(_same_word(t, w) for t in terms for b in blocks for w in lab_words(b)):
+            # The question names none of the thing's entries, so the answer may be one link
+            # away: every exact link is the thing's structure (where it runs, what it is
+            # part of, who owns it, what model it uses), whatever the label: its current line.
+            ofl = self.graph.of_line
+            structure = [b[:1] for b in blocks if b not in chosen and not any(c[0] == b[0] for c in chosen)
+                         and any(lk.exact for lk in ofl.get((prof, b[0].rstrip()), []))]
+            chosen = chosen + structure
+            if main:   # their things are opened only when they hold an entry the question names (retrieve)
+                self._structure = {b[0] for b in structure}
         chosen = _same_slot(chosen, terms, label)
         d = self.dates.get(prof, "")
-        out = [(prof, d, self.unconfirmed(x.rstrip()) + self.doubt(prof, x) if j == 0 else x.rstrip())
-               for b in chosen for j, x in enumerate(b)]
-        values = [re.sub(r" \(since .*$| / decommissioned.*$", "", b[0].split(":** ", 1)[-1]) for b in chosen]
+        out = []
+        for b in chosen:
+            head = ""
+            for j, x in enumerate(b):
+                if j and x.startswith("  - check: ") and not (self.checks_on and "; not confirmed in " in head):
+                    continue   # how to look: shown only where the reader may need to look
+                if j == 0:
+                    head = self.unconfirmed(x.rstrip())
+                out.append((prof, d, head + self.doubt(prof, x) if j == 0 else x.rstrip()))
+                if j == 0 and self.links_on:
+                    asked_b = any(_same_word(t, w) for t in terms for w in lab_words(b))
+                    out += [(prof, d, s) for s in self._linked_state(prof, x.rstrip(), asked_b)]
+        values = [re.sub(r" \(since .*$| / decommissioned.*$", "", b[0].split(":** ", 1)[-1]) for b in chosen
+                  if not (main and b[0] in self._structure)]
+        if main:
+            self._structure_values = [re.sub(r" \(since .*$", "", x.split(":** ", 1)[-1]) for x in self._structure]
         if not main:   # another thing the question touches: its current lines only
-            return [x for x in out if x[2].startswith("- **")][:OTHER_LINES], []
+            # (a "linked:" note goes with its line and doesn't take a line's place)
+            kept, n = [], 0
+            for x in out:
+                if x[2].startswith("- **"):
+                    n += 1
+                    if n > OTHER_LINES:
+                        break
+                    kept.append(x)
+                elif x[2].startswith("  - linked: ") and kept:
+                    kept.append(x)
+            return kept, []
         keys = {label(b) for b in chosen}
         # Entries tidy moved out of the profile (a session log written as
         # settings, events written as a status) still answer questions:
@@ -709,15 +1041,19 @@ class Recall:
         model rather than on the agent the question names ("Ava's Hermes
         compression threshold" -> config.yaml's compression.threshold_tokens).
         An entry must match two of the question's words, one the subject lacks."""
+        # Each distinct word is matched against the question once: every entry's
+        # words against every question word was ~3 s a long cron prompt on a
+        # small VM (11-04, over Hermes' 8 s prefetch wait).
+        named = _words_naming(terms, {w for f in self.facts for w in f[1]})
         own = {w for f in self.facts if f[0] == first for w in f[1]}
-        want = {t for t in terms if not any(_same_word(t, w) for w in own)}
+        want = set(terms) - {t for w in own for t in named.get(w, ())}
         if not want:
             return []
         cover: dict[int, set] = {}
         for i, f in enumerate(self.facts):
-            if f[0] in skip:
+            if f[0] in skip or f[0] in self.dormant:
                 continue
-            hit = {t for t in terms if any(_same_word(t, w) for w in f[1])}
+            hit = {t for w in f[1] for t in named.get(w, ())}
             if len(hit) >= 2 and hit & want:
                 cover[i] = hit
         best = sorted(cover, key=lambda i: (-len(cover[i]), -len(cover[i] & want)))[:ELSEWHERE]
@@ -727,7 +1063,14 @@ class Recall:
         self._q = q
         self._tally = bool(TALLY.search(q)) and not NOW.search(q)
         self._list = bool(LIST.search(q))   # about several items: "currently" too (they are current)
+        self._linked, self._shown_links = [], set()
+        self._structure, self._structure_values = set(), []
         ents = self.entities(q) or self.described(q)
+        several = False   # a role word that fits several things: none of them is the subject
+        if not ents and self.links_on:
+            ents, self._linked = self.role(q)
+            ents, self._linked = list(ents), list(self._linked)
+            several = len(ents) > 1
         names = ents[0] if ents else []
         # The owner named by "my" is the subject, but their names appear all
         # over memory: search by the question's words, not by the owner.
@@ -741,16 +1084,16 @@ class Recall:
             # "bake" must find "baked" and "baking": the stems too
             pats = list(dict.fromkeys(pats + [x for t in terms for x in (_stem(t), t[:-1] if t.endswith("e") else "")
                                                if len(x) >= 3 and x != t]))
-        args = ["rg", "-i", "-n", "--no-heading", "-F"]
+        args = ["-i", "-n", "--no-heading", "-F"]
         for p in pats:
             args += ["-e", p]
-        out = subprocess.run(args + ["notes"], cwd=self.root, capture_output=True, text=True).stdout
+        out = rg.run(args + ["notes"], cwd=self.root)
         hits = []
         for ln in out.splitlines():
             path, _, rest = ln.partition(":")
             no, _, text = rest.partition(":")
-            if not RECEIPTS and text.startswith("  - said: "):
-                continue   # a receipt shows under its entry, or not at all
+            if not RECEIPTS and text.startswith("  - said: ") or text.startswith("  - check: "):
+                continue   # a receipt or a way to check shows under its entry, or not at all
             hits.append((path, int(no) if no.isdigit() else 0, text))
         # rg's file order changes run to run (three runs, three orders, 10-17) and the
         # order breaks ties below, so the same question could get a different block.
@@ -769,12 +1112,38 @@ class Recall:
             pinned += lines
             seen_prof.add(first)
             others = [self.profile_of.get(g[0].lower()) for g in ents[1:]]
-            others += [self.profile_of.get(v.lower()) for v in values]
+            linked = [self.profile_of.get(v.lower()) for v in values]
+            if self.links_on:
+                # What the subject links to, the one that has an entry the question names
+                # first: "what port does Ava's brain use" is the brain's own Port entry.
+                own = lambda p: any(_same_word(t, w) for f in self.facts if f[0] == p for w in f[1] for t in terms)
+                owner = self._owner_prof()
+                # An exact link is followed; a thing a value only mentions ("Mira's partner"),
+                # or the owner (whom everything points at), only when it has an entry the
+                # question names.
+                linked = [p for v in values for p, exact in self.graph.resolve(v, first)
+                          if (exact and p != owner) or own(p)]
+                linked += [p for p in (self.profile_of.get(v.lower()) for v in values) if p and (p != owner or own(p))]
+                linked += [p for v in self._structure_values for p, exact in self.graph.resolve(v, first)
+                           if exact and own(p)]
+                linked = sorted(dict.fromkeys(linked), key=lambda p: not own(p))
+            others += linked
             for prof in dict.fromkeys(o for o in others if o):
                 if prof not in seen_prof and len(seen_prof) < 1 + MAX_OTHERS:
                     seen_prof.add(prof)
                     pinned += self._pin(prof, terms, main=False)[0]
             pinned = pinned[:MAX_PINNED] + self._elsewhere(terms, first, seen_prof)
+            if self.links_on and not several:
+                owner = self._owner_prof()
+                asked = any(_same_word(t, w) for f in self.facts if f[0] == first for w in f[1] for t in terms)
+                self._linked = self._incoming(first, terms, asked, first == owner) + self._linked
+                second = next((self.profile_of.get(g[0].lower()) for g in ents[1:]
+                               if self.profile_of.get(g[0].lower()) not in (first, owner)), None)
+                if second is None and owner and first != owner and FIRST_PERSON.search(q):
+                    second = owner
+                path = self._path_line(first, second) if second else ""
+                if path:
+                    self._linked.append(path)
             hits = [h for h in hits if h[0] not in seen_prof]
         self._kinds = []
         if HOW_MANY.search(q):
@@ -836,10 +1205,15 @@ class Recall:
         loose: lines from other notes. When the question names nothing, they
         are word matches, not an answer: a per-turn block leaves them out."""
         pinned, hits = self.retrieve(q)
-        named = bool(self.entities(q) or self.described(q) or self._kinds)
+        named = bool(self.entities(q) or self.described(q) or self._kinds or self._linked
+                     or (self.links_on and self.role(q)[0]))
         if self._tally:
             loose = max(loose, TALLY_LINES)
         hits = hits[:loose] if named or loose >= MAX_LINES else []
+        if self._shown_links:
+            # A line the Links part shows whole moved there: its place here stays empty
+            # (refilled, the block grew by every line Links took over).
+            hits = [h for h in hits if (h[0], h[2].strip()) not in self._shown_links]
         if not named and hits:
             # Nothing the question names is in memory: say so up front, so the
             # reader doesn't take the nearest word match for the answer.
@@ -864,6 +1238,9 @@ class Recall:
             mine = " · whose memory this is" if self.owner and self.profile_of.get(self.owner.lower()) == p else ""
             parts.append(f"Profile entries [{p.removeprefix('notes/').removesuffix('.md')}{mine} · last edited {d}]:\n"
                          + "\n".join(t for _, _, t in g))
+        if self._linked:
+            parts.append("Links (entries on other things whose value names a thing above):\n"
+                         + "\n".join(self._linked))
         if hits:
             parts.append("Other notes (change notes first, then daily logs; newest first in each), "
                          "each tagged [note · date]:\n" + "\n".join(

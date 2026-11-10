@@ -166,6 +166,10 @@ def news_cue(r: Recall, message: str) -> str:
     return ""
 
 
+STALE_CHECKS = ("Lines marked \"not confirmed\" may be out of date: if they matter, look (a `check:` line says "
+                "how), then `remember` what you saw with check = how you looked.")
+
+
 def cues(r: Recall, message: str, block: str) -> list[str]:
     """The cue lines for a message and the block built for it (at most two)."""
     out = []
@@ -173,5 +177,5 @@ def cues(r: Recall, message: str, block: str) -> list[str]:
     if news:
         out.append(news)
     if "; not confirmed in " in block:
-        out.append(STALE)
+        out.append(STALE_CHECKS if r.checks_on else STALE)
     return out

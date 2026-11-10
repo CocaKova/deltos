@@ -67,6 +67,17 @@ class ApplyTest(unittest.TestCase):
         self.assertEqual(st["refused"], 0)
         self.assertFalse((self.root / "notes" / "nimbus-extra.md").exists())   # nor set aside
 
+    def test_the_receipt_is_the_line_about_the_thing(self):
+        self.note("--- memory/a.md\n- the music came out sped up\n- Nimbus is up again on box-7\n",
+                  "Nimbus | status | up | 2026-10-04")
+        self.assertEqual(Store(self.root).find("Nimbus").attrs["status"].said[0], "- Nimbus is up again on box-7")
+        # by its alias, the "=" line's names too
+        self.note("--- memory/b.md\n- the music sped up\n- nb is down for a patch\n", "Nimbus | status | down | 2026-10-05")
+        self.assertEqual(Store(self.root).find("Nimbus").attrs["status"].said[0], "- nb is down for a patch")
+        self.note("--- memory/c.md\n- the music is loud\n- Vega, Vg for short, is new\n- Vg answers loud and clear\n",
+                  "= Vega | Vg | service\nVega | status | loud | 2026-10-05")
+        self.assertEqual(Store(self.root).find("Vega").attrs["status"].said[0], "- Vg answers loud and clear")
+
     def test_a_kind_alone_makes_no_thing(self):
         st = self.note("--- memory/a.md\n- Vega is a service\n", "= Vega | | service\nVega | kind | service | -\n"
                                                               "Vega | port | 9999 | -")

@@ -118,15 +118,44 @@ def stated(value: str, text: str, day: str = "") -> bool:
 
 @lru_cache(maxsize=64)
 def said_by_user(text: str) -> str:
-    """A chat's user lines only: an 'assistant:' line and the lines after it are
-    the assistant's until a 'user:' line (or a '--- ' / 'Conversation on ' header)."""
+    """A chat's user lines only: an 'assistant:' or 'relay (<writer>):' line and the lines
+    after it are not the owner's until a 'user:' line (or a '--- ' / 'Conversation on '
+    header). A relay is another agent writing in the user's seat (sources/chats.py)."""
     out, user = [], True
     for ln in text.splitlines():
-        if ln.startswith("assistant:"):
+        if ln.startswith(("assistant:", "relay (")):
             user = False
         elif ln.startswith(("user:", "--- ", "Conversation on ")):
             user = True
         if user:
+            out.append(ln)
+    return "\n".join(out)
+
+
+@lru_cache(maxsize=64)
+def relayed(text: str) -> str:
+    """A chat's relay lines only: what another agent wrote in the user's seat."""
+    out, on = [], False
+    for ln in text.splitlines():
+        if ln.startswith("relay ("):
+            on = True
+        elif ln.startswith(("user:", "assistant:", "--- ", "Conversation on ")):
+            on = False
+        if on:
+            out.append(ln)
+    return "\n".join(out)
+
+
+@lru_cache(maxsize=64)
+def assistant_said(text: str) -> str:
+    """A chat's assistant lines only."""
+    out, on = [], False
+    for ln in text.splitlines():
+        if ln.startswith("assistant:"):
+            on = True
+        elif ln.startswith(("user:", "relay (", "--- ", "Conversation on ")):
+            on = False
+        if on:
             out.append(ln)
     return "\n".join(out)
 
@@ -167,32 +196,36 @@ def named(thing: str, text: str) -> bool:
     return stated(base_name(thing), text)
 
 
-def _find(token: str, low: str):
-    """Where a value's word is in a line as written: '2000' as '2,000', '3' as 'three'."""
+def _find(token: str, low: str, pos: int = 0):
+    """Where a value's word is in a line as written: '2000' as '2,000', '3' as 'three'
+    (the first at or after pos)."""
     alts = [re.escape(token)]
     if token.isdigit():
         alts += [",?".join(token)] + [re.escape(w) for w, d in NUM.items() if d == token]
-    return re.search(rf"(?<![a-z0-9])(?:{'|'.join(alts)})(?![a-z0-9])", low)
+    return re.compile(rf"(?<![a-z0-9])(?:{'|'.join(alts)})(?![a-z0-9])").search(low, pos)
 
 
-def receipt(text: str, value: str, width: int = SAID_CHARS) -> str:
+def receipt(text: str, value: str, width: int = SAID_CHARS, near: str = "") -> str:
     """The words a value was read from: the first line that states it and says one
     of its words as a word, cut to at most `width` characters around the longest
     such word at spaces, with '…' where it was cut. '' when no line does: a short
     value stated only inside other words ("off" in "offset"; 48 of 1,520 receipts of
-    the 10-19 night replay) gets no receipt rather than a misleading one."""
+    the 10-19 night replay) gets no receipt rather than a misleading one. near: a
+    clause of the line to quote (quote()): only a line holding it, cut around its word."""
     vt = tokens(value)
+    near = " ".join(near.split())
     for line in (text or "").splitlines():
         if line.startswith("--- "):
             continue
         ln = " ".join(line.removeprefix("user:").split())
         shared = sorted(vt & tokens(ln), key=lambda x: (-len(x), x))
-        if not shared or not stated(value, ln):
+        pos = ln.find(near) if near else 0
+        if not shared or not stated(value, ln) or pos < 0:
             continue
         if len(ln) <= width:
             return ln
         low = ln.lower()
-        at = next((m for m in (_find(t, low) for t in shared) if m), None)
+        at = next((m for m in (_find(t, low, pos) for t in shared) if m), None)
         if at is None:
             continue
         room = width - 2   # one '…' each side
@@ -206,3 +239,66 @@ def receipt(text: str, value: str, width: int = SAID_CHARS) -> str:
             b = sp if sp >= at.end() else b
         return ("…" if a > 0 else "") + ln[a:b].strip() + ("…" if b < len(ln) else "")
     return ""
+
+
+# -- which line a value was read from, about its thing ------------------------------
+#
+# receipt() quotes the first line that states a value. A note that packs several
+# subjects says a short value ("up", "live", "3") on many lines, so that first line
+# is often about something else: 10-23, a model's "status: up" carried a line about
+# a game's audio as its receipt, and the agent reads receipts as the reason memory believes
+# a value. quote() picks the line about the thing: replaying four real nights and the
+# held 10-23 one (out/sys-1023/quote), 239 of 4,001 receipts move, those naming their
+# thing go from 86 to 153 of the 239, and no value changes. Tried first as a check
+# that refuses a value no passage states about its thing: on the labelled lines of
+# those nights it stopped 1 of 15 wrong ones and 3 to 6 of 47 right ones (the wrong
+# ones were misreads of lines that do name the thing), so it only picks receipts.
+
+# Where one statement ends and the next begins inside an item: "; ", a dash or an
+# arrow between words, or a sentence end. Not ", " (a list of one thing's parts).
+CLAUSE = re.compile(r";\s+|\s+[—–]\s+|\s+(?:→|->|=>)\s+|(?<=[\w)\]`*'\"])[.!?]\s+(?=[A-Z0-9*`(\[\"'~])")
+BULLET = re.compile(r"^(\s*)(?:[-*+]|\d+[.)])\s+")
+FRONT = re.compile(r"^(?:name|title|description):\s", re.I)
+
+
+@lru_cache(maxsize=64)
+def _items(text: str) -> tuple[tuple[str, tuple[str, ...], str], ...]:
+    """A note's text as items (a line with its wrapped lines), each with its clauses and
+    what came before it in its file: the file's name, name/description lines and items."""
+    out, before, cur = [], [], None
+
+    def flush():
+        nonlocal cur
+        if cur is not None:
+            out.append((cur, tuple(p for p in CLAUSE.split(cur) if p.strip()), " \n".join(before)))
+            before.append(cur)
+            cur = None
+
+    for ln in (text or "").splitlines():
+        if ln.startswith("--- "):
+            flush()
+            before.clear()
+            before.append(re.sub(r"[_/.]+", " ", re.sub(r"\(continued\)$", "", ln[4:])))
+            continue
+        if not ln.strip():
+            flush()
+            continue
+        if cur is not None and ln[:1].isspace() and not BULLET.match(ln) and not FRONT.match(ln):
+            cur += " " + ln.strip()   # a wrapped line of the item above
+            continue
+        flush()
+        cur = ln.strip()
+    flush()
+    return tuple(out)
+
+
+def quote(names, value: str, text: str) -> tuple[str, str]:
+    """Where a note states this value about its thing (names: the thing's name and
+    aliases), as (item, clause): the first clause that states it and names the thing, else
+    the first that states it in a file that has named the thing by then. ("", "") when
+    neither (receipt() then takes the note's first line that states it)."""
+    names = [base_name(n) for n in names if n and n.strip()]
+    said = lambda s: any(stated(n, s) for n in names)
+    found = [(item, c, ctx) for item, cs, ctx in _items(text) for c in cs if stated(value, c)]
+    return (next(((item, c) for item, c, _ in found if said(c)), None)
+            or next(((item, c) for item, c, ctx in found if said(ctx + " \n" + item)), ("", "")))

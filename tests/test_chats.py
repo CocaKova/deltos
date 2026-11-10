@@ -255,13 +255,21 @@ class HermesRowsTest(unittest.TestCase):
             ("k-1", "assistant", "Slip 14, noted.", t + 310, 1, 0, 0, None),
             ("k-2", "user", "The boat is called Wren", t, 1, 0, 0, None),          # copies only
             ("k-2", "assistant", "Wren is a fine name for a boat.", t + 10, 1, 0, 0, None)])
+        # A chain is one conversation, learned once from its last session (11-06): the
+        # parent's turns once, then the child's own; a second child with copies only
+        # gives nothing, its parent already in the first chain.
         stats = {}
         us = {u["note"]: u for u in chats.units(self.home, [], NOW, stats=stats)}
-        self.assertEqual(sorted(us), ["chat:default/k-1", "chat:default/p-1"])
-        self.assertIn("Wren", us["chat:default/p-1"]["pieces"][0])
-        self.assertNotIn("Wren", us["chat:default/k-1"]["pieces"][0])
-        self.assertIn("user: Her mooring is slip 14", us["chat:default/k-1"]["pieces"][0])
-        self.assertEqual(stats["copies"], 1)
+        self.assertEqual(sorted(us), ["chat:default/k-1"])
+        text = us["chat:default/k-1"]["pieces"][0]
+        self.assertEqual(text.count("The boat is called Wren"), 1)
+        self.assertTrue(text.index("Wren") < text.index("user: Her mooring is slip 14"))
+        self.assertEqual(us["chat:default/k-1"]["chain"], {"chat:default/p-1": 2})
+        self.assertEqual((stats["copies"], stats["continued"]), (1, 1))
+        # The chain's watermark: learned, the parent gives nothing again.
+        row = {"note": "chat:default/k-1", "upto": us["chat:default/k-1"]["upto"], "kind": "chat",
+               "chain": us["chat:default/k-1"]["chain"]}
+        self.assertEqual(chats.units(self.home, [row], NOW), [])
 
     def test_an_ask_whose_only_reply_failed_is_a_unit(self):
         t = NOW - 120 * MIN

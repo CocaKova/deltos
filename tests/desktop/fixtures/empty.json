@@ -1,0 +1,90 @@
+{
+ "/health": {
+  "ok": true,
+  "version": "0.2.0",
+  "root": "~/deltos-demo",
+  "today": "2026-11-10",
+  "things": 0
+ },
+ "/overview?days=7": {
+  "root": "~/deltos-demo",
+  "today": "2026-11-10",
+  "doubt_days": 21,
+  "things": 0,
+  "entries": 0,
+  "past": 0,
+  "unsure": 0,
+  "checked": 0,
+  "disputed": 0,
+  "days": 7,
+  "changed": 0,
+  "changed_things": 0,
+  "due": 0,
+  "looks": {
+   "days": 90,
+   "looks": 0,
+   "outcomes": {},
+   "by_label": {}
+  }
+ },
+ "/changes?days=7": {
+  "days": 7,
+  "changes": []
+ },
+ "/overview?days=30": {
+  "root": "~/deltos-demo",
+  "today": "2026-11-10",
+  "doubt_days": 21,
+  "things": 0,
+  "entries": 0,
+  "past": 0,
+  "unsure": 0,
+  "checked": 0,
+  "disputed": 0,
+  "days": 30,
+  "changed": 0,
+  "changed_things": 0,
+  "due": 0,
+  "looks": {
+   "days": 90,
+   "looks": 0,
+   "outcomes": {},
+   "by_label": {}
+  }
+ },
+ "/changes?days=30": {
+  "days": 30,
+  "changes": []
+ },
+ "/overview?days=90": {
+  "root": "~/deltos-demo",
+  "today": "2026-11-10",
+  "doubt_days": 21,
+  "things": 0,
+  "entries": 0,
+  "past": 0,
+  "unsure": 0,
+  "checked": 0,
+  "disputed": 0,
+  "days": 90,
+  "changed": 0,
+  "changed_things": 0,
+  "due": 0,
+  "looks": {
+   "days": 90,
+   "looks": 0,
+   "outcomes": {},
+   "by_label": {}
+  }
+ },
+ "/changes?days=90": {
+  "days": 90,
+  "changes": []
+ },
+ "/things": {
+  "things": []
+ },
+ "/due?n=50": {
+  "due": []
+ }
+}

@@ -1,0 +1,7 @@
+{
+ "/health": {
+  "ok": false,
+  "version": "0.2.0",
+  "reason": "the deltos library is not in /opt/deltos-not-here (reinstall the plugin, or point DELTOS_SRC at a deltos checkout)"
+ }
+}

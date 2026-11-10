@@ -138,7 +138,19 @@ class LearnTest(unittest.TestCase):
         self.assertIs(learn.enabled(self.cfg(learn=on, owner="")), False)
         self.assertIs(learn.enabled(self.cfg(learn=on, sessions={})), False)
         self.assertIs(learn.enabled(self.cfg(learn={"auto": False})), False)
+        night = {"nightly": True}   # the nightly job's trigger only, never a session end's
+        self.assertIs(learn.enabled(self.cfg(learn=night)), False)
+        self.assertIs(learn.enabled(self.cfg(learn=night), nightly=True), True)
+        self.assertIs(learn.enabled(self.cfg(learn=on), nightly=True), True)
+        self.assertIs(learn.enabled(self.cfg(learn={}), nightly=True), False)
+        self.assertIs(learn.enabled(self.cfg(learn=night, owner=""), nightly=True), False)
         self.assertEqual(learn.why_not(self.cfg(owner="")), "set owner = <your name> in deltos.toml")
+
+    def test_nightly_only_waits_for_the_nightly_trigger(self):
+        said = []
+        with mock.patch.object(learn.Config, "load", return_value=self.cfg(learn={"nightly": True})):
+            self.assertEqual(learn.sweep(wait=True, say=said.append), 0)
+        self.assertEqual(said, ["learning runs only in the nightly job ([learn] nightly = true)"])
 
     def test_idle_follows_timestamps(self):
         make_home(self.home, {"s0": [("user", "hello there", time.time() - 600)]})
@@ -319,10 +331,12 @@ class LearnTest(unittest.TestCase):
 
     def test_main_parses_its_flags(self):
         with mock.patch.object(learn, "sweep", return_value=3) as sw:
-            self.assertEqual(learn.main(["--root", "R", "--wait", "--days", "7", "--max", "5", "--dry-run", "--no-idle"]), 3)
+            self.assertEqual(learn.main(["--root", "R", "--wait", "--days", "7", "--max", "5", "--dry-run", "--no-idle",
+                                         "--nightly"]), 3)
         args, kw = sw.call_args
         self.assertEqual((args, {k: v for k, v in kw.items() if k != "say"}),
-                         (("R",), {"wait": True, "days": 7, "max_units": 5, "no_idle": True, "dry_run": True}))
+                         (("R",), {"wait": True, "days": 7, "max_units": 5, "no_idle": True, "dry_run": True,
+                                   "nightly": True}))
 
 
 if __name__ == "__main__":

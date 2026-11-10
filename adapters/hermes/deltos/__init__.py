@@ -2,14 +2,20 @@
 tools, and its instructions. All of it is deltos.Memory; this file only maps
 it onto Hermes' MemoryProvider hooks.
 
-Setup: link this folder to ~/.hermes/plugins/deltos and set memory.provider:
-deltos in config.yaml. Memory is $DELTOS_ROOT or ~/deltos (deltos.toml
-there). The deltos library is imported from $DELTOS_SRC, else the repo this
-folder sits in, so an update to it lands on the next gateway restart. The agent
-recorded as each fact's source is $DELTOS_AGENT, else deltos.toml's `agent`,
-else "agent". An optional extra block for the instructions comes from a Python
-file ($DELTOS_EXTRA_BLOCK, else [hermes] extra_block) defining build_block().
-Fail-soft: a memory error gives an empty block, never a failed turn.
+Setup: install it from the plugin catalog (the deltos library comes inside, in
+lib/) or link this folder to ~/.hermes/plugins/deltos, then `hermes memory setup`
+(or memory.provider: deltos in config.yaml). Memory is $DELTOS_ROOT, else the
+folder setup was given (deltos.json in the Hermes home), else ~/deltos; its
+settings are deltos.toml there, and a new store gets a short one (STARTER). The
+deltos library is imported from $DELTOS_SRC, else lib/ here, else the repo this
+folder sits in, so an update to it lands on the next gateway restart (where.py).
+The agent recorded as each fact's source is $DELTOS_AGENT, else deltos.toml's
+`agent`, else "agent". An optional extra block for the instructions comes from a
+Python file ($DELTOS_EXTRA_BLOCK, else [hermes] extra_block) defining
+build_block(). Fail-soft: a memory error gives an empty block, never a failed turn.
+
+`/deltos` in any chat (and `hermes deltos view` in a terminal) shows the store to a
+person: deltos/view.py's text, read-only, no model.
 
 The block is built in prefetch(), which Hermes runs on its own thread with a
 time bound (8 s) and hands the query with skill scaffolding stripped and secrets
@@ -42,21 +48,45 @@ from tools.registry import tool_error
 
 logger = logging.getLogger(__name__)
 
-SRC = os.path.expanduser(os.environ.get("DELTOS_SRC") or str(Path(__file__).resolve().parents[3]))
+
+
+def _sibling(name: str):
+    """A file next to this one, as a module (Hermes loads this folder by path, not as a package)."""
+    spec = importlib.util.spec_from_file_location(f"deltos_plugin_{name}", Path(__file__).resolve().parent / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+where = _sibling("where")
+SRC = where.src()
 
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
 PREV_CHARS = 2000      # the previous turn carried into the next turn's block, cut to this
 PREV_SESSIONS = 256    # sessions whose previous turn is kept (the least recent is dropped)
-PREV_GAP = 30 * 60     # seconds: a turn after a longer pause is a new topic, so nothing is carried
 KICK_EVERY = 60        # seconds: at most one learn start per gateway process this often
+# A new store's deltos.toml (written only where there is neither a deltos.toml nor notes yet,
+# and no $DELTOS_CONFIG): the two switches that make memory say what it has not confirmed and
+# let the agent record how it saw a value. An existing store keeps whatever it has, or lacks.
+STARTER = """\
+# deltos settings. Every key is optional; the full list is in the deltos README.
+# Written once for a new store by the Hermes plugin. Edit freely.
+
+[recall]
+doubt_days = 21   # a host, port, version or status nobody confirmed in 3 weeks reads "not confirmed in N weeks"
+
+[checks]
+on = true         # the agent records how it just saw a value, and can ask what is due for a fresh look
+"""
+COMMAND_HELP = "what memory holds, one thing's history, what changed, what is due for a look"
 # A profile's header in the block (bench/gate.py PROFILE), and a page's label line
 # under "Pages (": "[memory/foo.md · 2026-07-10]".
 # Hermes opens a cron job's prompt with its own "[IMPORTANT: …]" blocks (delivery, [SILENT],
 # recursion; skills it could not find). The same words come every run, so as a query they
-# matched the same six unrelated things in every cron block (10-22: "The Day", Hyperframes,
-# LLM bench …). A cron query drops them; the job's own prompt starts after them.
+# matched the same six unrelated things in every cron block (10-22: a film, a video tool,
+# a benchmark …). A cron query drops them; the job's own prompt starts after them.
 CRON_NOTICE = re.compile(r"\A\s*\[IMPORTANT: .*?\](?:\s*\n\n|\s*\Z)", re.S)
 PROFILE = re.compile(r"^Profile entries \[([^ \]·]+)")
 PAGE = re.compile(r"^\[([^\]·\n]+?) · ")
@@ -102,11 +132,12 @@ class DeltosProvider(MemoryProvider):
         self._memory = None
         self._takes_previous = False
         self._sid = ""
+        self._home = None    # the Hermes home this agent runs in (initialize); None = the default one
         self._cron = False   # a scheduled job's agent (set in initialize)
         self._turn = 0
         # session id -> (its last query cut to PREV_CHARS, the turn and a hash of the
         # whole query, the block given for it); the least recently used session goes first.
-        self._last: OrderedDict[str, tuple[str, str, str, float]] = OrderedDict()
+        self._last: OrderedDict[str, tuple[str, str, str]] = OrderedDict()
 
     @property
     def name(self) -> str:
@@ -115,7 +146,9 @@ class DeltosProvider(MemoryProvider):
     def _m(self):
         if self._memory is None:
             from deltos import Memory
-            m = Memory(agent=os.environ.get("DELTOS_AGENT", ""))
+            root = where.root(self._home)
+            _starter(root)
+            m = Memory(root, agent=os.environ.get("DELTOS_AGENT", ""))
             m.agent = m.agent or m.config.agent or "agent"
             # A deltos that reads the previous turn takes it as context(previous=...);
             # an older one gets the message alone.
@@ -126,8 +159,69 @@ class DeltosProvider(MemoryProvider):
     def is_available(self) -> bool:
         return os.path.isdir(os.path.join(SRC, "deltos"))
 
+    # -- setup (`hermes memory setup`, `hermes memory status`) ----------------------
+
+    def get_config_schema(self):
+        # One question. The rest is deltos.toml in the store ($DELTOS_ROOT / DELTOS_SRC /
+        # DELTOS_AGENT / DELTOS_EXTRA_BLOCK still win where they are set).
+        return [{"key": "root", "default": "~/deltos",
+                 "description": "Folder to keep memory in (plain markdown files you can read and edit)"}]
+
+    def save_config(self, values: dict, hermes_home: str) -> None:
+        """Setup's answer goes to deltos.json in the Hermes home (where.root reads it)."""
+        data = where.settings(hermes_home)
+        if str(values.get("root") or "").strip():
+            data["root"] = str(values["root"]).strip()
+        path = Path(hermes_home) / where.SETTINGS
+        path.write_text(json.dumps(data, indent=2) + "\n")
+
+    def post_setup(self, hermes_home: str, config: dict) -> None:
+        """`hermes memory setup`, from the picker or by name (`setup deltos`, which asks a
+        provider without this nothing): one question, the folder, then deltos is the provider."""
+        asked = self.get_config_schema()[0]
+        now = str(where.settings(hermes_home).get("root") or asked["default"])
+        sys.stdout.write(f"\n  {asked['description']} [{now}]: ")
+        sys.stdout.flush()
+        folder = sys.stdin.readline().strip() or now
+        self.save_config({"root": folder}, hermes_home)
+        if not isinstance(config.get("memory"), dict):
+            config["memory"] = {}
+        config["memory"]["provider"] = self.name
+        from hermes_cli.config import save_config
+        save_config(config)
+        print(f"\n  Memory provider: {self.name}\n  Memory folder: {folder}")
+        if os.environ.get("DELTOS_ROOT"):
+            print(f"  DELTOS_ROOT is set and wins over it: {os.environ['DELTOS_ROOT']}")
+        print("\n  Start a new session to activate. /deltos shows what memory holds.\n")
+
+    def get_status_config(self, provider_config=None) -> dict:
+        """What `hermes memory status` prints under the provider: where memory is and how much it holds."""
+        out = {"library": SRC}
+        try:
+            from deltos.view import View
+            m = self._m()
+            o = View.of(m).overview()
+            out = {"store": str(m.root), "library": SRC,
+                   "holds": f"{o['things']} things, {o['entries']} entries, {o['past']} past values",
+                   "not confirmed": f"{o['unsure']} (after {o['doubt_days']} days)" if o["doubt_days"] else "not marked",
+                   "checks": "on" if m.checks else "off"}
+        except Exception as exc:
+            out["error"] = str(exc)
+        return out
+
+    def command(self, raw_args: str = "") -> str:
+        """`/deltos [thing | on <date> <thing> | changes [days] | due [n] | help]`: the store, for a person."""
+        try:
+            from deltos.view import View, command
+            return command(View.of(self._m()), raw_args or "")
+        except Exception as exc:
+            logger.warning("/deltos failed: %s", exc)
+            return f"Memory could not be read: {exc}"
+
     def initialize(self, session_id: str, **kwargs) -> None:
         self._sid = session_id
+        if kwargs.get("hermes_home") and str(kwargs["hermes_home"]) != str(self._home or ""):
+            self._home, self._memory = str(kwargs["hermes_home"]), None   # this profile's own setup answer
         # Hermes builds one provider per agent and says what runs it: a scheduled job
         # comes as platform / agent_context "cron" ([hermes] cron_block decides its block).
         self._cron = "cron" in (kwargs.get("agent_context"), kwargs.get("platform"))
@@ -151,7 +245,12 @@ class DeltosProvider(MemoryProvider):
     def prefetch(self, query: str, *, session_id: str = "") -> str:
         """The block for this turn, from the query Hermes cleaned. The session's
         previous query goes along (a follow-up like "I mean on the other box" names
-        little itself); it is set here, so it never waits on Hermes' write-behind worker."""
+        little itself); it is set here, so it never waits on Hermes' write-behind worker.
+        However long the pause: the agent still reads that turn in its session, and
+        context() carries it only for a message that names nothing or is short. Until
+        10-28 a 30-minute pause dropped it, and of 12 real turns after a longer pause
+        that named nothing, 11 were follow-ups ("Its now installed, please update
+        memory" 62 min on, "Send it by mail" 9.7 h on); one was "Hello!" (15 h)."""
         q = (query or "").strip()
         if self._cron:
             while CRON_NOTICE.match(q):
@@ -160,12 +259,10 @@ class DeltosProvider(MemoryProvider):
             return ""
         key = f"{self._turn}:{hashlib.sha1(q.encode()).hexdigest()}"
         with self._lock:
-            prev, last_key, last_out, at = self._last.get(session_id, ("", "", "", 0.0))
+            prev, last_key, last_out = self._last.get(session_id, ("", "", ""))
         if key == last_key:   # asked again in the same turn: the same block
             return last_out
         t = time.monotonic()
-        if t - at > PREV_GAP:   # the session went quiet: its last turn isn't this one's topic
-            prev = ""
         try:
             m = self._m()
             # A cron job's prompt is the same every run, so its page matches are too
@@ -182,7 +279,7 @@ class DeltosProvider(MemoryProvider):
         ms = round((time.monotonic() - t) * 1000)
         out = f"## Memory\n{block}" if block else ""
         with self._lock:
-            self._last[session_id] = (q[:PREV_CHARS], key, out, t)
+            self._last[session_id] = (q[:PREV_CHARS], key, out)
             self._last.move_to_end(session_id)
             while len(self._last) > PREV_SESSIONS:
                 self._last.popitem(last=False)
@@ -266,9 +363,29 @@ class DeltosProvider(MemoryProvider):
             logger.exception("deltos tool %s failed", tool_name)
             return tool_error(f"{tool_name} failed: {exc}")
 
-    def get_config_schema(self):
-        return []   # env: DELTOS_ROOT / DELTOS_SRC / DELTOS_AGENT / DELTOS_EXTRA_BLOCK; the rest is deltos.toml
+
+def _starter(root: str | None) -> None:
+    """STARTER as a new store's deltos.toml. Never over a store that exists: one with notes
+    and no deltos.toml was set up that way."""
+    if os.environ.get("DELTOS_CONFIG"):
+        return
+    try:
+        from deltos.config import Config
+        folder = Path(Config.load(root).root)
+        if (folder / "deltos.toml").exists() or (folder / "notes").exists():
+            return
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "deltos.toml").write_text(STARTER)
+        logger.info("deltos: new store at %s (starter deltos.toml written)", folder)
+    except Exception as exc:
+        logger.debug("deltos starter settings not written: %s", exc)
 
 
 def register(ctx) -> None:
-    ctx.register_memory_provider(DeltosProvider())
+    provider = DeltosProvider()
+    ctx.register_memory_provider(provider)
+    try:   # a Hermes without plugin commands still gets the provider
+        ctx.register_command("deltos", provider.command, description=f"Memory: {COMMAND_HELP}",
+                             args_hint="[thing | on <date> <thing> | changes [days] | due [n] | help]")
+    except Exception as exc:
+        logger.debug("/deltos not registered: %s", exc)

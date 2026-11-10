@@ -58,6 +58,11 @@ WORLD = [
     ("Notes app", "app", [("host", "Box-7")]),
     ("Memory service", "service", [("status", "testing")]),
     ("Stream plugin", "plugin", [("version", "0.5.0")]),
+    ("Mirelle", "person", [("relationship", "Sam's sister"), ("location", "York")]),
+    # work (11-05): a client, the project for it, and the one unit of a product Sam owns
+    ("Quorvane Clinic", "client", [("owner", "Mirelle"), ("status", "active client")]),
+    ("Quorvane intake app", "project", [("part of", "Quorvane Clinic"), ("status", "scoping")]),
+    ("Box-3", "machine", [("hostname", "box-3"), ("ip", "192.168.1.13"), ("model", "Tessix T2"), ("owner", "Sam")]),
 ]
 # (thing whose news it is or "", words of the new value: any one of "a|b", message)
 CASES = [
@@ -103,7 +108,46 @@ CASES = [
     ("", "", "The Gateway still listens on 8787."),
     ("", "", "Did we ever deploy stream plugin 0.6.1?"),
 ]
-ARMS = {"baseline": ("plain", False), "when": ("when", False), "cues": ("plain", True), "both": ("when", True)}
+# People news (10-25): new people named in passing ("Kasimir is my stepbrother"), a relative's
+# move, a partner of someone not in memory. The day it was added, an agent wrote a page about
+# three new relatives and no facts until asked. Every name made up, none a dictionary word.
+PEOPLE = [
+    ("Teodor", "partner|boyfriend|mirelle", "Mirelle's boyfriend is Teodor, they've been together a year."),
+    ("Orsolya", "grand|father|dad", "Orsolya is my dad's mom, by the way."),
+    ("Kasimir", "step", "Kasimir is my stepbrother."),
+    ("Mirelle", "leeds", "Mirelle moved to Leeds last month."),
+    ("Bettan", "girlfriend|partner|kasimir", "Kasimir's girlfriend Bettan was in the hospital this week."),
+    ("Orsolya", "80|birthday|11-01|nov", "My grandma Orsolya turns 80 on November 1st."),
+    ("", "", "What should I get Mirelle for her birthday?"),
+    ("", "", "Mirelle and I talked for an hour today."),
+    ("", "", "Remind me who Mirelle is."),
+    ("", "", "Is Mirelle still in York?"),
+]
+# Work (11-05): what a long client session settles. Decisions relayed in a message, answers a
+# client gave by mail (pasted, as an agent reads them from its tools), a price looked up for a
+# product while the store holds one unit of it (the price belongs on the product, a new thing).
+WORK = [
+    ("Quorvane intake app", "4,800|4800", "Decided: the Quorvane intake app is $4,800 flat, half up front, "
+                                         "half on handover."),
+    ("Quorvane intake app", "week", "Sam's call on the intake app: three to five weeks, as written."),
+    ("Quorvane intake app", "tessix", "Hardware for the Quorvane intake app: recommend a Tessix T2 first."),
+    ("Quorvane Clinic", "brevix", "Mirelle's reply from the inbox: 'We already run Brevix for records, and "
+                                  "about 12 to 15 patients are in the pilot.'"),
+    ("Tessix T2", "2,999|2999", "Looked it up on the vendor's store page: a Tessix T2 sells for $2,999 today."),
+    ("", "", "What did we settle on for the Quorvane intake app price?"),
+    ("", "", "Draft a short reply to Mirelle thanking her for the answers."),
+    ("", "", "Mirelle might want a cheaper box later, we'll see."),
+    ("", "", "Is Box-3 still at 192.168.1.13?"),
+    ("", "", "Open the vendor's page for the Tessix T2 so I can read it."),
+]
+SETS = {"lab": CASES, "people": PEOPLE, "work": WORK}
+# (tool descriptions, cues, links, decisions): links = [recall] links (deltos/links.py), whose instructions and
+# receipts say how things link and name what a write links to; decisions = memory.DECIDING in the
+# instructions (11-05; on by default since, so the older arms leave it out to stay comparable).
+ARMS = {"baseline": ("plain", False, False, False), "when": ("when", False, False, False),
+        "cues": ("plain", True, False, False), "both": ("when", True, False, False),
+        "links": ("plain", False, True, False), "decisions": ("plain", False, False, True),
+        "live": ("plain", False, True, True)}
 
 
 def world(root: Path) -> None:
@@ -133,12 +177,13 @@ def _has(value: str, words: str) -> bool:
 
 def episode(case: tuple, arm: str) -> dict:
     thing, words, msg = case
-    descriptions, cues = ARMS[arm]
+    descriptions, cues, links, decisions = ARMS[arm]
     with tempfile.TemporaryDirectory() as d:
         root = Path(d)
         world(root)
         before = state(root)
-        m = Memory(config=Config(root=root, owner=OWNER, recall={"cues": cues}, tools={"descriptions": descriptions}),
+        m = Memory(config=Config(root=root, owner=OWNER, recall={"cues": cues, "links": links},
+                                 tools={"descriptions": descriptions, "decisions": decisions}),
                    agent="assistant", today=TODAY)
         block = m.context(msg)
         msgs = [{"role": "system", "content": f"{SYSTEM}\n\nToday is {TODAY}.\n\n{m.instructions()}\n\n"
@@ -171,7 +216,9 @@ def episode(case: tuple, arm: str) -> dict:
     wrong = [f"{t} {lab}={v}" for (t, lab), v in changed.items()
              if not (thing and t == thing.lower() and _has(v, news_words))
              and not any(w in msg.lower() for w in v.replace("|", " ").split() if len(w) > 2)]
-    return {"arm": arm, "thing": thing, "msg": msg, "cue": [ln for ln in block.splitlines()
+    # the news on another thing than the one it is about (a product's price on the unit)
+    elsewhere = [f"{t} {lab}={v}" for (t, lab), v in changed.items() if thing and t != thing.lower() and _has(v, words)]
+    return {"arm": arm, "thing": thing, "msg": msg, "elsewhere": elsewhere, "cue": [ln for ln in block.splitlines()
                                                              if ln.startswith(("This message may change",
                                                                                "Lines marked"))],
             "hit": hit, "wrote": bool(changed), "changed": [f"{t} {lab}={v}" for (t, lab), v in changed.items()],
@@ -190,6 +237,7 @@ def report(rows: list[dict], model: str) -> str:
         lines.append(f"{arm:>8}: write recall {sum(x['hit'] for x in news)}/{len(news)}  "
                      f"false writes {sum(x['wrote'] for x in quiet)}/{len(quiet)}  "
                      f"wrong writes {sum(len(x['wrong']) for x in r)}  "
+                     f"on another thing {sum(bool(x.get('elsewhere')) for x in news)}  "
                      f"cued {sum(bool(x['cue']) for x in r)}  brain errors {errs}")
     lines.append("")
     by = {}
@@ -207,13 +255,16 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--arms", default=",".join(ARMS))
     ap.add_argument("--cases", default="", help="comma-separated case numbers (0-based); default all")
+    ap.add_argument("--sets", default="lab", help="case sets: lab (the 10-22 forty), people, work (11-05), "
+                    "comma-separated")
     ap.add_argument("--out", default="")
     a = ap.parse_args()
     cfg = Config.load()
     if cfg.llm.get("url") and not llm.ENDPOINT.get("model"):
         llm.configure(**{k: v for k, v in cfg.llm.items() if v})
     model = llm.ENDPOINT["model"]
-    cases = [CASES[int(i)] for i in a.cases.split(",")] if a.cases else CASES
+    pool = [c for name in a.sets.split(",") for c in SETS[name.strip()]]
+    cases = [pool[int(i)] for i in a.cases.split(",")] if a.cases else pool
     out = Path(a.out or f"out/write-or-not/{datetime.date.today()}")
     out.mkdir(parents=True, exist_ok=True)
     rows = []

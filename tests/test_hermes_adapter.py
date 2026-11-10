@@ -138,12 +138,14 @@ class HermesAdapterTest(unittest.TestCase):
         calls = self._calls(True, [("s1", long), ("s1", "and?")])
         self.assertEqual(calls[1][1], long.strip()[:adapter.PREV_CHARS])
 
-    def test_a_long_pause_drops_the_previous(self):
-        def later(p):   # the session's last turn, as if it were asked an hour ago
-            p._last["s1"] = p._last["s1"][:3] + (p._last["s1"][3] - 3600,)
+    def test_a_long_pause_keeps_the_previous(self):
+        # The session still holds the last turn after an hour (or a night); only a new
+        # or reset session drops it (test_reset_switch_drops_the_old_previous).
+        later = lambda p: mock.patch.object(adapter.time, "monotonic", lambda: 10 ** 9).start()
+        self.addCleanup(mock.patch.stopall)
         calls = self._calls(True, [("s1", "where is Box-7?"), ("s1", "its port?"), ("s1", "and its backup?")],
                             between={1: later})
-        self.assertEqual([prev for _, prev in calls], ["", "", "its port?"])
+        self.assertEqual([prev for _, prev in calls], ["", "where is Box-7?", "its port?"])
 
     def test_reset_switch_drops_the_old_previous(self):
         calls = self._calls(True, [("s1", "where is Box-7?"), ("s1", "its port?"),

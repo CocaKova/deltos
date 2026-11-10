@@ -1,6 +1,6 @@
 [project]
 name = "deltos"
-version = "0.1.0"
+version = "0.2.0"
 description = "Memory that knows what is true now, and what it used to be: markdown files, no index server, an MCP server and harness adapters."
 readme = "README.md"
 requires-python = ">=3.11"

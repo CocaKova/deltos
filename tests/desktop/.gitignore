@@ -1,0 +1,3 @@
+# built by run.sh and harness/build.sh
+deltos-bundle.mjs
+harness/dist/

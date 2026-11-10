@@ -25,11 +25,23 @@ $DELTOS_ROOT or ~/deltos. Every key is optional:
     cues = true                          # one line at the end of the block when the message may change a known
                                          # thing ("remember it before answering") or the block shows "not
                                          # confirmed" lines (deltos/cues.py); unset = off ($DELTOS_CUES wins)
+    links = true                         # links between things in what the agent reads and is told (deltos/
+                                         # links.py): what points at a thing, role words through the owner's
+                                         # links, dependencies, paths, a linked thing retired since; the receipts
+                                         # name what a write links to; unset = off ($DELTOS_LINKS wins)
+
+    [checks]                             # deltos/checks.py: how each fact can be seen again
+    on = true                            # agents get remember's `check` (how they just saw a value) and the
+                                         # memory_checks tool (what is due for a look); blocks show a `check:`
+                                         # line under a "not confirmed" one; unset = off ($DELTOS_CHECKS wins)
 
     [tools]
     descriptions = "when"                # tool descriptions that also say WHEN to use each tool (remember: the
                                          # moment a value changes); "plain" (default) = what each tool does
                                          # ($DELTOS_TOOL_DESCRIPTIONS wins)
+    decisions = false                    # leave out of the instructions that a decision, an answer read in a mail
+                                         # or page, is a fact, and that a product and its unit are two things
+                                         # (memory.DECIDING); unset = in ($DELTOS_DECISIONS wins)
 
     [sessions]                           # chat digests under <root>/sessions
     hermes = "~/.hermes"
@@ -38,6 +50,8 @@ $DELTOS_ROOT or ~/deltos. Every key is optional:
                                          # [sessions] hermes)
     auto = true                          # learn each chat once it ends, while the agent is idle (needs [llm] url,
                                          # owner and [sessions] hermes); unset or false: only `deltos learn` by hand
+    nightly = true                       # with auto unset: learn only in the nightly job (`deltos learn --wait
+                                         # --nightly`), never at a session end or a gateway start
     days = 2                             # chats started in the last N days (and resumed ones already learned)
     max_units = 20                       # chats per sweep, oldest first; the rest wait for the next one
 
@@ -99,6 +113,7 @@ class Config:
     learn: dict = field(default_factory=dict)    # chat learning ([learn]: auto, days, max_units)
     recall: dict = field(default_factory=dict)   # reading ([recall]: doubt_days, cues)
     tools: dict = field(default_factory=dict)    # what the agent is given ([tools]: descriptions)
+    checks: dict = field(default_factory=dict)   # looking again ([checks]: on)
 
     @classmethod
     def load(cls, root: str | Path | None = None) -> "Config":
@@ -126,6 +141,7 @@ class Config:
             learn=dict(d.get("learn", {})),
             recall=dict(d.get("recall", {})),
             tools=dict(d.get("tools", {})),
+            checks=dict(d.get("checks", {})),
             llm={"url": llm.get("url", ""), "model": llm.get("model", ""), "key": key,
                  **{k: dict(llm[k]) for k in ("extra", "thinking_off", "thinking_on") if llm.get(k)},
                  **({"thinking": str(llm["thinking"])} if llm.get("thinking") else {})},

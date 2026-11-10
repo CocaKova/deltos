@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Nightly memory job: the import as a staged run (new note lines become facts on a copy of
 # memory; the run is judged against this store's own accepted runs, then promoted or held with
-# its numbers), the learn sweep of chats that ended while nothing was listening (`deltos learn
-# --wait`: only with [learn] auto, and once the agent is idle), the chat digests, a commit of
+# its numbers), the learn sweep of chats not learned yet (`deltos learn --wait --nightly`: only with
+# [learn] auto or [learn] nightly, and once the agent is idle), the chat digests, a commit of
 # the day's other writes, and the status line.
 #
 #   DELTOS_SRC    the deltos checkout to run (default: the repo this script sits in)
@@ -32,7 +32,7 @@ case $rc in
   3) log "import HELD: $(head -1 "$ROOT/import.hold")"; rc=0 ;;
   *) log "import FAILED rc=$rc (memory untouched)" ;;
 esac
-deltos learn --wait >> "$LOG" 2>&1
+deltos learn --wait --nightly >> "$LOG" 2>&1
 lrc=$?
 case $lrc in
   0) ;;

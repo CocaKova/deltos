@@ -92,6 +92,31 @@ class ReceiptTest(unittest.TestCase):
         self.assertEqual(ground.receipt("- Nimbus moved to box-7\n", "9100"), "")
         self.assertEqual(ground.receipt("", "9100"), "")
 
+    def test_the_line_about_the_thing(self):
+        # A short value is said on many lines; the receipt is the one about the thing (10-23: a
+        # model's "status: up" carried a line about a game's audio).
+        text = ("--- memory/games.md\n- the music came out sped up; SDL resamples it\n"
+                "- 20:32 DSV 1017 UP (2nd start OK); watchers resumed\n")
+        item, clause = ground.quote(["DSV 1017"], "up", text)
+        self.assertEqual(clause, "- 20:32 DSV 1017 UP (2nd start OK)")
+        self.assertEqual(ground.receipt(item, "up", near=clause), item)
+        self.assertTrue(ground.receipt(text, "up").startswith("- the music"))   # the first line, before
+        # by its alias, and by the file it is in when the line doesn't repeat the name
+        self.assertEqual(ground.quote(["Deepseek V4.1 Flash 1017", "DSV 1017"], "up", text)[1], clause)
+        orph = "--- memory/project_orpheus_dictation.md\n- **Server**: FastAPI on **:8123**\n"
+        self.assertEqual(ground.quote(["Orpheus"], "8123", orph)[1], "- **Server**: FastAPI on **:8123**")
+        self.assertEqual(ground.quote(["Keryx"], "8123", orph), ("", ""))
+        # a wrapped line is one item
+        wrapped = "--- memory/a.md\n- Nimbus moved, the port\n  is now 9100 for good\n- 9100 elsewhere\n"
+        self.assertEqual(ground.quote(["Nimbus"], "9100", wrapped)[0], "- Nimbus moved, the port is now 9100 for good")
+
+    def test_a_long_line_is_cut_around_the_clause(self):
+        line = "- Box-9 gate GREEN 1353 " + "x " * 120 + "; Nimbus gate GREEN 1355, shipped"
+        r = ground.receipt(line, "GREEN 1355", near="Nimbus gate GREEN 1355, shipped")
+        self.assertIn("1355", r)
+        self.assertNotIn("1353", r)
+        self.assertEqual(ground.receipt(line, "GREEN 1355", near="not in it"), "")
+
 
 class NumberTest(unittest.TestCase):
     """A number is that number: said with a suffix or unit it counts, inside a longer one it doesn't."""

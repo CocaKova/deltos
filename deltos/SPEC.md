@@ -31,6 +31,9 @@ operations, read with one ripgrep pass. No database, no embeddings required.
    writer replaces it only with news dated after the day it was set or last
    confirmed; older news still lands in the trail, and it can report a change
    but never mark the value never true. The refusal says who set it and when.
+   A note line the text gives no date for counts from the earliest day it could
+   have been written: for a commit's lines, the day of the commit before it
+   (a nightly commit carries yesterday's edits).
 8. **Things have many names.** Every name a team uses is registered once, so a
    question about "TS-2" finds Tamsin.
 
@@ -138,9 +141,113 @@ never leaves half a note. Writers in several processes share a folder through
 an advisory lock (`.deltos.lock`); a store that sees `MEMORY.md` changed by
 someone else re-reads the names before writing.
 
+## Learning from chats
+
+A finished chat is learned once, and only the owner's words ground a fact.
+A user turn is read by who wrote it, from the turn itself:
+
+- **harness**: a turn that opens with a bracketed tag in capitals
+  (`[CONTEXT COMPACTION — …]`, `[STILL IN PROGRESS — …]`) or a known notice.
+  It is the harness talking, so it is not read. A tag that says it carries the
+  user's message (`[OUT-OF-BAND USER MESSAGE …]`) is opened, and what it
+  carries is read by these same rules.
+- **relay**: a turn that names its writer (`[From Orin, for Ava …]`,
+  `[From Ava, relayed by Orin]`). It is another agent's words, shown as context
+  only.
+- **owner**: everything else, read as typed.
+
+A value only a relay or the assistant states is refused, whatever its words.
+A chain of sessions (a compacted chat going on in a child session) is one
+conversation, learned once its last session ends.
+
 ## Reading
 
 `recall(question)`: find every thing the question names (subject first),
 pin the subject's fact lines with their trails, follow `[[links]]` one hop,
 then add other lines that mention any of the names: change notes before daily
 logs, newest first, capped at 20. One model call answers from the result.
+
+## Links
+
+An entry whose current value names another thing links the two. Nothing is
+written for a link: `- **Host:** Calder` on Gristle *is* the link from Gristle
+to Calder, labelled host, with the entry's dates, trail, source and trust. A
+link that changes is a value that changes; a value moved to the trail is no
+longer a link. The graph is read from the notes (deltos/links.py), so every
+writer makes links.
+
+- **Exact** when the value is the name (`Host: Calder`, `Host: Calder (rack 2)`),
+  a **mention** when the name is part of it (`Relationship: Mira's partner`).
+  Names are found the way a question's are (longest name first, a name inside a
+  longer name doesn't count, skipping the entry's own thing's names).
+- A mention counts only as a word: not inside a path, an address or a file name
+  (`~/.hermes/hermes-agent/plugins`), and a name that is a plain English word
+  only where it is written as a name (`historical brain` is not Brain;
+  `Nick's girlfriend` names Nick).
+- Never links: `Kind` (a category), `Status` (a state), `Setting ...` (a config
+  key's value).
+- A person known only by what they are to someone is a placeholder name
+  (`Ivo's dad`, kind person). Its profile starts with `Relationship: Ivo's dad`,
+  which links it to Ivo; naming the person later with the placeholder as another
+  name (`name("Rowan", ["Ivo's dad"])`) makes the name the profile's (the file
+  follows) and keeps the placeholder as another name.
+
+With `[recall] links = true` the block shows both ends of a link, resolves a
+role word through the owner's links, lists what depends on a thing two links
+away, gives the chain between two things the question names (worked out, not
+stored: memory records what was said, the reader follows the chain), and puts
+`  - linked: <thing> status <value>` under an entry whose linked thing was
+retired, or whose status changed after the entry was set when the question asks
+about that entry.
+
+A product and one unit of it are two things. A unit is known by what only it has
+(an address, a serial, a host name that is one of its own names); a price or a
+release date is the same for every unit. When one is written on a unit, the write
+stands and its receipt says where it belongs (the product's own thing, linked
+from the unit by `model`); `deltos doctor` lists the units that hold one.
+
+## Checks
+
+Notes say what was true when they were written; a check is someone looking
+again. A person or an agent that just saw a value says how:
+`remember(thing, attribute, value, check="hermes --version")`. The same value
+confirms the entry (`confirmed <today>`), another one replaces it from today
+(or from the `since` the writer gives: a value known to have held since an
+earlier day is still confirmed today, because it was seen today), and the entry
+keeps how to look, under its line:
+
+```markdown
+- **Version:** 0.22.4 (since 2026-10-22; confirmed 2026-10-26)
+  - check: hermes --version on box-7
+```
+
+- How to look stays when the value changes (how you look doesn't change when
+  what you see does). It is one line of at most 25 words and never holds a
+  password, token or key; deltos never runs it.
+- An import never writes a check: a note can't look.
+- Each look is a row in `checks.jsonl` (day, thing, attribute, value before,
+  value seen, outcome `same` / `changed` / `new` / `held`, how, who). `held` =
+  what was seen did not become current (trust order, or an older date).
+  The share of `changed` among known values is memory's own measured error on
+  live state, per label (`deltos checks --stats`).
+- What is due (`deltos checks`, the `memory_checks` tool): current entries
+  whose label drifts in live state (status, version, host, port, model, ...),
+  or any entry with a way to check, not seen (since or confirmed) in 21 days,
+  ranked by days since seen × (1 + times the agent's blocks named the thing in
+  30 days). Retired things and values are left alone.
+- With `[checks] on = true`: agents get `remember`'s `check` and
+  `memory_checks`, and a `check:` line shows in the block only under a line
+  marked "not confirmed in N weeks" (`[recall] doubt_days`). Off (the
+  default), the store still keeps check lines and the CLI still works.
+- A note never overturns a look. An import line that disagrees with a value a
+  person or agent saw (the entry has a `check:` line) is kept beside it, not over
+  it, whatever the line's date:
+
+  ```markdown
+  - **LAN address:** 10.0.0.87 (since 2026-05-03; source: Ava)
+    - check: ping 10.0.0.87 answered
+    - said otherwise: 10.0.0.116 (a note, 2026-05-05; not seen)
+  ```
+
+  The entry is due for a look first (`deltos checks`). A look, a confirmation or
+  a new value from a person or agent takes the line off.

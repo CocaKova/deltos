@@ -1,0 +1,25 @@
+# name | width x height | query string
+thing-light        | 1320x860 | fixture=demo&theme=light
+thing-dark         | 1320x860 | fixture=demo&theme=dark
+thing-orchard-dark | 1320x980 | fixture=demo&theme=dark&steps=click:Orchard
+thing-orchard-light| 1320x980 | fixture=demo&theme=light&steps=click:Orchard
+disputed-dark      | 1320x860 | fixture=demo&theme=dark&steps=click:Local model
+past-dark          | 1320x980 | fixture=demo&theme=dark&steps=click:Orchard|click:Go to the change before|click:Go to the change before
+past-light         | 1320x980 | fixture=demo&theme=light&steps=click:Orchard|click:Go to the change before|click:Go to the change before
+changes-dark       | 1320x860 | fixture=demo&theme=dark&steps=click:Changes|click:30 days
+changes-light      | 1320x860 | fixture=demo&theme=light&steps=click:Changes|click:30 days
+due-dark           | 1320x860 | fixture=demo&theme=dark&steps=click:Worth a look
+due-light          | 1320x860 | fixture=demo&theme=light&steps=click:Worth a look
+ask-dark           | 1320x860 | fixture=demo&theme=dark&composer=1&steps=click:Worth a look|click:Ask the agent to check
+search-dark        | 1320x860 | fixture=demo&theme=dark&steps=type:zzz
+empty-dark         | 1320x860 | fixture=empty&theme=dark
+empty-light        | 1320x860 | fixture=empty&theme=light
+down-dark          | 1320x860 | fixture=down&theme=dark
+down-light         | 1320x860 | fixture=down&theme=light
+older-dark         | 1320x860 | fixture=demo&theme=dark&case=stale
+notfound-dark      | 1320x860 | fixture=demo&theme=dark&case=notfound&steps=click:Worth a look|click:Local model
+error-dark         | 1320x860 | fixture=demo&theme=dark&case=error
+offline-light      | 1320x860 | fixture=demo&theme=light&case=offline
+loading-dark       | 1320x860 | fixture=demo&theme=dark&case=loading
+narrow-dark        | 620x900  | fixture=demo&theme=dark&bare=1&steps=click:Orchard
+narrow-light       | 430x900  | fixture=demo&theme=light&bare=1

@@ -216,7 +216,28 @@ def store_delta(base: Path, after: Path) -> dict:
     lb, la = _lint_total(base), _lint_total(after)
     if lb is not None and la is not None:
         out["lint_delta"] = la - lb
+    lk = _link_delta(base, after)
+    if lk:
+        out.update(lk)
     return out
+
+
+def _link_delta(base: Path, after: Path) -> dict:
+    """Links (deltos/links.py) a run added and removed: an entry's value that now names
+    another thing, or no longer does. A run that rewires many links is worth a look
+    (10-23: a wrong-thing merge moved one app's version onto another). Reported, not judged."""
+    if importlib.util.find_spec("deltos.links") is None:
+        return {}
+    try:
+        from .recall import Recall
+
+        def edges(root):
+            r = Recall(Path(root))
+            return {(lk.src, lk.key, lk.dst) for ls in r.graph.out.values() for lk in ls}
+        b, a = edges(base), edges(after)
+        return {"links_added": len(a - b), "links_removed": len(b - a)}
+    except Exception:   # a report line must never fail the run it reports on
+        return {}
 
 
 def _sig(p: float) -> float:
@@ -331,6 +352,8 @@ def render(verdict: Verdict, run_id: str, label: str) -> str:
               f"changed profiles {m.get('changed_profiles', 0)}")
         if "lint_delta" in m:
             st += f", lint {m['lint_delta']:+d}"
+        if "links_added" in m:
+            st += f", links +{m['links_added']} -{m.get('links_removed', 0)}"
         lines.append(st)
     if verdict.decision == "hold":
         lines += ["", f"deltos run promote {run_id}   # keep it anyway",

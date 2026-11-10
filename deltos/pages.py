@@ -14,10 +14,10 @@ import datetime
 import os
 import re
 import shutil
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import rg
 from .recall import STOP
 
 FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n?", re.S)
@@ -83,6 +83,27 @@ def age(day: str, today: str) -> str:
     if n < 60:
         return f"{n // 7} weeks old"
     return f"{n // 30} months old"
+
+
+def _trie_pattern(words) -> str:
+    """One regex for a set of words, shared beginnings written once ("bra(?:in|nch)"),
+    that matches the longest of them at a place: a plain a|b|c tries every word at
+    every place of every line."""
+    trie: dict = {}
+    for w in words:
+        node = trie
+        for c in w:
+            node = node.setdefault(c, {})
+        node[""] = {}
+
+    def pat(node: dict) -> str:
+        alts = [re.escape(c) + pat(nxt) for c, nxt in sorted(node.items()) if c]
+        if not alts:
+            return ""
+        body = alts[0] if len(alts) == 1 else "(?:" + "|".join(alts) + ")"
+        return f"(?:{body})?" if "" in node else body   # greedy: the longer word first
+
+    return pat(trie)
 
 
 class PageError(Exception):
@@ -208,20 +229,26 @@ class Pages:
     # -- read ----------------------------------------------------------------
 
     def _rg(self, args: list[str]) -> list[tuple[Path, int, str]]:
-        cmd = ["rg", "-i", "-n", "--no-heading", "--with-filename", "--glob", "*.md"]
+        cmd = ["-i", "-n", "--no-heading", "--with-filename", "--glob", "*.md"]
         for g in SKIP:
             cmd += ["--glob", "!" + g]
         where = [str(f.path) for f in self.folders if f.searchable and f.path.is_dir()]
         if not where:   # rg with no paths would search the current directory
             return []
-        out = subprocess.run(cmd + args + where,
-                             capture_output=True, text=True, timeout=20).stdout
-        rows = []
+        out = rg.run(cmd + args + where, timeout=20)
+        rows, path = [], {}   # one Path a file: tens of thousands of lines on a long prompt
         for ln in out.splitlines():
             m = re.match(r"^(.*?\.md):(\d+):(.*)$", ln)
-            if m and not any(part.startswith(".") for part in Path(m.group(1)).parts[-3:-1]):
-                rows.append((Path(m.group(1)), int(m.group(2)), m.group(3)))
-        rows.sort(key=lambda r: (str(r[0]), r[1]))   # rg's file order changes run to run
+            if not m:
+                continue
+            f = m.group(1)
+            if f not in path:
+                p = Path(f)
+                path[f] = None if any(part.startswith(".") for part in p.parts[-3:-1]) else p
+            if path[f] is not None:
+                rows.append((f, int(m.group(2)), m.group(3)))
+        rows.sort(key=lambda r: (r[0], r[1]))   # rg's file order changes run to run
+        rows = [(path[f], i, t) for f, i, t in rows]
         return rows
 
     def search(self, text: str, limit: int = 40) -> str:
@@ -254,7 +281,8 @@ class Pages:
         return "\n".join(out)
 
     def top(self, question: str, n: int = 3, skip_terms: tuple[str, ...] = (),
-            min_cover: int = 1, extra_terms: dict[str, float] | None = None) -> list[tuple[str, str, list[str]]]:
+            min_cover: int = 1, extra_terms: dict[str, float] | None = None,
+            names: list[str] | None = None) -> list[tuple[str, str, list[str]]]:
         """Pages that match the most (and rarest) words of a question:
         [(ref, date, best lines)], the date being the page's newest (its own, or
         the newest dated entry among the lines that matched). Brain-free ranking,
@@ -263,8 +291,13 @@ class Pages:
         extra_terms: more words to look for, each weighing its multiplier times
         a question word (the previous message's words, when this one is a short
         follow-up: "I mean in the app"). They rank pages, never let one in: a
-        page still needs the question's own words, min_cover of them."""
+        page still needs the question's own words, min_cover of them.
+        names: names of things the question is about that it doesn't say itself (a
+        role word reached them through links, or another of their names). A name
+        weighs like a question word and counts as one toward min_cover."""
         terms = query_terms(question, skip_terms)
+        named = sorted({x.lower().strip() for x in names or [] if len(x.strip()) >= 3} - set(terms))
+        terms = terms + named
         if not terms:
             return []
         extra = {w: x for w, x in (extra_terms or {}).items()
@@ -274,9 +307,15 @@ class Pages:
         per: dict[Path, dict[int, set[str]]] = {}
         heads: dict[Path, set[int]] = {}
         line_of: dict[tuple[Path, int], str] = {}
+        # The words in a line, in one regex pass (a loop over every word for every
+        # line was seconds a long prompt on a small VM, 11-04): the longest word
+        # that starts at each place, plus the words inside it. Any word in the line
+        # starts somewhere, so it is the longest there or inside the longest.
+        inside = {w: {x for x in every if x in w} for w in every}
+        find = re.compile("(?=(" + _trie_pattern(every) + "))")
         for p, i, t in rows:
             tl = t.lower()
-            per.setdefault(p, {})[i] = {w for w in every if w in tl}
+            per.setdefault(p, {})[i] = {x for w in set(find.findall(tl)) for x in inside[w]}
             line_of[p, i] = t
             if i < 15 and re.match(r"\s*(title|description|name):", tl):
                 heads.setdefault(p, set()).add(i)
@@ -296,14 +335,18 @@ class Pages:
                             per[p].pop(j, None)
                 if not per[p]:
                     del per[p]
-        df = {w: sum(1 for lines in per.values() if any(w in s for s in lines.values())) for w in every}
+        df = dict.fromkeys(every, 0)
+        for lines in per.values():
+            for w in set().union(*lines.values()):
+                df[w] += 1
         weight = {w: (1.0 if w in terms else extra[w]) / df[w] for w in every if df[w]}
 
         # Words that meet in one line (or in the file name) say what a page is
         # about; a long page that has each word somewhere does not.
         def score(p: Path) -> float:
             line = max(sum(weight[w] for w in ws) for ws in per[p].values())
-            name = sum(weight[w] for w in every if w in weight and w in p.stem.lower())
+            stem = p.stem.lower()
+            name = sum(weight[w] for w in every if w in weight and w in stem)
             # The title / description line is the page's own summary, so it counts
             # again: when it is also the best line, that line counts twice. Counting
             # it once was tried (10-19): the gate's live suite regressed 2, the page
@@ -312,9 +355,11 @@ class Pages:
             return line + name + head
 
         if min_cover > 1:   # whole words here: "rain" is not in "brain"
-            whole = {(p, i) for p, i, t in rows
-                     if sum(1 for w in terms if re.search(rf"\b{re.escape(w)}\b", t.lower())) >= min_cover}
-            per = {p: ls for p, ls in per.items() if any((p, i) in whole for i in ls)}
+            # only the words already found in the line can be whole words in it
+            bound = {w: re.compile(rf"\b{re.escape(w)}\b") for w in set(terms)}
+            per = {p: ls for p, ls in per.items()
+                   if any(sum(1 for w in ws if w in bound and bound[w].search(line_of[p, i].lower())) >= min_cover
+                          for i, ws in ls.items())}
         elif extra:   # the previous message's words alone don't let a page in
             per = {p: ls for p, ls in per.items() if any(ws.intersection(terms) for ws in ls.values())}
         sc = {p: score(p) for p in per}

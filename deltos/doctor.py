@@ -17,7 +17,8 @@ import re
 from datetime import date, timedelta
 from pathlib import Path
 
-from .store import PEOPLE, Past, Store, _key, junk_setting, junk_status, name_problem, numbered_sibling, parse_thing
+from .store import (PEOPLE, Past, Store, _key, junk_setting, junk_status, name_problem, numbered_sibling,
+                    parse_thing, product_fact, receipt_unsaid, secret_problem, unit_marks)
 
 STALE_DAYS = 30
 CHURN = 0.8        # an entry kind "changes often": its label word's entries have this many older values each
@@ -91,6 +92,29 @@ def report(root: Path, today: str | None = None) -> str:
     odd = maybe_other_things(things)
     out.append(f"Names that may be another thing (name_thing remove_names to undo): {len(odd)}"
                + "".join(f"\n- {n}: {a} ({why})" for n, a, why in odd[:25]))
+    mixed = unit_and_product(things)
+    out.append(f"One unit holding its product's facts (name the product, move these there): {len(mixed)}"
+               + "".join(f"\n- {n}: {', '.join(p)} (a unit: {u})" for n, u, p in mixed[:10]))
+    dead = dead_links(root)
+    out.append(f"History and extra pointers to no note: {len(dead)}" + "".join(f"\n- {a} -> [[{b}]]" for a, b in dead[:10]))
+    from collections import Counter
+    from .entrytypes import TYPES, entry_type
+    types = Counter(entry_type(x.name, x.value, t.kind) for t in things for x in t.attrs.values())
+    events = [(t.name, x) for t in things for k, x in t.attrs.items()
+              if k == "status" and entry_type(x.name, x.value, t.kind) == "event"]
+    out.append("Entry types: " + ", ".join(f"{k} {types.get(k, 0)}" for k in TYPES)
+               + f"\nStatus written as an event (what happened, not the state): {len(events)}"
+               + "".join(f"\n- {n}: {x.value[:50]}" for n, x in events[:10]))
+    secrets = [(t.name, x) for t in things for x in t.attrs.values() if secret_problem(x.value, x.name)]
+    out.append(f"Entries that look like a secret or a one-time code (forget them; keep where it is kept): {len(secrets)}"
+               + "".join(f"\n- {n} {x.name}" for n, x in secrets[:10]))
+    unsaid = unsaid_receipts(things)
+    out.append(f"Receipts that say none of their value (deltos receipts --drop): {len(unsaid)}"
+               + "".join(f"\n- {n} {a.name}: {a.value[:40]} <- \"{a.said[0][:60]}\"" for n, a in unsaid[:5]))
+    loose = plain_names(things)
+    out.append(f"Other names that are plain lowercase words (they name the thing wherever the words are "
+               f"written; name_thing remove_names to undo): {len(loose)}"
+               + "".join(f"\n- {n}: {a}" for n, a in loose[:15]))
     same = maybe_same_people(things)
     out.append(f"Maybe one person in two profiles (merge with name_thing merge=true): {len(same)}"
                + "".join(f"\n- {a} / {b}" for a, b in same[:10]))
@@ -119,6 +143,42 @@ def maybe_other_things(things) -> list[tuple[str, str, str]]:
                 if other and _key(other) != _key(t.name):
                     out.append((t.name, a, f"is {other!r}, which has its own profile"))
     return out
+
+
+def unit_and_product(things) -> list[tuple[str, str, list[str]]]:
+    """Things that are one unit (an address, a serial, their own host name) and also hold a
+    product's facts (price, release date): (name, what makes it a unit, those entries)."""
+    out = []
+    for t in things:
+        marks = unit_marks(t)
+        prod = [f"{a.name}: {a.value}" for a in t.attrs.values() if product_fact(a.name)]
+        if marks and prod:
+            out.append((t.name, marks[0], prod))
+    return out
+
+
+def dead_links(root: Path) -> list[tuple[str, str]]:
+    """The store's own pointers ([[<thing>-history]], [[<thing>-extra]]) that lead to no note:
+    (note, link). A [[link]] to anything else may be a page in another folder."""
+    notes = Path(root) / "notes"
+    stems = {p.stem for p in notes.glob("*.md")}
+    return [(p.stem, m.group(1)) for p in sorted(notes.glob("*.md"))
+            for m in re.finditer(r"\[\[([^\]|#\n]+-(?:history|extra))\]\]", p.read_text())
+            if m.group(1).strip() not in stems]
+
+
+def unsaid_receipts(things) -> list[tuple[str, object]]:
+    """(thing name, entry) for every receipt that says none of its value (store.receipt_unsaid)."""
+    return [(t.name, a) for t in things for a in t.attrs.values() if receipt_unsaid(a)]
+
+
+def plain_names(things) -> list[tuple[str, str]]:
+    """Other names written in lowercase plain words ('base', 'employer', 'test harness'). A plain
+    word counts as a name only as written, and these are written that way in any sentence: every
+    value that says the word links to the thing (11-05: '96GB base $5,499' linked a model)."""
+    from .recall import WORDS
+    return [(t.name, a) for t in things for a in t.aliases
+            if a == a.lower() and re.fullmatch(r"[a-z]+(?: [a-z]+)?", a) and all(w in WORDS for w in a.split())]
 
 
 def _label_words(label: str) -> list[str]:

@@ -540,14 +540,14 @@ class NightlyTest(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertIn("import ok", log)
         self.assertNotIn("site steps failed", log)
-        self.assertEqual(calls, ["import", "learn --wait", "sessions --days 2", "status --line"])
+        self.assertEqual(calls, ["import", "learn --wait --nightly", "sessions --days 2", "status --line"])
 
     def test_a_failed_site_step_is_logged_and_the_job_goes_on(self):
         rc, log, calls = self.nightly("exit 5\n")
         self.assertEqual(rc, 0)
         self.assertIn("site steps failed rc=5", log)
         self.assertIn("import ok", log)
-        self.assertEqual(calls, ["import", "learn --wait", "sessions --days 2", "status --line"])
+        self.assertEqual(calls, ["import", "learn --wait --nightly", "sessions --days 2", "status --line"])
 
 
 if __name__ == "__main__":

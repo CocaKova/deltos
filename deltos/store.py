@@ -41,6 +41,7 @@ RETIRED = "retired"
 VOLATILE = ("high", "low", "static")
 TRASH = ".trash"           # forgotten things and entries, restorable (inside the memory folder, outside notes/)
 FORGET_LOG = "forget-log.jsonl"
+RECEIPTS_LOG = "receipts-log.jsonl"   # receipts taken off entries (Store.unsay), with why
 FORGET_PER_DAY = 10        # forgets one agent may make in a day; a person at the CLI has no budget
 BIG_THING = 5              # entries at which an agent needs user_asked to forget a whole thing
 HAND = "hand"              # the source of a person's own write (the CLI); an agent writes under its name
@@ -128,7 +129,20 @@ def base_name(name: str) -> str:
     return m.group("n").strip() if m else name.strip()
 
 
-def name_problem(name: str) -> str:
+# A person known only by what they are to someone, until their name is known: "Ivo's
+# dad", "Mira's partner". As a name it is a placeholder: the profile it starts gets the
+# relationship as its first entry (so it links to the someone), and the person's name,
+# once given with the placeholder as another name, becomes the profile's name.
+PLACEHOLDER = re.compile(r"(?P<who>[^\W\d_][\w .&-]*?)['’]s (?P<role>[a-z][a-z-]*(?: [a-z][a-z-]*){0,2})")
+
+
+def placeholder(name: str) -> bool:
+    return PLACEHOLDER.fullmatch(name.strip()) is not None
+
+
+def name_problem(name: str, person: bool = False) -> str:
+    """Why a name can't name a thing, "" when it can. person: the thing is a person,
+    who may be known only by what they are to someone ("Ivo's dad") for now."""
     n = name.strip()
     if not re.search(r"[^\W_]", n):
         return "empty"   # "-", "?", "n/a"-style placeholders would join every thing into one
@@ -142,9 +156,10 @@ def name_problem(name: str) -> str:
         # "--no-sandbox", "--attempts": how a command is run. NOT_A_NAME's flag rule needs a word
         # before the flag, and 109 flags had become things in a live store (10-19).
         return "looks like a command flag (record it as a setting of the command), not a name"
-    if re.search(r"\w['’]s\b.*\b[a-z]", n):
+    if re.search(r"\w['’]s\b.*\b[a-z]", n) and not (person and placeholder(n)):
         # "Ava's plan", "Sam's action figure set": the possessive starts a phrase.
-        # "Trader Joe's", "Sutton's Inc.", "Sam's Club" are names.
+        # "Trader Joe's", "Sutton's Inc.", "Sam's Club" are names. A person known only
+        # as "Ivo's dad" is a placeholder (PLACEHOLDER).
         return "is a phrase about something ('Ava's plan'), not a name"   # "S" would match inside every "Alex's"
     if re.match(r"(my|our|your|his|her|their) ", n):
         return "is what something is to someone ('my mom'), not a name: record it as relationship"
@@ -239,10 +254,116 @@ def junk_status(value: str) -> bool:
             or (len(words) == 1 and bool(FILE_EXT.search(v))))
 
 
+
+# One unit and the product it is a unit of are two things (11-05: a street price for the product
+# landed on the profile of the one machine the owner has, whose names include the product's).
+# A unit is known by what only it has: an address, a serial, a host name that is one of its own
+# names. A product's facts are the same for every unit: its price, its release.
+UNIT_LABEL = re.compile(r"^(ip|ip address|lan ip|tailscale ip|tailnet ip|hostname|serial|serial number|"
+                        r"mac|mac address|asset tag)$", re.I)
+PRODUCT_LABEL = re.compile(r"\b(price|msrp|cost|release date|launch date|sku)\b", re.I)
+OWN_COST = re.compile(r"\b(paid|purchase|purchased|bought|rent|renewal|bill|billing|plan|monthly|fee)\b", re.I)
+MODEL_LABEL = {"model", "machine", "product", "hardware", "platform", "is a"}
+
+
+def receipt_unsaid(a: "Attr") -> bool:
+    """A receipt that says none of its value: not one word stem or number of the value is in
+    the quoted words (10-17..21 imports kept the wrong sentence for 45 of 272 receipts, e.g. a
+    host name 'said' by a line about a human check). A value without words (a symbol) can't tell."""
+    if not a.said:
+        return False
+    from .items import _words
+    vw = _words(a.value)
+    # A value's words, when it has any: its numbers alone ('node-ef6b' -> 6) meet the dates and
+    # counts any note line carries.
+    vw = {w for w in vw if not w[0].isdigit()} or vw
+    return bool(vw) and not (vw & _words(a.said[0]))
+
+
+def unit_marks(t: "Thing") -> list[str]:
+    """What makes a thing one unit: entries only one unit has ('Ip: 192.0.2.10',
+    'Host: box-7' on box-7 itself). [] for a product, a service, a person."""
+    names = {_key(n) for n in [t.name, *t.aliases]}
+    return [f"{a.name} {a.value}" for a in t.attrs.values()
+            if UNIT_LABEL.match(a.name.strip())
+            or (a.name.strip().lower() == "host" and _key(re.sub(r"\s*\(.*$", "", a.value)) in names)]
+
+
+def product_fact(attribute: str) -> bool:
+    """A label that is the same for every unit of a product (price, release date), not
+    what one unit cost its owner ('purchase price', 'monthly fee')."""
+    return bool(PRODUCT_LABEL.search(attribute)) and not OWN_COST.search(attribute)
+
+
+def unit_product_hint(t: "Thing", attribute: str) -> str:
+    """When a product's fact is written on one unit: where it belongs, for the writer's
+    receipt. '' when the label is not a product's or the thing is not a unit."""
+    if not product_fact(attribute):
+        return ""
+    marks = unit_marks(t)
+    if not marks:
+        return ""
+    model = next((a.value for a in t.attrs.values() if a.name.strip().lower() in MODEL_LABEL), "")
+    return (f"{t.name} is one unit ({marks[0]}); a {attribute.strip().lower()} is the product's, the same for "
+            f"every unit: record it on the product's own thing"
+            + (f" ({re.sub(r'\s*\(.*$', '', model)}?)" if model else "")
+            + f" and link this unit to it (model), then forget it here")
+
+
+CHECK_WORDS = 25
+# A way to look names where to look; a credential in it would be shown to every reader.
+SECRET = re.compile(r"(?i)\b(?:password|passwd|secret|token|api[_-]?key|bearer|authorization)\b\s*[:=]?\s*\S{6,}"
+                    r"|(?<![\w/.-])(?=[A-Za-z0-9_-]*\d)(?=[A-Za-z0-9_-]*[A-Za-z])[A-Za-z0-9_-]{32,}(?![\w/.-])")
+
+
+def check_problem(how: str) -> str:
+    """Why a way to check a value can't be kept, or "". One line, short, no credential."""
+    if not how.strip():
+        return "empty"
+    if "\n" in how:
+        return "one line only"
+    if len(how.split()) > CHECK_WORDS:
+        return f"over {CHECK_WORDS} words: say where to look, not the whole procedure"
+    if SECRET.search(how):
+        return "it looks like it holds a password, token or key: say where to look without it"
+    return ""
+
+
+# Never kept: a secret, or a one-time code. 11-06 a chat import stored a registrar's SMS
+# code twice, and the store held a database password as a plain entry since 10-09. Memory
+# keeps where a secret lives (a vault item's name), never the secret.
+KEY_LABEL = re.compile(r"(?i)\b(?:password|passphrase|passwd|secret|token|api[ _-]?key|private key|bearer|otp|2fa|mfa|passcode)\b")
+CODE_LABEL = re.compile(r"(?i)\b(?:code|pin|otp|2fa|mfa|passcode)\b")
+NOT_SECRET_CODE = re.compile(r"(?i)\b(?:zip|postal|area|country|source|status|error|exit|promo|discount|coupon|qr|project|"
+                             r"course|tax|product|response|http|return)\s+code\b")
+TOKEN_SHAPE = re.compile(r"\b(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|xox[abpr]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|"
+                         r"eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_.-]+)")
+# A credential label's value that says where or how, not what: kept.
+POINTER = re.compile(r"(?i:^(?:none|auto|set|unset|missing|required|optional|configured|changed|rotated|revoked|expired|"
+                     r"present|absent|empty|n/?a|yes|no|true|false|on|off)$)|[/~$]|^[A-Z][A-Z0-9_]{2,}$")
+
+
+def secret_problem(value: str, attribute: str = "") -> str:
+    """Why a value looks like a secret or a one-time code, or ''."""
+    v = value.strip()
+    if TOKEN_SHAPE.search(v):
+        return "it looks like a key or token"
+    if (KEY_LABEL.search(attribute) and len(v) >= 4 and " " not in v and re.search(r"[A-Za-z]", v)
+            and not POINTER.search(v)):
+        return "it looks like the secret itself"
+    if CODE_LABEL.search(attribute) and not NOT_SECRET_CODE.search(attribute) and re.fullmatch(r"\d[\d -]{2,8}\d", v):
+        return "it looks like a one-time code"
+    return ""
+
+
 def value_problem(value: str, attribute: str = "") -> str:
     v = bare(value).strip()
     if not v:
         return "empty value"
+    secret = secret_problem(v, attribute)
+    if secret:
+        return (f"{secret}: memory never keeps passwords, keys or one-time codes. Record where it is kept instead "
+                "(\"vault item: Netlify PAT\"), or nothing")
     if "\n" in v:
         return "has a line break: record the short value; put the explanation in a note"
     if len(v.split()) > MAX_VALUE_WORDS or len(v) > 100:
@@ -358,6 +479,8 @@ class Attr:
     extra: list[str] = field(default_factory=list)    # hand-written sub-lines, kept as is
     also: list[Also] = field(default_factory=list)    # other current items of the same kind, newest first
     said: tuple[str, str] | None = None               # receipt: the words the current value came from, and their date
+    check: str = ""                                   # how the value can be seen in the world (deltos/checks.py)
+    other: tuple[str, str, str] | None = None         # said otherwise: a note's value against a look (value, by, day)
 
 
 @dataclass
@@ -397,17 +520,45 @@ def held_trust(a: "Attr") -> tuple[int, str]:
     return level, max(a.since, a.confirmed)
 
 
+def look_hold(a: "Attr", source: str, confirm: bool) -> bool:
+    """A value someone looked at (it has a way to check, and a person or agent stands
+    behind it) stands against a note whatever the note's date: a note says what its
+    writer believed, a look is what was there. 11-03 an agent saw a LAN address answer
+    and wrote how; on 11-05 a to-do line still carrying the old address replaced it,
+    because the line was dated after the look. The note's value is kept beside the
+    entry (Store.dispute) and the entry is due for a look."""
+    return writer_trust(source, confirm) == IMPORT and bool(a.check) and held_trust(a)[0] >= AGENT
+
+
 def trust_hold(a: "Attr", since: str, source: str, confirm: bool) -> str:
     """Why a different value for `a`, from this writer and dated `since`, can't
     replace it: '' when it can. Only news dated after the day the more trusted
-    source last stood behind the value replaces it."""
+    source last stood behind the value replaces it; a note never replaces a value
+    someone looked at (look_hold)."""
     level, day = held_trust(a)
+    if look_hold(a, source, confirm) and since > day:
+        return (f"seen on {day} ({a.check}); a note doesn't overturn a look: it is kept as said otherwise "
+                "until someone looks again")
     if writer_trust(source, confirm) >= level or since > day:
         return ""
     who = ("set by hand" if level == PERSON else f"set by {a.source}" if a.source and a.since >= a.confirmed
            else "confirmed")
     by = "a note import" if writer_trust(source, confirm) == IMPORT else "an agent"
     return f"{who} on {day}; {by} changes it only with news dated after {day}"
+
+
+# A thing no longer in use: a clause of its Status starts with one of these ("stopped fallback",
+# "historical brain; stopped fallback"; not "kept, DeepSeek deleted", not "down": often for a while).
+DORMANT = re.compile(r"(?i)(?:^|[;,]\s*)(?:retired|decommissioned|stopped|deleted|removed|archived|dead|parked|"
+                     r"superseded|abandoned|dropped|uninstalled|disabled|replaced|deprecated|shelved|frozen|"
+                     r"cancell?ed|killed)\b")
+
+
+def dormant(status: str) -> bool:
+    """A Status value that says the thing is no longer in use."""
+    # "removed personalities.nova, frontier" (config.yaml, 09-24) is an edit written as a
+    # status, not a thing out of use: a value naming keys or paths is not a state.
+    return bool(DORMANT.search(status or "")) and not re.search(r"\w[./_=]\w", status)
 
 
 # ---- rendering and parsing ------------------------------------------------------
@@ -421,6 +572,13 @@ ALSO_ITEM = re.compile(r"^  - also current: (?P<v>.*) \(another one, from (?P<s>
 # A receipt: the sentence the current value was read from (an import writes it).
 SAID = re.compile(r'^  - said: "(?P<q>.*)" \((?P<d>[0-9-]*)\)\s*$')
 SAID_CHARS = 200
+# How the value can be seen in the world again (a command, a file and key, a page): kept
+# across value changes, since how to look doesn't change when what is seen does. Data, never
+# run by deltos (deltos/checks.py).
+CHECK = re.compile(r"^  - check: (?P<h>.+?)\s*$")
+# What a note said against a value someone looked at: kept beside it, not over it, until
+# someone looks again (trust_hold). The entry is due for a look first (deltos/checks.py).
+OTHER = re.compile(r"^  - said otherwise: (?P<v>.*) \((?P<by>[^,()]+), (?P<d>[0-9-]+); not seen\)\s*$")
 WRONG = re.compile(r"^  - was recorded as (?P<v>.*) by mistake \(corrected (?P<e>[0-9-]+)(?: by (?P<by>[^;()]+))?; "
                    r"never true\)\s*$")
 OLDER = re.compile(r"^  - \d+ older value\(s\) in \[\[")
@@ -477,6 +635,10 @@ def render_thing(t: Thing) -> str:
         lines.append(_fact_line(a))
         if a.said:
             lines.append(f'  - said: "{a.said[0]}" ({a.said[1]})')
+        if a.check:
+            lines.append(f"  - check: {a.check}")
+        if a.other:
+            lines.append(f"  - said otherwise: {a.other[0]} ({a.other[1]}, {a.other[2]}; not seen)")
         lines += [f"  - also current: {x.value} (another one, from {x.since})" for x in a.also]
         for p in a.trail[:WARM]:
             if p.wrong:
@@ -573,6 +735,14 @@ def parse_thing(text: str, history: str = "") -> Thing:
             m = SAID.match(ln)
             if m:
                 cur.said = (m.group("q"), m.group("d"))
+                continue
+            m = CHECK.match(ln)
+            if m:
+                cur.check = m.group("h")
+                continue
+            m = OTHER.match(ln)
+            if m:
+                cur.other = (m.group("v"), m.group("by"), m.group("d"))
                 continue
             m = ALSO_ITEM.match(ln)
             if m:
@@ -771,6 +941,32 @@ class Store:
         with self._locked():
             return self._name(thing, aliases, kind)
 
+    def retitle(self, thing: str, title: str, keep_old: bool = True) -> str:
+        """Give a thing another of its names as its own (the title the index and every
+        block show): one unit that carried its product's name ('Mac Studio' on the owner's
+        Studio 1) becomes 'Studio 1', and the freed name can go to the product. The file stem
+        stays. keep_old: the old title stays one of its names (take it off with unname)."""
+        with self._locked():
+            t = self.find(thing)
+            if t is None:
+                return f"nothing is called {thing!r}"
+            title = title.strip()
+            owner = self.by_name.get(_key(title))
+            if owner and owner != t.slug:
+                return f"not renamed: {title!r} is another thing's name ({self.label(owner)})"
+            why = name_problem(title, (t.kind or "").lower() in PEOPLE)
+            if why:
+                return f"not renamed: {title!r} {why}"
+            if _key(title) == _key(t.name):
+                return f"{t.name} is already its name"
+            old = t.name
+            t.name = title
+            t.aliases = ([old] if keep_old else []) + [a for a in t.aliases if _key(a) not in (_key(title), _key(old))]
+            if not keep_old:
+                self.by_name.pop(_key(old), None)
+            self.save(t)
+            return f"{old} is now called {title}" + (f" (also {old})" if keep_old else "")
+
     def unname(self, thing: str, names: list[str]) -> str:
         """Take names off a thing they were wrongly merged into ('claimcheck.cc'
         is the website, not the API package). The thing keeps its facts; a
@@ -832,6 +1028,7 @@ class Store:
                         trail.append(p)
                 new.trail, new.extra = trail, new.extra + [x for x in old.extra if x not in new.extra]
                 new.also = _merge_also(new.also, old.also)
+                new.check = new.check or old.check
                 t.attrs[k] = new
             t.about += [x for x in o.about if x not in t.about]
             t.extra += [x for x in o.extra if x not in t.extra]
@@ -876,6 +1073,7 @@ class Store:
             new.trail, new.extra = trail, new.extra + [x for x in old.extra if x not in new.extra]
             new.also = _merge_also(new.also, old.also)
             new.confirmed = max(a.confirmed, b.confirmed)
+            new.check = new.check or old.check
             keep = kb if new is b else ka
             del t.attrs[ka if keep == kb else kb]
             t.volatile.pop(ka if keep == kb else kb, None)
@@ -1057,9 +1255,10 @@ class Store:
         thing = base_name(html.unescape(thing))
         aliases = [base_name(x) for a in aliases or [] for x in html.unescape(a).split(",")]
         t = self.find(thing)
-        if t is None and name_problem(thing):
-            return f"not created: {thing!r} {name_problem(thing)}"
-        refused = [a for a in (aliases or []) if a.strip() and name_problem(a)]
+        person = _key(kind or (t.kind if t else "")) in PEOPLE
+        if t is None and name_problem(thing, person):
+            return f"not created: {thing!r} {name_problem(thing, person)}"
+        refused = [a for a in (aliases or []) if a.strip() and name_problem(a, person)]
         why: dict[str, str] = {}
         new, seen = [], {_key(thing)}
         for a in aliases or []:   # the model repeats names; the first spelling wins
@@ -1078,6 +1277,23 @@ class Store:
                 if t:
                     new = [thing] + [x for x in new if x != a]
                     break
+        renamed = ""
+        if t is not None and placeholder(t.name) and not placeholder(thing) and _key(thing) != _key(t.name) \
+                and not name_problem(thing, person) and self.by_name.get(_key(thing)) in (None, t.slug):
+            # "Rowan" given with "Ivo's dad": the person's name is known now. It becomes
+            # the profile's name; the placeholder stays one of its names.
+            renamed, t.name = t.name, thing
+            t.aliases = [renamed] + [x for x in t.aliases if _key(x) not in (_key(thing), _key(renamed))]
+            new = [x for x in new if _key(x) != _key(thing)]
+            # The file follows: "ivo-s-dad" as the profile's label would hide who it is.
+            old, stem = t.slug, self._new_file(thing)
+            for part in ("", "-history", "-extra"):
+                if (self.notes / f"{old}{part}.md").exists():
+                    os.replace(self.notes / f"{old}{part}.md", self.notes / f"{stem}{part}.md")
+            self.rows.pop(old, None)
+            for key in [k for k, sl in self.by_name.items() if sl == old]:
+                self.by_name[key] = stem
+            t.file = stem
         kept = [t.name, *t.aliases] if t else [thing]
         for a in list(new):
             sib = numbered_sibling(a, [x for x in kept if x != a])
@@ -1092,6 +1308,10 @@ class Store:
             near = [x for n in [thing, *new] for x in self.similar(n)]
             t = Thing(thing.strip(), [a for a in new if a not in clash], kind, self.today, self.today,
                       file=self._new_file(thing))
+            if placeholder(t.name):
+                # Known only as what they are to someone: that is the first thing known about
+                # them, and the entry links them to that someone (deltos/links.py).
+                t.attrs["relationship"] = Attr("Relationship", t.name, self.today)
             self.save(t)
             return f"created {t.name}" + (f" (also called {', '.join(t.aliases)})" if t.aliases else "") + \
                 (f"; refused as names: {', '.join(f'{a} ({why[a]})' if a in why else a for a in refused)}" if refused else "") + \
@@ -1116,13 +1336,16 @@ class Store:
             t.kind = kind
         self.save(t)
         msg = f"{t.name}: added names {', '.join(added)}" if added else f"{t.name}: nothing new"
+        if renamed:
+            msg = f"renamed {renamed} to {t.name} ({renamed} stays one of its names)" + \
+                (f"; added names {', '.join(added)}" if added else "")
         return msg + (f"; refused as names: {', '.join(f'{a} ({why[a]})' if a in why else a for a in refused)}" if refused else "") + \
             (f"; skipped names already used by other things: {', '.join(taken)} (if that is the same thing in "
              f"two profiles, merge them)" if taken else "")
 
     def remember(self, thing: str, attribute: str, value: str, since: str = "", source: str = "",
                  correction: bool = False, volatility: str = "", create: bool = False, confirm: bool = True,
-                 another: bool = False) -> str:
+                 another: bool = False, check: str = "") -> str:
         """`create` lets a bulk import make things on the fly. An agent gets a
         refusal instead: a nickname nobody registered must not quietly become
         a second thing, so it has to say which thing it means.
@@ -1132,10 +1355,61 @@ class Store:
         `another=True`: the value is a second item of the same kind (another
         event, purchase, ...), not a new state: both stay current, the older
         one as an "also current:" line (an import: deltos/items.py decides; an agent
-        says so with remember's another)."""
+        says so with remember's another).
+        `check`: the writer saw the value in the world just now, this way (a
+        command, a file and key, a page). The entry keeps how to look
+        ("  - check: ..."), and <root>/checks.jsonl one row per look with what it
+        found (deltos/checks.py). Only a person or an agent looks: an import
+        (confirm=False) never writes one."""
         with self._locked():
-            return self._remember(thing, attribute, value, since, source, correction, volatility, create, confirm,
-                                  another)
+            a = self._entry(thing, attribute) if check else None
+            before = a.value if a else ""
+            out = self._remember(thing, attribute, value, since, source, correction, volatility, create, confirm,
+                                 another)
+            if check and confirm and not out.startswith("not recorded"):
+                out += self._looked(thing, attribute, value, before, out, check, source)
+            return out
+
+    def _entry(self, thing: str, attribute: str) -> "Attr | None":
+        t = self.find(base_name(html.unescape(thing)))
+        key = _clean(strip_window(html.unescape(attribute)))
+        k = next((x for x in t.attrs if _attr_key(x) == _attr_key(key)), None) if t else None
+        return t.attrs[k] if k else None
+
+    def _looked(self, thing, attribute, value, before, out, how, source) -> str:
+        """Keep how a value was seen on its entry, and log the look."""
+        how = " ".join(html.unescape(how).split())
+        problem = check_problem(how)
+        if problem:
+            return f"; how you checked not kept: {problem}"
+        t = self.find(base_name(html.unescape(thing)))
+        key = _clean(strip_window(html.unescape(attribute)))
+        k = next((x for x in t.attrs if _attr_key(x) == _attr_key(key)), None) if t else None
+        if k is None:
+            return ""
+        a = t.attrs[k]
+        seen = _clean(html.unescape(value))
+        if seen.lower() in ("retired", "decommissioned", "retired / decommissioned"):
+            seen = RETIRED
+        # held: what was seen did not become current (trust order, or an older date)
+        outcome = ("new" if not before else "held" if _key(a.value) != _key(seen)
+                   else "same" if _key(before) == _key(seen) else "changed")
+        # A look is a sighting: the value current after it was seen today, whatever
+        # day it started ("not installed since 09-11", looked at now). Without the
+        # date, recall calls a value checked minutes ago unconfirmed for weeks.
+        fresh = outcome != "held" and max(a.since, a.confirmed or "") < self.today
+        if fresh:
+            a.confirmed = self.today
+        if a.check != how or fresh or (a.other and outcome != "held"):
+            a.check = how
+            if outcome != "held":
+                a.other = None   # looked again: what the note said is answered
+            self.save(t)
+        row = {"day": self.today, "thing": t.name, "attribute": a.name, "before": before, "seen": seen,
+               "outcome": outcome, "how": how, "source": source or ""}
+        with open(self.root / "checks.jsonl", "a") as fh:
+            fh.write(json.dumps(row) + "\n")
+        return f"; checked ({outcome}): memory keeps how you looked"
 
     def _remember(self, thing, attribute, value, since, source, correction, volatility, create, confirm=True,
                   another=False) -> str:
@@ -1183,7 +1457,7 @@ class Store:
         if another and not same and not correction:
             if since >= a.since:
                 a.also.insert(0, Also(a.value, a.since))
-                a.said = None   # the receipt was the earlier item's
+                a.said, a.other = None, None   # the receipt was the earlier item's
                 a.value, a.since, a.confirmed, a.source = value, since, "", source
                 msg = f"{t.name} {key}: {value} (since {since}); another one beside {a.also[0].value}"
             else:
@@ -1194,6 +1468,7 @@ class Store:
         if same and (correction or since >= a.since):
             if confirm:
                 a.confirmed = max(a.confirmed or "", self.today)
+                a.other = None   # someone stood behind it again
             if since < a.since:
                 a.since = since
             self.save(t)
@@ -1209,7 +1484,7 @@ class Store:
             # Who said so: a person or agent's correction holds against a note that
             # repeats the value (notes.Migrator); an import's own guess doesn't.
             a.trail.insert(0, Past(a.value, "", self.today, wrong=True, by=(source or "hand") if confirm else ""))
-            a.said = None
+            a.said, a.other = None, None
             a.value, a.confirmed, a.source = value, "", source
             a.since = since if given else a.since
             self.save(t)
@@ -1217,7 +1492,7 @@ class Store:
         if since < a.since:
             return created + self._backdate(t, a, key, value, since)
         a.trail.insert(0, Past(a.value, a.since, since))
-        a.said = None
+        a.said, a.other = None, None
         a.value, a.since, a.confirmed, a.source = value, since, "", source
         self.save(t)
         return created + f"{t.name} {key}: {value} (since {since}); was {a.trail[0].value}"
@@ -1239,6 +1514,44 @@ class Store:
             if a.said == said:
                 return False
             a.said = said
+            self.save(t)
+            return True
+
+    def unsay(self, thing: str, attribute: str, reason: str, source: str = HAND) -> str:
+        """Take a receipt off an entry: words that don't say its value (an old import's
+        receipt from the wrong sentence) mislead a reader more than none. The entry and
+        its value stay; the words go to receipts-log.jsonl with the reason (undo by hand)."""
+        if not (reason or "").strip():
+            return "not changed: say why (reason)"
+        with self._locked():
+            t = self.find(thing)
+            a = next((v for k, v in t.attrs.items() if _attr_key(k) == _attr_key(attribute)), None) if t else None
+            if a is None:
+                return f"not changed: {thing!r} has no entry {attribute!r}"
+            if not a.said:
+                return f"not changed: {t.name} {a.name} has no receipt"
+            words, day = a.said
+            a.said = None
+            self.save(t)
+            with open(self.root / RECEIPTS_LOG, "a") as fh:
+                fh.write(json.dumps({"at": datetime.now().isoformat(timespec="seconds"), "thing": t.name,
+                                     "attribute": a.name, "value": a.value, "said": words, "said_day": day,
+                                     "reason": reason.strip(), "source": source}) + "\n")
+            return f"{t.name} {a.name}: receipt taken off ({reason.strip()}); the value stays"
+
+    def dispute(self, thing: str, attribute: str, value: str, day: str, by: str = "a note") -> bool:
+        """Keep a note's value beside an entry someone looked at, instead of over it
+        (trust_hold / look_hold): '  - said otherwise: <value> (<by>, <day>; not seen)'.
+        The newest one is kept; a look, a confirmation or a new value takes it off."""
+        value, by = _clean(value), _clean_source(by).replace(",", " ") or "a note"
+        with self._locked():
+            t = self.find(thing)
+            a = next((v for k, v in t.attrs.items() if _attr_key(k) == _attr_key(attribute)), None) if t else None
+            if a is None or _key(a.value) == _key(value) or value_problem(value, a.name):
+                return False
+            if a.other and (a.other[2] > day or (a.other[2] == day and _key(a.other[0]) == _key(value))):
+                return False
+            a.other = (value, by, day)
             self.save(t)
             return True
 

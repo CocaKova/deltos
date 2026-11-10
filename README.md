@@ -9,10 +9,16 @@ replaced, as plain markdown you can read, edit and diff. No index server, no
 embeddings and no model on the read path: building a turn's memory takes well
 under a second.
 
-**Status: 0.1, early.** It has been one agent's daily memory for weeks, and the read
-path is the steady part. The nightly import (notes and chats into facts) is the young
-part: how well it does depends on the model you point it at (measured on three).
-Expect changes before 1.0.
+**Status: 0.2, early.** It has been one agent's daily memory for weeks, and the read
+path is the steady part. The nightly import (notes into facts) is the young part: how
+well it does depends on the model you point it at (measured on three). Learning from
+chats is an experiment and ships off. Expect changes before 1.0.
+
+New in 0.2: memory says when it has not checked a value lately and learns from each
+look ([Checks](#how-it-works)), `deltos view` shows the store to a person, every import
+is a staged run you can undo, ripgrep is optional, and the
+[Hermes plugin](adapters/hermes/deltos/README.md) installs by itself, with a `/deltos`
+command and a Memory page in Hermes Desktop.
 
 Tested on [LongMemEval](https://github.com/xiaowu0162/LongMemEval) (Wu et al.,
 ICLR 2025; MIT) and compared against [Mem0](https://github.com/mem0ai/mem0)
@@ -265,10 +271,17 @@ The 37 held-out misses, each checked against the memory the reader actually used
   import test its prompt finds 61 on DeepSeek-V4.1-Flash and 60 on GLM-5.3-Flash,
   and it runs nightly on GLM, which repeats itself at temperature 0
   (`[import] temperature = 0.6` fixes that there).
-- **Learning from chats ships off.** `deltos learn` turns finished chats into
-  facts. On the author's real chats 14% of the facts it kept were wrong, against
-  a 10% bar, measured on the same chats its last fix came from. It needs a test
-  on new chats before `[learn] auto` defaults on.
+- **Learning from chats ships off, as an experiment.** `deltos learn` turns
+  finished chats into facts. On its first test (40 of the author's real chats, 60
+  lines graded blind by three graders) 42% of the lines it kept were wrong, most
+  of them memory's own values copied back in. Refusing those brought a replay to
+  14% wrong, against a 10% bar, measured on the same chats the fix came from. Its
+  first night on a live store wrote 98 lines from 12 chats, about one in five
+  worth keeping (most came from chats where another agent, not a person, was
+  doing the talking), and the run was undone. The fixes that followed write 15
+  lines where the first night's rules wrote 83 on a replay, and have not been
+  graded on new chats. Until they pass, `[learn] auto` stays off, and every sweep
+  is a staged run you can undo.
 - **One prompt example to neutralize.** The import prompt's worked example names
   the author's own app. A refusal message's example name, which the model copied
   into 11 of the 15,867 memory-building outputs, is now a made-up one; that swap
@@ -293,7 +306,11 @@ The 37 held-out misses, each checked against the memory the reader actually used
   Each entry is the current value with its date and a short `was:` trail. Older
   values move to a history note, and a value recorded by mistake is kept as
   *never true*. A second item of the same kind can stay current beside the
-  first. Things link to each other (`runs on`, `part of`).
+  first.
+- **Links.** An entry whose value is another thing's name links the two:
+  `Host: nas` on the backup job, `Relationship: Mira's partner` on Teo. Nothing
+  extra is stored, so a link has the entry's dates, history and trust, and every
+  writer makes links without knowing it.
 - **Pages.** Documents for what isn't a fact: decisions, how-tos, write-ups,
   and a digest per day of every chat. Some folders are writable, some read-only.
 - **Sources.** Where knowledge comes from: an agent's tool calls, note repos
@@ -330,6 +347,18 @@ A profile entry:
 entries and one hop of links (older values only when the question asks about the
 past), adds the best-matching pages and fits the block to a budget.
 
+**Reading links** (`[recall] links = true`; off by default until the reader is
+scored on two models). The block shows a link from both ends: what runs on a
+machine, who owns what, who is someone's partner. A role word goes through the
+owner's own links ("my grandma", "the machines I own", "my clients"). It also
+shows what depends on a thing two links away, the chain between two things the
+question puts together (marked as worked out, not stored), and a linked thing
+that was retired, or changed after the entry pointing at it was set. Pages
+about a thing reached that way are found by its names. A write's receipt says
+what the value links to and which names in it memory doesn't know yet. Lint
+lists links that are unusual for their label, or point at a thing that was
+forgotten, and an import's report counts the links it added and removed.
+
 **Time travel.** `deltos show <thing> --as-of 2026-04-01` gives each entry's
 value on that day, from the dates memory already keeps (no extra storage):
 
@@ -343,6 +372,29 @@ value on that day, from the dates memory already keeps (no extra storage):
 A value recorded by mistake is never offered. This is when values were true,
 as memory knows it now; what memory believed on a day is in its git history.
 
+**Checks: when memory has not looked lately** (`[recall] doubt_days = 21` and
+`[checks] on = true`; both off by default, and the Hermes plugin sets them for a
+new store). Notes say what was true when they were written; a check is someone
+looking again. A current entry whose label drifts in live state (status, version,
+host, port, model, ...) and that nobody has set or confirmed in three weeks says
+so in the block:
+
+```
+- **Url:** http://workstation:8000/v1 (since 2026-07-13; source: demo; not confirmed in 4 months)
+  - said otherwise: http://workstation:8001/v1 (a meeting note, 2026-11-06; not seen)
+```
+
+An agent that then looks says how it looked:
+`remember(thing, attribute, value, check="curl -s .../version")`. The same value
+confirms the entry, another one replaces it, and the entry keeps how to look
+under its line (one line, never a secret; deltos never runs it). `memory_checks`
+(and `deltos checks`) lists what is due for a look, most pressing first. Each
+look is a row in `checks.jsonl`, so `deltos checks --stats` is memory's own
+measured error on live state: how often a look found the value had changed, per
+label. A note never overturns a look: an import line that disagrees with a value
+someone saw is kept beside it (`said otherwise`, above), and the entry goes to
+the top of what is due.
+
 The file format is specified in [deltos/SPEC.md](deltos/SPEC.md).
 
 ## Use it
@@ -355,6 +407,10 @@ From source (Python 3.11 or newer, standard library only):
 git clone https://github.com/CocaKova/deltos ~/deltos-src && cd ~/deltos-src
 python3 -m deltos --help
 ```
+
+[ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) is used for search when it
+is on the PATH, and a built-in search with the same results otherwise (it also
+skips hidden files, but does not read `.gitignore`).
 
 There is nothing to install: `python3 -m deltos` runs from the clone. For a
 `deltos` command anywhere, `pip install -e .` in a venv or with pipx (Debian and
@@ -387,6 +443,12 @@ deltos context <message>          the memory block for a message (what a harness
 deltos recall <query>             the same search, with more pages
 deltos show <thing> [--history]   everything on one thing
 deltos show <thing> --as-of YYYY-MM-DD   each entry's value on that day
+deltos view [<thing> | on YYYY-MM-DD <thing> | changes [DAYS] | due [N]]
+                                  the store for a person: what it holds, what it has not
+                                  confirmed, what changed lately
+deltos checks [-n N] [--stats [DAYS]]   what is due for a look; --stats: how often a look
+                                  found memory wrong, per label
+deltos demo <folder>              a small made-up store in a new folder, to try all of this on
 deltos remember <thing> <attribute> <value> [--since YYYY-MM-DD] [--correction]   (source: hand)
 deltos name <thing> [other names...] [--kind K] [--remove NAME ...] [--merge]
 deltos forget <thing> [--attribute A] [--reason R]    undoable: deltos restore <thing>
@@ -397,6 +459,8 @@ deltos read <ref>                 a whole page
 deltos doctor [--fix] [--review [N]]   health numbers; --fix moves junk out of profiles
 deltos sessions [--days N]        rebuild the daily chat digests
 deltos import [--limit N]         note repos -> facts, with the configured model
+deltos status                     the last run of each kind, and what is held
+deltos run show|promote|discard|undo <id>   one staged run
 deltos serve                      MCP server on stdio
 deltos hook claude-code           Claude Code prompt hook: the memory block for the prompt on stdin
 ```
@@ -411,8 +475,8 @@ writes as `agent`.
 `deltos serve` speaks MCP over stdio (newline-delimited JSON-RPC, stdlib only).
 Any MCP client gets the tools `memory_recall`, `memory_show`, `remember`,
 `name_thing`, `forget`, `memory_restore`, `page_search`, `page_read`,
-`page_write`, `page_edit` and `page_forget`, and the memory instructions arrive
-with the handshake. For a client configured by JSON:
+`page_write`, `page_edit` and `page_forget` (and `memory_checks` with
+`[checks] on = true`), and the memory instructions arrive with the handshake. For a client configured by JSON:
 
 ```json
 { "mcpServers": { "deltos": { "command": "deltos", "args": ["--agent", "assistant", "serve"] } } }
@@ -430,8 +494,20 @@ prompt comes from a `UserPromptSubmit` hook; see
 
 ### Hermes
 
-A memory provider plugin: the per-turn block, the tools and the instructions.
-See [adapters/hermes](adapters/hermes/README.md).
+A memory provider plugin: the per-turn block, the tools and the instructions,
+plus `/deltos` in any chat and a Memory page in Hermes Desktop.
+
+```bash
+hermes plugins install CocaKova/deltos#adapters/hermes/deltos --enable
+hermes plugins enable deltos      # lets the Memory page read the store
+hermes memory setup deltos
+```
+
+![The Memory page in Hermes Desktop, on the made-up demo store](adapters/hermes/deltos/screens/memory-thing.png)
+
+The plugin's own page: [adapters/hermes/deltos](adapters/hermes/deltos/README.md).
+The longer manual (notes, a nightly job, runs and holds):
+[adapters/hermes](adapters/hermes/README.md).
 
 ### Configuration
 
@@ -441,6 +517,16 @@ optional:
 ```toml
 owner = "Sam"                        # whose memory this is (the instructions name them)
 agent = "assistant"                  # the agent writing through an adapter (each fact's source)
+
+[recall]
+doubt_days = 21                      # a current entry that drifts (status, version, host, ...) and was
+                                     # not set or confirmed in this many days reads "not confirmed in
+                                     # N weeks" in the block. 0 (default): no such note
+
+[checks]
+on = true                            # agents get `remember`'s `check` and the `memory_checks` tool.
+                                     # false (default): the store still keeps check lines, and
+                                     # `deltos checks` still works
 
 [pages]
 write = "~/notes"                    # documents the agent may edit
@@ -455,6 +541,9 @@ hermes = "~/.hermes"
 [learn]                              # deltos learn: finished chats -> facts (needs [llm], owner, [sessions])
 auto = false                         # true: each chat is learned after it ends, while the agent is idle;
                                      # false (default): only `deltos learn` by hand
+prompt = "v2"                        # v2 (default): v1 plus a working chat's rules (a task's request is
+                                     # not a habit; take nothing from the assistant or a relay);
+                                     # v1: the LongMemEval reading, byte for byte
 
 [import]                             # deltos import: notes -> facts (needs [llm]); both sources optional
 folders = ["~/notes:notes"]          # any folder of markdown as path:label, no git needed: each note's
@@ -507,6 +596,7 @@ The servers' thinking switch, once probed, is remembered in
 ```
 deltos/    memory.py (the one surface) · store.py (write rules) · recall.py (read path)
            pages.py · doctor.py · items.py · config.py · cli.py · mcp.py · llm.py
+           checks.py (looking again) · view.py (the store for a person) · runs.py (staged runs)
            sources/notes.py (note repos -> facts) · sources/hermes.py (chat digests)
 adapters/  claude-code/ · hermes/
 bench/     the benchmarks: LongMemEval, Mem0 / Graphiti, a synthetic world, the gate

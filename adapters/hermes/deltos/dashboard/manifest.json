@@ -1,0 +1,10 @@
+{
+  "name": "deltos",
+  "label": "Deltos",
+  "description": "Read-only view of the agent's memory: every thing it knows, what each value was before, and what it has not confirmed lately.",
+  "version": "0.2.0",
+  "api": "plugin_api.py",
+  "tab": {
+    "hidden": true
+  }
+}

@@ -137,6 +137,31 @@ def _detail(t, sig: str, use: Counter) -> str:
     return _entries(t) if sig == "plain-word" else ""
 
 
+def links(root: Path) -> dict:
+    """Links that look wrong (deltos/links.py), for a person to review, never proposed:
+    unusual: a link whose pair of kinds is rare for its label in this store (learned:
+             "Owner" joins a machine to a person 75 times, here a person to a person);
+    dangling: a value that names a thing that was forgotten and not restored (the link
+             points at nothing now)."""
+    from .recall import Recall
+    from .store import Store, _key
+    r = Recall(Path(root))
+    g = r.graph
+    gone = {}
+    for e in Store(Path(root)).forgotten(10_000):
+        if not e["restored"] and not e.get("attribute"):
+            for n in e.get("names", []):
+                gone.setdefault(_key(n), e.get("thing", n))
+    dangling = []
+    for prof, _, line in r.facts:
+        from .links import label_of, value_of
+        v = _key(value_of(line))
+        if v in gone and not r.profile_of.get(value_of(line).lower()) and label_of(line).lower() != "kind":
+            dangling.append((r.title(prof), line, gone[v]))
+    unusual = [(r.title(lk.src), lk.line, why) for lk, why in g.unusual()]
+    return {"links": sum(len(x) for x in g.out.values()), "unusual": unusual, "dangling": dangling}
+
+
 def report(root: Path, fix: bool = False) -> tuple[str, dict]:
     things = things_of(Path(root))
     res, use = table(things), label_use(things)
@@ -148,6 +173,12 @@ def report(root: Path, fix: bool = False) -> tuple[str, dict]:
         out.append(f"{sig} {len(hits)} ({what}): {act}")
         out += [f"- {name} [{stem}]" + (f": {d}" if (d := _detail(by[stem], sig, use)) else "")
                 for stem, name in hits[:EXAMPLES]]
+    lk = links(Path(root))
+    out.append(f"links {lk['links']} (entries whose value names another thing)")
+    out.append(f"unusual-link {len(lk['unusual'])} (its kinds are rare for its label here): for a person to review")
+    out += [f"- {name}: {line} ({why})" for name, line, why in lk["unusual"][:EXAMPLES]]
+    out.append(f"dangling-link {len(lk['dangling'])} (names a thing that was forgotten): for a person to review")
+    out += [f"- {name}: {line} ({thing} was forgotten)" for name, line, thing in lk["dangling"][:EXAMPLES]]
     plan = proposal(res)
     if fix:
         out += ["", f"Proposed cleanup (a dry run, nothing changed; --apply performs it). Forget "

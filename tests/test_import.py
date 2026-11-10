@@ -43,6 +43,19 @@ class ImportTest(unittest.TestCase):
         self.assertIn("Short stories written: 4", self.calls[1][0]["content"])   # first person -> the owner
         self.assertEqual(Store(Path(self.d.name)).find("Sam").attrs["short stories written"].value, "7")
 
+    def test_known_shows_a_thing_the_text_names_without_its_kind_word(self):
+        s = Store(Path(self.d.name))
+        s.name("steam-launcher plugin", [], "app")
+        s.name("Home Assistant", [], "service")
+        s.name("home-assistant plugin", [], "plugin")
+        s.name("memory tool", [], "tool")
+        m = notes.Migrator(Path(self.d.name), owner="Sam")
+        known = m.known("Steam launcher v0.2.0 is built. Home Assistant is up. Saved to memory.")
+        self.assertIn("steam-launcher plugin", known)
+        self.assertIn("Home Assistant", known)
+        self.assertNotIn("home-assistant plugin", known)   # the shorter name is another thing's
+        self.assertNotIn("memory tool", known)             # one word left is a plain word
+
     def test_replay_applies_the_logged_repair(self):
         m = notes.Migrator(Path(self.d.name), owner="Sam")
         st = m.session("s1", "2023-05-23", "", replay={"raw": "Sam's car | color | red | 2023-05-23",

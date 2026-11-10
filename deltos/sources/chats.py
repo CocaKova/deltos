@@ -63,9 +63,32 @@ update with its date, not a correction):
 {known}"""
 
 
-def chat_prompt(owner: str) -> str:
-    """The chat prompt for this owner (replace, not format: {day} and {known} stay for the Migrator)."""
-    return _PROMPT.replace("<OWNER>", owner)
+# v2: what a working chat adds to the benchmark's reading. The benchmark's chats are
+# someone telling an assistant about their life; an agent's owner mostly gives it work,
+# and the first nightly (11-06) stored a test's instructions as the owner's habits ("text
+# message reading habit: last 5 messages from past 2 days"). Appended, so v1 stays the
+# benchmark's text byte for byte.
+_WORK = """
+- A request for this conversation's task ("fix this bug", "summarize my last 3 emails",
+  "try sending a test") is not a fact about <OWNER> or a habit. A standing rule <OWNER> states (always,
+  never, from now on, every time) is a fact: give it a label ending in "rule".
+- What the assistant did or found is not <OWNER>'s word: take a fact from an assistant line
+  only when <OWNER> confirms it. Lines marked "relay (<writer>)" were written by another
+  agent; take no fact from them.
+- A value that changed during the conversation: give where it ended."""
+PROMPTS = ("v1", "v2")
+
+
+def chat_prompt(owner: str, version: str = "v1") -> str:
+    """The chat prompt for this owner (replace, not format: {day} and {known} stay for the
+    Migrator). v1 is the benchmark's; v2 adds _WORK before the memory reference."""
+    if version not in PROMPTS:
+        raise ValueError(f"unknown chat prompt {version!r} (one of {', '.join(PROMPTS)})")
+    text = _PROMPT
+    if version == "v2":
+        head, sep, tail = text.partition("\n\nWhat memory already holds")
+        text = head + _WORK + sep + tail
+    return text.replace("<OWNER>", owner)
 
 
 def _dbs(home: Path) -> list[tuple[Path, str]]:
@@ -96,10 +119,74 @@ def _said(db: sqlite3.Connection) -> str:
     return "".join(" and " + k for k in keep)
 
 
-def _line(role: str, content: str) -> str:
-    content = SECRET.sub("[redacted]", content)
+# Who wrote a user turn, read from the turn itself: a harness files its own notices,
+# summaries and restatements as user turns, and an agent that briefs another agent
+# writes in the user's seat. 11-06: of the 98 lines the first nightly learned from 12
+# chats, 66 came from chats whose user turns were another agent's briefs (its
+# imperatives became the owner's facts) and 5 more from a harness's restated request;
+# the sessions table told them apart in nothing (same source, same user id).
+#   harness  a turn that opens with a bracketed tag in capitals ("[CONTEXT COMPACTION
+#            ...]", "[STILL IN PROGRESS ...]", "[SYSTEM NOTICE ...]") or with one of
+#            NOTICES: the harness speaking; not read. A tag that says it carries the
+#            user's message ("[OUT-OF-BAND USER MESSAGE ...]") is opened, and what it
+#            carries is read by these same rules.
+#   relay    a turn that names its writer, "[From <writer>...]": another agent's words,
+#            shown as context (its opening, like an assistant turn) and never a ground
+#            for a fact (deltos/ground.py). "[From <owner>, relayed by <agent>]" is the
+#            agent's too: it writes about the owner ("Sam tapped Yes") and mixes in its
+#            own orders for the task; only what the owner typed is the owner's.
+#   owner    everything else.
+# Two or more words in capitals, or one with a dash and its explanation: "[TODO] buy milk"
+# and "[URGENT]" are someone typing.
+HARNESS_TAG = re.compile(r"^\s*\[/?(?:[A-Z][A-Z0-9/'&-]+(?: [A-Z0-9/'&-]+)+(?=\s*[\]—–:(])|[A-Z][A-Z0-9/'&-]{2,}\s+[—–]\s)")
+CARRIER = re.compile(r"\bUSER MESSAGE\b")
+NOTICES = ("You've reached the maximum number of tool-calling iterations",)
+RELAY = re.compile(r"^\s*\[(?:From|Message from|Sent by|Written by)\s+(?P<who>[^,.\]—–]+?)\s*(?=[,.\]—–])[^\]]*\]\s*",
+                   re.I)
+
+
+def _carried(content: str) -> str:
+    """What a carrier tag holds: the text after its opening line, up to its closing tag."""
+    body = content.split("\n", 1)[1] if "\n" in content else ""
+    return re.split(r"(?m)^\s*\[/[A-Z][^\]]*\]\s*$", body, maxsplit=1)[0].strip()
+
+
+def author(content: str, owner: str = "") -> tuple[str, str, str]:
+    """(kind, writer, text) of a user turn: kind 'owner', 'relay' or 'harness'
+    (the rules above); text is the turn without its tags."""
+    text = content or ""
+    for _ in range(3):   # a carrier inside a carrier
+        if HARNESS_TAG.match(text) and CARRIER.search(text.split("\n", 1)[0]):
+            text = _carried(text)
+        else:
+            break
+    if HARNESS_TAG.match(text) or text.startswith(NOTICES):
+        return "harness", "", ""
+    m = RELAY.match(text)
+    if m:
+        who = m.group("who").strip()
+        by = re.search(r"\brelayed by\s+([^,.\]—–]+)", m.group(0), re.I)
+        if by:
+            return "relay", by.group(1).strip(), text[m.end():].strip()
+        rest = text[m.end():].strip()
+        mine = {"user", "the user"} | ({w.lower() for w in owner.split()[:1]} | {owner.lower()} if owner else set())
+        if who.lower() in mine or who.lower().split()[0] in mine:
+            return "owner", who, text   # the owner's, as typed
+        return "relay", who, rest
+    return "owner", owner, text
+
+
+def _line(role: str, content: str, owner: str = "") -> str:
+    """One turn as the unit reads it ('' when it is not read at all)."""
     if role == "user":
-        return "user: " + content[:MSG_CHARS]
+        kind, who, content = author(content, owner)
+        if kind == "harness" or not content:
+            return ""
+        content = SECRET.sub("[redacted]", content)
+        if kind == "owner":
+            return "user: " + content[:MSG_CHARS]
+        return f"relay ({who}): {content[:ASSISTANT_HEAD]}{' ...' if len(content) > ASSISTANT_HEAD else ''}"
+    content = SECRET.sub("[redacted]", content)
     return f"assistant: {content[:ASSISTANT_HEAD]}{' ...' if len(content) > ASSISTANT_HEAD else ''}"
 
 
@@ -135,18 +222,29 @@ def _pack(head: str, turns: list[str], header: str) -> list[str]:
 
 
 def units(home: Path, live_rows: list[dict], now: float, days: int = 2, skip_ids=None,
-          stats: dict | None = None) -> list[dict]:
+          stats: dict | None = None, owner: str = "") -> list[dict]:
     """The finished chats of every profile not yet learned, oldest first, one unit each:
     {note: 'chat:<profile>/<session id>', day, pieces, upto: the last message id, of}.
     live_rows: the store's migrate-log rows of kind 'chat' (their 'upto' is each session's
     watermark). Sessions started in the last `days` days are looked at, and older ones
     with a watermark that have new messages. skip_ids: a regex of session ids to skip
-    ([hermes] skip_ids). stats, when given, counts sessions seen and why each was skipped."""
+    ([hermes] skip_ids). stats, when given, counts sessions seen and why each was skipped.
+    owner: the owner's name, so "[From <owner>, relayed by ...]" reads as theirs (author()).
+
+    A chain is one conversation: when a harness compacts a chat it ends the session and
+    goes on in a child (parent_session_id), and the parent's last turns are the middle of
+    the work, not where it ended (11-06: a client task learned in three units, each with
+    the states of that moment: "pending", "stuck on a bot challenge"). A session with a
+    child is learned with it, once the last session of the chain is finished: one unit,
+    the chain's unread turns in order, its row's 'chain' carrying each earlier session's
+    watermark."""
     skip = (re.compile(skip_ids) if isinstance(skip_ids, str) else skip_ids) if skip_ids else None
     upto: dict[str, int] = {}
     for r in live_rows:
         if r.get("upto") is not None:
             upto[r["note"]] = max(upto.get(r["note"], 0), int(r["upto"]))
+        for note, mark in (r.get("chain") or {}).items():
+            upto[note] = max(upto.get(note, 0), int(mark))
     st = stats if stats is not None else {}
     out = []
     for path, profile in _dbs(home):
@@ -159,8 +257,8 @@ def units(home: Path, live_rows: list[dict], now: float, days: int = 2, skip_ids
             continue
         try:
             said = _said(db)
-            cols = "id, source, ended_at, " + ("parent_session_id" if "parent_session_id" in
-                                               {r[1] for r in db.execute("pragma table_info(sessions)")} else "null")
+            chained = "parent_session_id" in {r[1] for r in db.execute("pragma table_info(sessions)")}
+            cols = "id, source, ended_at, " + ("parent_session_id" if chained else "null")
             known = [k.split("/", 1)[1] for k in upto if k.startswith(f"chat:{profile}/")]
             rows = db.execute(f"select {cols} from sessions where started_at >= ?",
                               (now - days * 86400,)).fetchall()
@@ -173,16 +271,30 @@ def units(home: Path, live_rows: list[dict], now: float, days: int = 2, skip_ids
             for sid, source, ended, parent in rows:
                 st["seen"] = st.get("seen", 0) + 1
                 note = f"chat:{profile}/{sid}"
+                if chained and db.execute("select 1 from sessions where parent_session_id = ? limit 1",
+                                          (sid,)).fetchone():
+                    st["continued"] = st.get("continued", 0) + 1   # learned with the chain's last session
+                    continue
                 why, msgs = _turns(db, said, sid, source, ended, upto.get(note, 0), now, skip, parent)
+                chain = {}
+                if not why or why in ("learned", "copies", "no user", "trivial"):
+                    msgs, chain = _chain(db, said, profile, parent, upto, msgs if not why else [])
+                    why = "" if msgs and any(r == "user" for _, r, _, _ in msgs) else why or "no user"
                 if why:
                     st[why] = st.get(why, 0) + 1
                     continue
+                lines = [ln for ln in (_line(r, c, owner) for _, r, c, _ in msgs) if ln]
+                if not any(ln.startswith("user: ") for ln in lines):
+                    st["no owner words"] = st.get("no owner words", 0) + 1
+                    continue
                 last_ts = msgs[-1][3] or now
                 day = datetime.date.fromtimestamp(last_ts).isoformat()
-                pieces = _pack(f"Conversation on {day}:\n\n", [_line(r, c) for _, r, c, _ in msgs],
-                               f"--- chat {sid} (continued)\n")
-                out.append((last_ts, {"note": note, "day": day, "pieces": pieces, "upto": msgs[-1][0],
-                                      "of": len(pieces)}))
+                pieces = _pack(f"Conversation on {day}:\n\n", lines, f"--- chat {sid} (continued)\n")
+                u = {"note": note, "day": day, "pieces": pieces, "upto": msgs[-1][0], "of": len(pieces)}
+                if chain:
+                    u["chain"] = chain
+                    upto.update(chain)   # a session branched into several: its turns go with the first
+                out.append((last_ts, u))
         except sqlite3.Error:   # a locked, broken or foreign db: the other profiles still count
             st["unreadable"] = st.get("unreadable", 0) + 1
         finally:
@@ -224,3 +336,30 @@ def _turns(db, said, sid, source, ended, mark, now, skip, parent=None) -> tuple[
     if trivial([(r, c, t) for _, r, c, t, _ in rows]):
         return "trivial", []
     return "", msgs
+
+
+def _chain(db, said, profile, parent, upto, msgs) -> tuple[list, dict]:
+    """The turns of a finished chain not read yet, oldest session first: each earlier
+    session's (above its own watermark), then the last session's own new turns (msgs,
+    from _turns: its copies of earlier turns already left out). Returns (turns, the
+    earlier sessions' new watermarks by note)."""
+    if not parent:
+        return msgs, {}
+    line, seen = [], set()
+    while parent and parent not in seen and len(seen) < 50:
+        seen.add(parent)
+        line.append(parent)
+        row = db.execute("select parent_session_id from sessions where id = ?", (parent,)).fetchone()
+        parent = row[0] if row else None
+    turns, chain, have = [], {}, set()
+    for sid in reversed(line):
+        note = f"chat:{profile}/{sid}"
+        mark = upto.get(note, 0)
+        rows = db.execute(f"select id, role, content, timestamp from messages where session_id = ? and id > ? "
+                          f"and role in ('user', 'assistant'){said} order by id", (sid, mark)).fetchall()
+        rows = [(i, r, c, ts) for i, r, c, ts in rows if c and c.strip() and (r, c, ts) not in have]
+        if rows:
+            chain[note] = rows[-1][0]
+            have.update((r, c, ts) for _, r, c, ts in rows)
+            turns += rows
+    return turns + [m for m in msgs if (m[1], m[2], m[3]) not in have], chain

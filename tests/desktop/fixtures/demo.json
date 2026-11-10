@@ -1,0 +1,3241 @@
+{
+ "/health": {
+  "ok": true,
+  "version": "0.2.0",
+  "root": "~/deltos-demo",
+  "today": "2026-11-10",
+  "things": 7
+ },
+ "/overview?days=7": {
+  "root": "~/deltos-demo",
+  "today": "2026-11-10",
+  "doubt_days": 21,
+  "things": 7,
+  "entries": 23,
+  "past": 16,
+  "unsure": 8,
+  "checked": 4,
+  "disputed": 1,
+  "days": 7,
+  "changed": 3,
+  "changed_things": 3,
+  "due": 8,
+  "looks": {
+   "days": 90,
+   "looks": 4,
+   "outcomes": {
+    "same": 3,
+    "changed": 1
+   },
+   "by_label": {
+    "port": {
+     "same": 2
+    },
+    "version": {
+     "changed": 1
+    },
+    "status": {
+     "same": 1
+    }
+   }
+  }
+ },
+ "/changes?days=7": {
+  "days": 7,
+  "changes": [
+   {
+    "day": "2026-11-09",
+    "thing": "Newsletter",
+    "slug": "newsletter",
+    "label": "Send day",
+    "value": "Tuesday",
+    "was": "Thursday",
+    "was_since": "2026-05-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-11-07",
+    "thing": "vps-2",
+    "slug": "vps-2",
+    "label": "Size",
+    "value": "8 vCPU, 16 GB",
+    "was": "4 vCPU, 8 GB",
+    "was_since": "2026-08-30",
+    "corrected": false
+   },
+   {
+    "day": "2026-11-05",
+    "thing": "Orchard",
+    "slug": "orchard",
+    "label": "Version",
+    "value": "3.5.0",
+    "was": "3.4.1",
+    "was_since": "2026-10-03",
+    "corrected": false
+   }
+  ]
+ },
+ "/overview?days=30": {
+  "root": "~/deltos-demo",
+  "today": "2026-11-10",
+  "doubt_days": 21,
+  "things": 7,
+  "entries": 23,
+  "past": 16,
+  "unsure": 8,
+  "checked": 4,
+  "disputed": 1,
+  "days": 30,
+  "changed": 5,
+  "changed_things": 3,
+  "due": 8,
+  "looks": {
+   "days": 90,
+   "looks": 4,
+   "outcomes": {
+    "same": 3,
+    "changed": 1
+   },
+   "by_label": {
+    "port": {
+     "same": 2
+    },
+    "version": {
+     "changed": 1
+    },
+    "status": {
+     "same": 1
+    }
+   }
+  }
+ },
+ "/changes?days=30": {
+  "days": 30,
+  "changes": [
+   {
+    "day": "2026-11-09",
+    "thing": "Newsletter",
+    "slug": "newsletter",
+    "label": "Send day",
+    "value": "Tuesday",
+    "was": "Thursday",
+    "was_since": "2026-05-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-11-07",
+    "thing": "vps-2",
+    "slug": "vps-2",
+    "label": "Size",
+    "value": "8 vCPU, 16 GB",
+    "was": "4 vCPU, 8 GB",
+    "was_since": "2026-08-30",
+    "corrected": false
+   },
+   {
+    "day": "2026-11-05",
+    "thing": "Orchard",
+    "slug": "orchard",
+    "label": "Version",
+    "value": "3.5.0",
+    "was": "3.4.1",
+    "was_since": "2026-10-03",
+    "corrected": false
+   },
+   {
+    "day": "2026-10-29",
+    "thing": "Newsletter",
+    "slug": "newsletter",
+    "label": "Status",
+    "value": "paused",
+    "was": "weekly",
+    "was_since": "2026-05-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-10-16",
+    "thing": "Orchard",
+    "slug": "orchard",
+    "label": "Price",
+    "value": "$12 a month per seat",
+    "was": "$9 a month per seat",
+    "was_since": "2026-04-14",
+    "corrected": false
+   }
+  ]
+ },
+ "/overview?days=90": {
+  "root": "~/deltos-demo",
+  "today": "2026-11-10",
+  "doubt_days": 21,
+  "things": 7,
+  "entries": 23,
+  "past": 16,
+  "unsure": 8,
+  "checked": 4,
+  "disputed": 1,
+  "days": 90,
+  "changed": 14,
+  "changed_things": 6,
+  "due": 8,
+  "looks": {
+   "days": 90,
+   "looks": 4,
+   "outcomes": {
+    "same": 3,
+    "changed": 1
+   },
+   "by_label": {
+    "port": {
+     "same": 2
+    },
+    "version": {
+     "changed": 1
+    },
+    "status": {
+     "same": 1
+    }
+   }
+  }
+ },
+ "/changes?days=90": {
+  "days": 90,
+  "changes": [
+   {
+    "day": "2026-11-09",
+    "thing": "Newsletter",
+    "slug": "newsletter",
+    "label": "Send day",
+    "value": "Tuesday",
+    "was": "Thursday",
+    "was_since": "2026-05-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-11-07",
+    "thing": "vps-2",
+    "slug": "vps-2",
+    "label": "Size",
+    "value": "8 vCPU, 16 GB",
+    "was": "4 vCPU, 8 GB",
+    "was_since": "2026-08-30",
+    "corrected": false
+   },
+   {
+    "day": "2026-11-05",
+    "thing": "Orchard",
+    "slug": "orchard",
+    "label": "Version",
+    "value": "3.5.0",
+    "was": "3.4.1",
+    "was_since": "2026-10-03",
+    "corrected": true
+   },
+   {
+    "day": "2026-10-29",
+    "thing": "Newsletter",
+    "slug": "newsletter",
+    "label": "Status",
+    "value": "paused",
+    "was": "weekly",
+    "was_since": "2026-05-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-10-16",
+    "thing": "Orchard",
+    "slug": "orchard",
+    "label": "Price",
+    "value": "$12 a month per seat",
+    "was": "$9 a month per seat",
+    "was_since": "2026-04-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-09-21",
+    "thing": "Local model",
+    "slug": "local-model",
+    "label": "Model",
+    "value": "Qwen3 Coder 30B",
+    "was": "Llama 3.3 70B",
+    "was_since": "2026-07-13",
+    "corrected": false
+   },
+   {
+    "day": "2026-09-06",
+    "thing": "vps-1",
+    "slug": "vps-1",
+    "label": "Status",
+    "value": "retired",
+    "was": "running",
+    "was_since": "2026-04-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-09-01",
+    "thing": "Postgres",
+    "slug": "postgres",
+    "label": "Host",
+    "value": "vps-2",
+    "was": "vps-1",
+    "was_since": "2026-04-24",
+    "corrected": false
+   },
+   {
+    "day": "2026-09-01",
+    "thing": "Orchard",
+    "slug": "orchard",
+    "label": "Port",
+    "value": "8443",
+    "was": "8080",
+    "was_since": "2026-04-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-09-01",
+    "thing": "Orchard",
+    "slug": "orchard",
+    "label": "Host",
+    "value": "vps-2",
+    "was": "vps-1",
+    "was_since": "2026-04-14",
+    "corrected": false
+   },
+   {
+    "day": "2026-08-30",
+    "thing": "vps-2",
+    "slug": "vps-2",
+    "label": "Status",
+    "value": "running",
+    "was": "",
+    "was_since": "",
+    "corrected": false
+   },
+   {
+    "day": "2026-08-30",
+    "thing": "vps-2",
+    "slug": "vps-2",
+    "label": "Ip",
+    "value": "203.0.113.20",
+    "was": "",
+    "was_since": "",
+    "corrected": false
+   },
+   {
+    "day": "2026-08-12",
+    "thing": "Postgres",
+    "slug": "postgres",
+    "label": "Version",
+    "value": "16.4",
+    "was": "15.6",
+    "was_since": "2026-04-24",
+    "corrected": false
+   },
+   {
+    "day": "2026-08-12",
+    "thing": "Postgres",
+    "slug": "postgres",
+    "label": "Backup schedule",
+    "value": "nightly, 02:00",
+    "was": "weekly, Sunday 03:00",
+    "was_since": "2026-04-24",
+    "corrected": false
+   }
+  ]
+ },
+ "/things": {
+  "things": [
+   {
+    "name": "Newsletter",
+    "slug": "newsletter",
+    "kind": "project",
+    "aliases": [
+     "the weekly letter"
+    ],
+    "updated": "2026-11-09",
+    "entries": 2,
+    "past": 2,
+    "unsure": 0,
+    "checked": 0,
+    "disputed": 0,
+    "dormant": false,
+    "changed": "2026-11-09"
+   },
+   {
+    "name": "vps-2",
+    "slug": "vps-2",
+    "kind": "machine",
+    "aliases": [
+     "the new server"
+    ],
+    "updated": "2026-11-10",
+    "entries": 3,
+    "past": 1,
+    "unsure": 1,
+    "checked": 1,
+    "disputed": 0,
+    "dormant": false,
+    "changed": "2026-11-07"
+   },
+   {
+    "name": "Orchard",
+    "slug": "orchard",
+    "kind": "web app",
+    "aliases": [
+     "the shop",
+     "orchard app"
+    ],
+    "updated": "2026-11-05",
+    "entries": 7,
+    "past": 7,
+    "unsure": 2,
+    "checked": 2,
+    "disputed": 0,
+    "dormant": false,
+    "changed": "2026-11-05"
+   },
+   {
+    "name": "Local model",
+    "slug": "local-model",
+    "kind": "service",
+    "aliases": [
+     "the local LLM"
+    ],
+    "updated": "2026-11-06",
+    "entries": 3,
+    "past": 1,
+    "unsure": 2,
+    "checked": 0,
+    "disputed": 1,
+    "dormant": false,
+    "changed": "2026-09-21"
+   },
+   {
+    "name": "vps-1",
+    "slug": "vps-1",
+    "kind": "machine",
+    "aliases": [
+     "the old server"
+    ],
+    "updated": "2026-09-06",
+    "entries": 2,
+    "past": 1,
+    "unsure": 1,
+    "checked": 0,
+    "disputed": 0,
+    "dormant": true,
+    "changed": "2026-09-06"
+   },
+   {
+    "name": "Postgres",
+    "slug": "postgres",
+    "kind": "service",
+    "aliases": [],
+    "updated": "2026-11-08",
+    "entries": 4,
+    "past": 3,
+    "unsure": 2,
+    "checked": 1,
+    "disputed": 0,
+    "dormant": false,
+    "changed": "2026-09-01"
+   },
+   {
+    "name": "Mara",
+    "slug": "mara",
+    "kind": "person",
+    "aliases": [],
+    "updated": "2026-08-07",
+    "entries": 2,
+    "past": 1,
+    "unsure": 0,
+    "checked": 0,
+    "disputed": 0,
+    "dormant": false,
+    "changed": "2026-08-07"
+   }
+  ]
+ },
+ "/due?n=50": {
+  "due": [
+   {
+    "thing": "Local model",
+    "stem": "local-model",
+    "attribute": "Url",
+    "value": "http://workstation:8000/v1",
+    "seen": "2026-07-13",
+    "age": 120,
+    "asks": 0,
+    "how": "",
+    "score": 120,
+    "other": [
+     "http://workstation:8001/v1",
+     "a meeting note",
+     "2026-11-06"
+    ],
+    "moved": null
+   },
+   {
+    "thing": "Orchard",
+    "stem": "orchard",
+    "attribute": "Status",
+    "value": "live",
+    "seen": "2026-04-14",
+    "age": 210,
+    "asks": 0,
+    "how": "",
+    "score": 210,
+    "other": null,
+    "moved": null
+   },
+   {
+    "thing": "Local model",
+    "stem": "local-model",
+    "attribute": "Host",
+    "value": "workstation",
+    "seen": "2026-07-13",
+    "age": 120,
+    "asks": 0,
+    "how": "",
+    "score": 120,
+    "other": null,
+    "moved": null
+   },
+   {
+    "thing": "Postgres",
+    "stem": "postgres",
+    "attribute": "Version",
+    "value": "16.4",
+    "seen": "2026-08-12",
+    "age": 90,
+    "asks": 0,
+    "how": "",
+    "score": 90,
+    "other": null,
+    "moved": null
+   },
+   {
+    "thing": "vps-2",
+    "stem": "vps-2",
+    "attribute": "Ip",
+    "value": "203.0.113.20",
+    "seen": "2026-08-30",
+    "age": 72,
+    "asks": 0,
+    "how": "",
+    "score": 72,
+    "other": null,
+    "moved": null
+   },
+   {
+    "thing": "Orchard",
+    "stem": "orchard",
+    "attribute": "Host",
+    "value": "vps-2",
+    "seen": "2026-09-01",
+    "age": 70,
+    "asks": 0,
+    "how": "",
+    "score": 70,
+    "other": null,
+    "moved": null
+   },
+   {
+    "thing": "Postgres",
+    "stem": "postgres",
+    "attribute": "Host",
+    "value": "vps-2",
+    "seen": "2026-09-01",
+    "age": 70,
+    "asks": 0,
+    "how": "",
+    "score": 70,
+    "other": null,
+    "moved": null
+   },
+   {
+    "thing": "Local model",
+    "stem": "local-model",
+    "attribute": "Model",
+    "value": "Qwen3 Coder 30B",
+    "seen": "2026-09-21",
+    "age": 50,
+    "asks": 0,
+    "how": "",
+    "score": 50,
+    "other": null,
+    "moved": null
+   }
+  ]
+ },
+ "/thing?name=newsletter": {
+  "found": true,
+  "thing": {
+   "name": "Newsletter",
+   "slug": "newsletter",
+   "kind": "project",
+   "aliases": [
+    "the weekly letter"
+   ],
+   "updated": "2026-11-09",
+   "entries": 2,
+   "past": 2,
+   "unsure": 0,
+   "checked": 0,
+   "disputed": 0,
+   "dormant": false,
+   "changed": "2026-11-09",
+   "about": [],
+   "items": [
+    {
+     "label": "Status",
+     "value": "paused",
+     "since": "2026-10-29",
+     "confirmed": "",
+     "seen": "2026-10-29",
+     "age": 12,
+     "source": "demo",
+     "type": "state",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "weekly",
+       "start": "2026-05-14",
+       "end": "2026-10-29",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Send day",
+     "value": "Tuesday",
+     "since": "2026-11-09",
+     "confirmed": "",
+     "seen": "2026-11-09",
+     "age": 1,
+     "source": "demo",
+     "type": "event",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "Thursday",
+       "start": "2026-05-14",
+       "end": "2026-11-09",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "/on?name=newsletter&day=2025-11-10": {
+  "found": true,
+  "thing": {
+   "name": "Newsletter",
+   "slug": "newsletter",
+   "kind": "project",
+   "day": "2025-11-10",
+   "items": [
+    {
+     "label": "Status",
+     "value": "",
+     "start": "2026-05-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Send day",
+     "value": "",
+     "start": "2026-05-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=newsletter&day=2026-05-14": {
+  "found": true,
+  "thing": {
+   "name": "Newsletter",
+   "slug": "newsletter",
+   "kind": "project",
+   "day": "2026-05-14",
+   "items": [
+    {
+     "label": "Status",
+     "value": "weekly",
+     "start": "2026-05-14",
+     "end": "2026-10-29",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Send day",
+     "value": "Thursday",
+     "start": "2026-05-14",
+     "end": "2026-11-09",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=newsletter&day=2026-08-12": {
+  "found": true,
+  "thing": {
+   "name": "Newsletter",
+   "slug": "newsletter",
+   "kind": "project",
+   "day": "2026-08-12",
+   "items": [
+    {
+     "label": "Status",
+     "value": "weekly",
+     "start": "2026-05-14",
+     "end": "2026-10-29",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Send day",
+     "value": "Thursday",
+     "start": "2026-05-14",
+     "end": "2026-11-09",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=newsletter&day=2026-10-11": {
+  "found": true,
+  "thing": {
+   "name": "Newsletter",
+   "slug": "newsletter",
+   "kind": "project",
+   "day": "2026-10-11",
+   "items": [
+    {
+     "label": "Status",
+     "value": "weekly",
+     "start": "2026-05-14",
+     "end": "2026-10-29",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Send day",
+     "value": "Thursday",
+     "start": "2026-05-14",
+     "end": "2026-11-09",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=newsletter&day=2026-10-29": {
+  "found": true,
+  "thing": {
+   "name": "Newsletter",
+   "slug": "newsletter",
+   "kind": "project",
+   "day": "2026-10-29",
+   "items": [
+    {
+     "label": "Status",
+     "value": "paused",
+     "start": "2026-10-29",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Send day",
+     "value": "Thursday",
+     "start": "2026-05-14",
+     "end": "2026-11-09",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=newsletter&day=2026-11-03": {
+  "found": true,
+  "thing": {
+   "name": "Newsletter",
+   "slug": "newsletter",
+   "kind": "project",
+   "day": "2026-11-03",
+   "items": [
+    {
+     "label": "Status",
+     "value": "paused",
+     "start": "2026-10-29",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Send day",
+     "value": "Thursday",
+     "start": "2026-05-14",
+     "end": "2026-11-09",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=newsletter&day=2026-11-09": {
+  "found": true,
+  "thing": {
+   "name": "Newsletter",
+   "slug": "newsletter",
+   "kind": "project",
+   "day": "2026-11-09",
+   "items": [
+    {
+     "label": "Status",
+     "value": "paused",
+     "start": "2026-10-29",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Send day",
+     "value": "Tuesday",
+     "start": "2026-11-09",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/thing?name=vps-2": {
+  "found": true,
+  "thing": {
+   "name": "vps-2",
+   "slug": "vps-2",
+   "kind": "machine",
+   "aliases": [
+    "the new server"
+   ],
+   "updated": "2026-11-10",
+   "entries": 3,
+   "past": 1,
+   "unsure": 1,
+   "checked": 1,
+   "disputed": 0,
+   "dormant": false,
+   "changed": "2026-11-07",
+   "about": [],
+   "items": [
+    {
+     "label": "Status",
+     "value": "running",
+     "since": "2026-08-30",
+     "confirmed": "2026-11-10",
+     "seen": "2026-11-10",
+     "age": 0,
+     "source": "demo",
+     "type": "state",
+     "state": "checked",
+     "note": "",
+     "check": "uptime on vps-2",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.20",
+     "since": "2026-08-30",
+     "confirmed": "",
+     "seen": "2026-08-30",
+     "age": 72,
+     "source": "demo",
+     "type": "state",
+     "state": "unsure",
+     "note": "not confirmed in 2 months",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    },
+    {
+     "label": "Size",
+     "value": "8 vCPU, 16 GB",
+     "since": "2026-11-07",
+     "confirmed": "",
+     "seen": "2026-11-07",
+     "age": 3,
+     "source": "demo",
+     "type": "state",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "4 vCPU, 8 GB",
+       "start": "2026-08-30",
+       "end": "2026-11-07",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "/on?name=vps-2&day=2025-11-10": {
+  "found": true,
+  "thing": {
+   "name": "vps-2",
+   "slug": "vps-2",
+   "kind": "machine",
+   "day": "2025-11-10",
+   "items": [
+    {
+     "label": "Status",
+     "value": "",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Size",
+     "value": "",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-2&day=2026-08-12": {
+  "found": true,
+  "thing": {
+   "name": "vps-2",
+   "slug": "vps-2",
+   "kind": "machine",
+   "day": "2026-08-12",
+   "items": [
+    {
+     "label": "Status",
+     "value": "",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Size",
+     "value": "",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-2&day=2026-08-30": {
+  "found": true,
+  "thing": {
+   "name": "vps-2",
+   "slug": "vps-2",
+   "kind": "machine",
+   "day": "2026-08-30",
+   "items": [
+    {
+     "label": "Status",
+     "value": "running",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.20",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Size",
+     "value": "4 vCPU, 8 GB",
+     "start": "2026-08-30",
+     "end": "2026-11-07",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-2&day=2026-10-11": {
+  "found": true,
+  "thing": {
+   "name": "vps-2",
+   "slug": "vps-2",
+   "kind": "machine",
+   "day": "2026-10-11",
+   "items": [
+    {
+     "label": "Status",
+     "value": "running",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.20",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Size",
+     "value": "4 vCPU, 8 GB",
+     "start": "2026-08-30",
+     "end": "2026-11-07",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-2&day=2026-11-03": {
+  "found": true,
+  "thing": {
+   "name": "vps-2",
+   "slug": "vps-2",
+   "kind": "machine",
+   "day": "2026-11-03",
+   "items": [
+    {
+     "label": "Status",
+     "value": "running",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.20",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Size",
+     "value": "4 vCPU, 8 GB",
+     "start": "2026-08-30",
+     "end": "2026-11-07",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-2&day=2026-11-07": {
+  "found": true,
+  "thing": {
+   "name": "vps-2",
+   "slug": "vps-2",
+   "kind": "machine",
+   "day": "2026-11-07",
+   "items": [
+    {
+     "label": "Status",
+     "value": "running",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.20",
+     "start": "2026-08-30",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Size",
+     "value": "8 vCPU, 16 GB",
+     "start": "2026-11-07",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/thing?name=orchard": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "aliases": [
+    "the shop",
+    "orchard app"
+   ],
+   "updated": "2026-11-05",
+   "entries": 7,
+   "past": 7,
+   "unsure": 2,
+   "checked": 2,
+   "disputed": 0,
+   "dormant": false,
+   "changed": "2026-11-05",
+   "about": [],
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "since": "2026-04-14",
+     "confirmed": "",
+     "seen": "2026-04-14",
+     "age": 210,
+     "source": "demo",
+     "type": "state",
+     "state": "unsure",
+     "note": "not confirmed in 7 months",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "since": "2026-09-01",
+     "confirmed": "",
+     "seen": "2026-09-01",
+     "age": 70,
+     "source": "demo",
+     "type": "state",
+     "state": "unsure",
+     "note": "not confirmed in 2 months",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "vps-1",
+       "start": "2026-04-14",
+       "end": "2026-09-01",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Version",
+     "value": "3.5.0",
+     "since": "2026-11-05",
+     "confirmed": "",
+     "seen": "2026-11-05",
+     "age": 5,
+     "source": "demo",
+     "type": "state",
+     "state": "checked",
+     "note": "",
+     "check": "curl -s https://orchard.example/version",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "3.4.1",
+       "start": "2026-10-03",
+       "end": "2026-11-05",
+       "wrong": false,
+       "by": ""
+      },
+      {
+       "value": "3.4.0",
+       "start": "",
+       "end": "2026-10-03",
+       "wrong": true,
+       "by": "demo"
+      },
+      {
+       "value": "3.3.0",
+       "start": "2026-06-13",
+       "end": "2026-10-01",
+       "wrong": false,
+       "by": ""
+      },
+      {
+       "value": "3.2.4",
+       "start": "2026-04-14",
+       "end": "2026-06-13",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Port",
+     "value": "8443",
+     "since": "2026-09-01",
+     "confirmed": "2026-11-04",
+     "seen": "2026-11-04",
+     "age": 6,
+     "source": "demo",
+     "type": "state",
+     "state": "checked",
+     "note": "",
+     "check": "ss -ltnp on vps-2",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "8080",
+       "start": "2026-04-14",
+       "end": "2026-09-01",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "since": "2026-04-14",
+     "confirmed": "",
+     "seen": "2026-04-14",
+     "age": 210,
+     "source": "demo",
+     "type": "identity",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    },
+    {
+     "label": "Price",
+     "value": "$12 a month per seat",
+     "since": "2026-10-16",
+     "confirmed": "",
+     "seen": "2026-10-16",
+     "age": 25,
+     "source": "demo",
+     "type": "decision",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "$9 a month per seat",
+       "start": "2026-04-14",
+       "end": "2026-10-16",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "since": "2026-07-23",
+     "confirmed": "",
+     "seen": "2026-07-23",
+     "age": 110,
+     "source": "demo",
+     "type": "rule",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2025-11-10": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2025-11-10",
+   "items": [
+    {
+     "label": "Status",
+     "value": "",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-04-14": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-04-14",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-1",
+     "start": "2026-04-14",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.2.4",
+     "start": "2026-04-14",
+     "end": "2026-06-13",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8080",
+     "start": "2026-04-14",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$9 a month per seat",
+     "start": "2026-04-14",
+     "end": "2026-10-16",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-06-13": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-06-13",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-1",
+     "start": "2026-04-14",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.3.0",
+     "start": "2026-06-13",
+     "end": "2026-10-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8080",
+     "start": "2026-04-14",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$9 a month per seat",
+     "start": "2026-04-14",
+     "end": "2026-10-16",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-07-23": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-07-23",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-1",
+     "start": "2026-04-14",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.3.0",
+     "start": "2026-06-13",
+     "end": "2026-10-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8080",
+     "start": "2026-04-14",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$9 a month per seat",
+     "start": "2026-04-14",
+     "end": "2026-10-16",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-08-12": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-08-12",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-1",
+     "start": "2026-04-14",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.3.0",
+     "start": "2026-06-13",
+     "end": "2026-10-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8080",
+     "start": "2026-04-14",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$9 a month per seat",
+     "start": "2026-04-14",
+     "end": "2026-10-16",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-09-01": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-09-01",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.3.0",
+     "start": "2026-06-13",
+     "end": "2026-10-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8443",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$9 a month per seat",
+     "start": "2026-04-14",
+     "end": "2026-10-16",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-10-03": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-10-03",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.4.1",
+     "start": "2026-10-03",
+     "end": "2026-11-05",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8443",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$9 a month per seat",
+     "start": "2026-04-14",
+     "end": "2026-10-16",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-10-11": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-10-11",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.4.1",
+     "start": "2026-10-03",
+     "end": "2026-11-05",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8443",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$9 a month per seat",
+     "start": "2026-04-14",
+     "end": "2026-10-16",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-10-16": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-10-16",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.4.1",
+     "start": "2026-10-03",
+     "end": "2026-11-05",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8443",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$12 a month per seat",
+     "start": "2026-10-16",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-11-03": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-11-03",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.4.1",
+     "start": "2026-10-03",
+     "end": "2026-11-05",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8443",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$12 a month per seat",
+     "start": "2026-10-16",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=orchard&day=2026-11-05": {
+  "found": true,
+  "thing": {
+   "name": "Orchard",
+   "slug": "orchard",
+   "kind": "web app",
+   "day": "2026-11-05",
+   "items": [
+    {
+     "label": "Status",
+     "value": "live",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "3.5.0",
+     "start": "2026-11-05",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "8443",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Owner",
+     "value": "Mara",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Price",
+     "value": "$12 a month per seat",
+     "start": "2026-10-16",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Deploy rule",
+     "value": "never deploy on a Friday",
+     "start": "2026-07-23",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/thing?name=local-model": {
+  "found": true,
+  "thing": {
+   "name": "Local model",
+   "slug": "local-model",
+   "kind": "service",
+   "aliases": [
+    "the local LLM"
+   ],
+   "updated": "2026-11-06",
+   "entries": 3,
+   "past": 1,
+   "unsure": 2,
+   "checked": 0,
+   "disputed": 1,
+   "dormant": false,
+   "changed": "2026-09-21",
+   "about": [],
+   "items": [
+    {
+     "label": "Model",
+     "value": "Qwen3 Coder 30B",
+     "since": "2026-09-21",
+     "confirmed": "",
+     "seen": "2026-09-21",
+     "age": 50,
+     "source": "demo",
+     "type": "state",
+     "state": "unsure",
+     "note": "not confirmed in 7 weeks",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "Llama 3.3 70B",
+       "start": "2026-07-13",
+       "end": "2026-09-21",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Host",
+     "value": "workstation",
+     "since": "2026-07-13",
+     "confirmed": "",
+     "seen": "2026-07-13",
+     "age": 120,
+     "source": "demo",
+     "type": "state",
+     "state": "unsure",
+     "note": "not confirmed in 4 months",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    },
+    {
+     "label": "Url",
+     "value": "http://workstation:8000/v1",
+     "since": "2026-07-13",
+     "confirmed": "",
+     "seen": "2026-07-13",
+     "age": 120,
+     "source": "demo",
+     "type": "state",
+     "state": "disputed",
+     "note": "not confirmed in 4 months",
+     "check": "",
+     "said": null,
+     "other": {
+      "value": "http://workstation:8001/v1",
+      "by": "a meeting note",
+      "day": "2026-11-06"
+     },
+     "also": [],
+     "past": []
+    }
+   ]
+  }
+ },
+ "/on?name=local-model&day=2025-11-10": {
+  "found": true,
+  "thing": {
+   "name": "Local model",
+   "slug": "local-model",
+   "kind": "service",
+   "day": "2025-11-10",
+   "items": [
+    {
+     "label": "Model",
+     "value": "",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Url",
+     "value": "",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=local-model&day=2026-07-13": {
+  "found": true,
+  "thing": {
+   "name": "Local model",
+   "slug": "local-model",
+   "kind": "service",
+   "day": "2026-07-13",
+   "items": [
+    {
+     "label": "Model",
+     "value": "Llama 3.3 70B",
+     "start": "2026-07-13",
+     "end": "2026-09-21",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "workstation",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Url",
+     "value": "http://workstation:8000/v1",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=local-model&day=2026-08-12": {
+  "found": true,
+  "thing": {
+   "name": "Local model",
+   "slug": "local-model",
+   "kind": "service",
+   "day": "2026-08-12",
+   "items": [
+    {
+     "label": "Model",
+     "value": "Llama 3.3 70B",
+     "start": "2026-07-13",
+     "end": "2026-09-21",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "workstation",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Url",
+     "value": "http://workstation:8000/v1",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=local-model&day=2026-09-21": {
+  "found": true,
+  "thing": {
+   "name": "Local model",
+   "slug": "local-model",
+   "kind": "service",
+   "day": "2026-09-21",
+   "items": [
+    {
+     "label": "Model",
+     "value": "Qwen3 Coder 30B",
+     "start": "2026-09-21",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "workstation",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Url",
+     "value": "http://workstation:8000/v1",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=local-model&day=2026-10-11": {
+  "found": true,
+  "thing": {
+   "name": "Local model",
+   "slug": "local-model",
+   "kind": "service",
+   "day": "2026-10-11",
+   "items": [
+    {
+     "label": "Model",
+     "value": "Qwen3 Coder 30B",
+     "start": "2026-09-21",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "workstation",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Url",
+     "value": "http://workstation:8000/v1",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=local-model&day=2026-11-03": {
+  "found": true,
+  "thing": {
+   "name": "Local model",
+   "slug": "local-model",
+   "kind": "service",
+   "day": "2026-11-03",
+   "items": [
+    {
+     "label": "Model",
+     "value": "Qwen3 Coder 30B",
+     "start": "2026-09-21",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Host",
+     "value": "workstation",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Url",
+     "value": "http://workstation:8000/v1",
+     "start": "2026-07-13",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/thing?name=vps-1": {
+  "found": true,
+  "thing": {
+   "name": "vps-1",
+   "slug": "vps-1",
+   "kind": "machine",
+   "aliases": [
+    "the old server"
+   ],
+   "updated": "2026-09-06",
+   "entries": 2,
+   "past": 1,
+   "unsure": 1,
+   "checked": 0,
+   "disputed": 0,
+   "dormant": true,
+   "changed": "2026-09-06",
+   "about": [],
+   "items": [
+    {
+     "label": "Status",
+     "value": "retired",
+     "since": "2026-09-06",
+     "confirmed": "",
+     "seen": "2026-09-06",
+     "age": 65,
+     "source": "demo",
+     "type": "state",
+     "state": "retired",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "running",
+       "start": "2026-04-14",
+       "end": "2026-09-06",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.10",
+     "since": "2026-04-14",
+     "confirmed": "",
+     "seen": "2026-04-14",
+     "age": 210,
+     "source": "demo",
+     "type": "state",
+     "state": "unsure",
+     "note": "not confirmed in 7 months",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-1&day=2025-11-10": {
+  "found": true,
+  "thing": {
+   "name": "vps-1",
+   "slug": "vps-1",
+   "kind": "machine",
+   "day": "2025-11-10",
+   "items": [
+    {
+     "label": "Status",
+     "value": "",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-1&day=2026-04-14": {
+  "found": true,
+  "thing": {
+   "name": "vps-1",
+   "slug": "vps-1",
+   "kind": "machine",
+   "day": "2026-04-14",
+   "items": [
+    {
+     "label": "Status",
+     "value": "running",
+     "start": "2026-04-14",
+     "end": "2026-09-06",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.10",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-1&day=2026-08-12": {
+  "found": true,
+  "thing": {
+   "name": "vps-1",
+   "slug": "vps-1",
+   "kind": "machine",
+   "day": "2026-08-12",
+   "items": [
+    {
+     "label": "Status",
+     "value": "running",
+     "start": "2026-04-14",
+     "end": "2026-09-06",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.10",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-1&day=2026-09-06": {
+  "found": true,
+  "thing": {
+   "name": "vps-1",
+   "slug": "vps-1",
+   "kind": "machine",
+   "day": "2026-09-06",
+   "items": [
+    {
+     "label": "Status",
+     "value": "retired",
+     "start": "2026-09-06",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.10",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-1&day=2026-10-11": {
+  "found": true,
+  "thing": {
+   "name": "vps-1",
+   "slug": "vps-1",
+   "kind": "machine",
+   "day": "2026-10-11",
+   "items": [
+    {
+     "label": "Status",
+     "value": "retired",
+     "start": "2026-09-06",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.10",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=vps-1&day=2026-11-03": {
+  "found": true,
+  "thing": {
+   "name": "vps-1",
+   "slug": "vps-1",
+   "kind": "machine",
+   "day": "2026-11-03",
+   "items": [
+    {
+     "label": "Status",
+     "value": "retired",
+     "start": "2026-09-06",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Ip",
+     "value": "203.0.113.10",
+     "start": "2026-04-14",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/thing?name=postgres": {
+  "found": true,
+  "thing": {
+   "name": "Postgres",
+   "slug": "postgres",
+   "kind": "service",
+   "aliases": [],
+   "updated": "2026-11-08",
+   "entries": 4,
+   "past": 3,
+   "unsure": 2,
+   "checked": 1,
+   "disputed": 0,
+   "dormant": false,
+   "changed": "2026-09-01",
+   "about": [],
+   "items": [
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "since": "2026-09-01",
+     "confirmed": "",
+     "seen": "2026-09-01",
+     "age": 70,
+     "source": "demo",
+     "type": "state",
+     "state": "unsure",
+     "note": "not confirmed in 2 months",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "vps-1",
+       "start": "2026-04-24",
+       "end": "2026-09-01",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Version",
+     "value": "16.4",
+     "since": "2026-08-12",
+     "confirmed": "",
+     "seen": "2026-08-12",
+     "age": 90,
+     "source": "demo",
+     "type": "state",
+     "state": "unsure",
+     "note": "not confirmed in 3 months",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "15.6",
+       "start": "2026-04-24",
+       "end": "2026-08-12",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    },
+    {
+     "label": "Port",
+     "value": "5432",
+     "since": "2026-04-24",
+     "confirmed": "2026-11-08",
+     "seen": "2026-11-08",
+     "age": 2,
+     "source": "demo",
+     "type": "state",
+     "state": "checked",
+     "note": "",
+     "check": "ss -ltnp on vps-2",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    },
+    {
+     "label": "Backup schedule",
+     "value": "nightly, 02:00",
+     "since": "2026-08-12",
+     "confirmed": "",
+     "seen": "2026-08-12",
+     "age": 90,
+     "source": "demo",
+     "type": "state",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "weekly, Sunday 03:00",
+       "start": "2026-04-24",
+       "end": "2026-08-12",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "/on?name=postgres&day=2025-11-10": {
+  "found": true,
+  "thing": {
+   "name": "Postgres",
+   "slug": "postgres",
+   "kind": "service",
+   "day": "2025-11-10",
+   "items": [
+    {
+     "label": "Host",
+     "value": "",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Backup schedule",
+     "value": "",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=postgres&day=2026-04-24": {
+  "found": true,
+  "thing": {
+   "name": "Postgres",
+   "slug": "postgres",
+   "kind": "service",
+   "day": "2026-04-24",
+   "items": [
+    {
+     "label": "Host",
+     "value": "vps-1",
+     "start": "2026-04-24",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "15.6",
+     "start": "2026-04-24",
+     "end": "2026-08-12",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "5432",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Backup schedule",
+     "value": "weekly, Sunday 03:00",
+     "start": "2026-04-24",
+     "end": "2026-08-12",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=postgres&day=2026-08-12": {
+  "found": true,
+  "thing": {
+   "name": "Postgres",
+   "slug": "postgres",
+   "kind": "service",
+   "day": "2026-08-12",
+   "items": [
+    {
+     "label": "Host",
+     "value": "vps-1",
+     "start": "2026-04-24",
+     "end": "2026-09-01",
+     "state": "past",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "16.4",
+     "start": "2026-08-12",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "5432",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Backup schedule",
+     "value": "nightly, 02:00",
+     "start": "2026-08-12",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=postgres&day=2026-09-01": {
+  "found": true,
+  "thing": {
+   "name": "Postgres",
+   "slug": "postgres",
+   "kind": "service",
+   "day": "2026-09-01",
+   "items": [
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "16.4",
+     "start": "2026-08-12",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "5432",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Backup schedule",
+     "value": "nightly, 02:00",
+     "start": "2026-08-12",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=postgres&day=2026-10-11": {
+  "found": true,
+  "thing": {
+   "name": "Postgres",
+   "slug": "postgres",
+   "kind": "service",
+   "day": "2026-10-11",
+   "items": [
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "16.4",
+     "start": "2026-08-12",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "5432",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Backup schedule",
+     "value": "nightly, 02:00",
+     "start": "2026-08-12",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=postgres&day=2026-11-03": {
+  "found": true,
+  "thing": {
+   "name": "Postgres",
+   "slug": "postgres",
+   "kind": "service",
+   "day": "2026-11-03",
+   "items": [
+    {
+     "label": "Host",
+     "value": "vps-2",
+     "start": "2026-09-01",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Version",
+     "value": "16.4",
+     "start": "2026-08-12",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Port",
+     "value": "5432",
+     "start": "2026-04-24",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Backup schedule",
+     "value": "nightly, 02:00",
+     "start": "2026-08-12",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/thing?name=mara": {
+  "found": true,
+  "thing": {
+   "name": "Mara",
+   "slug": "mara",
+   "kind": "person",
+   "aliases": [],
+   "updated": "2026-08-07",
+   "entries": 2,
+   "past": 1,
+   "unsure": 0,
+   "checked": 0,
+   "disputed": 0,
+   "dormant": false,
+   "changed": "2026-08-07",
+   "about": [],
+   "items": [
+    {
+     "label": "Role",
+     "value": "designer and co-founder",
+     "since": "2026-05-04",
+     "confirmed": "",
+     "seen": "2026-05-04",
+     "age": 190,
+     "source": "demo",
+     "type": "identity",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": []
+    },
+    {
+     "label": "Location",
+     "value": "Lisbon",
+     "since": "2026-08-07",
+     "confirmed": "",
+     "seen": "2026-08-07",
+     "age": 95,
+     "source": "demo",
+     "type": "state",
+     "state": "plain",
+     "note": "",
+     "check": "",
+     "said": null,
+     "other": null,
+     "also": [],
+     "past": [
+      {
+       "value": "Porto",
+       "start": "2026-05-04",
+       "end": "2026-08-07",
+       "wrong": false,
+       "by": ""
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "/on?name=mara&day=2025-11-10": {
+  "found": true,
+  "thing": {
+   "name": "Mara",
+   "slug": "mara",
+   "kind": "person",
+   "day": "2025-11-10",
+   "items": [
+    {
+     "label": "Role",
+     "value": "",
+     "start": "2026-05-04",
+     "end": "",
+     "state": "before",
+     "also": []
+    },
+    {
+     "label": "Location",
+     "value": "",
+     "start": "2026-05-04",
+     "end": "",
+     "state": "before",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=mara&day=2026-05-04": {
+  "found": true,
+  "thing": {
+   "name": "Mara",
+   "slug": "mara",
+   "kind": "person",
+   "day": "2026-05-04",
+   "items": [
+    {
+     "label": "Role",
+     "value": "designer and co-founder",
+     "start": "2026-05-04",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Location",
+     "value": "Porto",
+     "start": "2026-05-04",
+     "end": "2026-08-07",
+     "state": "past",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=mara&day=2026-08-07": {
+  "found": true,
+  "thing": {
+   "name": "Mara",
+   "slug": "mara",
+   "kind": "person",
+   "day": "2026-08-07",
+   "items": [
+    {
+     "label": "Role",
+     "value": "designer and co-founder",
+     "start": "2026-05-04",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Location",
+     "value": "Lisbon",
+     "start": "2026-08-07",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=mara&day=2026-08-12": {
+  "found": true,
+  "thing": {
+   "name": "Mara",
+   "slug": "mara",
+   "kind": "person",
+   "day": "2026-08-12",
+   "items": [
+    {
+     "label": "Role",
+     "value": "designer and co-founder",
+     "start": "2026-05-04",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Location",
+     "value": "Lisbon",
+     "start": "2026-08-07",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=mara&day=2026-10-11": {
+  "found": true,
+  "thing": {
+   "name": "Mara",
+   "slug": "mara",
+   "kind": "person",
+   "day": "2026-10-11",
+   "items": [
+    {
+     "label": "Role",
+     "value": "designer and co-founder",
+     "start": "2026-05-04",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Location",
+     "value": "Lisbon",
+     "start": "2026-08-07",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/on?name=mara&day=2026-11-03": {
+  "found": true,
+  "thing": {
+   "name": "Mara",
+   "slug": "mara",
+   "kind": "person",
+   "day": "2026-11-03",
+   "items": [
+    {
+     "label": "Role",
+     "value": "designer and co-founder",
+     "start": "2026-05-04",
+     "end": "",
+     "state": "current",
+     "also": []
+    },
+    {
+     "label": "Location",
+     "value": "Lisbon",
+     "start": "2026-08-07",
+     "end": "",
+     "state": "current",
+     "also": []
+    }
+   ]
+  }
+ },
+ "/things?q=orch": {
+  "things": [
+   {
+    "name": "Orchard",
+    "slug": "orchard",
+    "kind": "web app",
+    "aliases": [
+     "the shop",
+     "orchard app"
+    ],
+    "updated": "2026-11-05",
+    "entries": 7,
+    "past": 7,
+    "unsure": 2,
+    "checked": 2,
+    "disputed": 0,
+    "dormant": false,
+    "changed": "2026-11-05"
+   }
+  ]
+ },
+ "/things?q=machine": {
+  "things": [
+   {
+    "name": "vps-2",
+    "slug": "vps-2",
+    "kind": "machine",
+    "aliases": [
+     "the new server"
+    ],
+    "updated": "2026-11-10",
+    "entries": 3,
+    "past": 1,
+    "unsure": 1,
+    "checked": 1,
+    "disputed": 0,
+    "dormant": false,
+    "changed": "2026-11-07"
+   },
+   {
+    "name": "vps-1",
+    "slug": "vps-1",
+    "kind": "machine",
+    "aliases": [
+     "the old server"
+    ],
+    "updated": "2026-09-06",
+    "entries": 2,
+    "past": 1,
+    "unsure": 1,
+    "checked": 0,
+    "disputed": 0,
+    "dormant": true,
+    "changed": "2026-09-06"
+   }
+  ]
+ },
+ "/things?q=zzz": {
+  "things": []
+ },
+ "/thing?name=vps": {
+  "found": false,
+  "near": [
+   "vps-2",
+   "vps-1"
+  ]
+ },
+ "/thing?name=nothing-like-this": {
+  "found": false,
+  "near": []
+ }
+}

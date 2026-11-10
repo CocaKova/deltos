@@ -315,7 +315,7 @@ class NightlyLearnTest(unittest.TestCase):
 
     def test_the_learn_sweep_runs_after_the_import(self):
         rc, log, calls = self.nightly(0)
-        self.assertEqual((rc, calls), (0, ["import", "learn --wait", "sessions --days 2", "status --line"]))
+        self.assertEqual((rc, calls), (0, ["import", "learn --wait --nightly", "sessions --days 2", "status --line"]))
         self.assertIn("stand-in learn", log)
         self.assertNotIn("learn HELD", log)
         self.assertNotIn("learn FAILED", log)
@@ -330,7 +330,7 @@ class NightlyLearnTest(unittest.TestCase):
         rc, log, calls = self.nightly(1)
         self.assertEqual(rc, 0)
         self.assertIn("learn FAILED rc=1", log)
-        self.assertEqual(calls, ["import", "learn --wait", "sessions --days 2", "status --line"])
+        self.assertEqual(calls, ["import", "learn --wait --nightly", "sessions --days 2", "status --line"])
 
 
 if __name__ == "__main__":

@@ -97,6 +97,29 @@ SOFTWARE.
   Knowledge Graph Architecture for Agent Memory", arXiv:2501.13956 (2025), which
   Zep used for its LongMemEval runs.
 
+## Hermes Agent (the Hermes plugin's test harness and screenshots)
+
+- What: `adapters/hermes/deltos` is a plugin for Hermes Agent and is written
+  against its plugin interfaces; no Hermes code is copied into the plugin. The
+  harness for looking at the plugin's Memory page outside the app
+  (`tests/desktop/harness`) is a stand-in for Hermes Desktop: `app.css` takes its
+  theme variables (their names and the light and dark palette values) from the
+  app's stylesheet, `apps/desktop/src/styles.css`, and `sdk.mjs` and
+  `tests/desktop/stub-sdk.mjs` re-create the names and props of the plugin SDK
+  parts the page uses (`apps/desktop/src/sdk`). The screenshots in
+  `adapters/hermes/deltos/screens/` were drawn by that harness.
+- Source: https://github.com/NousResearch/hermes-agent
+- License: MIT, "Copyright (c) 2025 Nous Research" (the MIT text is the one
+  reproduced above, with this copyright line).
+- Fonts and icons seen in the screenshots. They are not in this repo:
+  `harness/build.sh` reads them from a `node_modules` folder you supply.
+  - Inter by Rasmus Andersson, https://github.com/rsms/inter · SIL Open Font
+    License 1.1.
+  - JetBrains Mono, https://github.com/JetBrains/JetBrainsMono · SIL Open Font
+    License 1.1.
+  - Codicons by Microsoft, https://github.com/microsoft/vscode-codicons · icons
+    CC BY 4.0, code MIT.
+
 ## Synthetic-world benchmark references
 
 - The `grep` adapter (`bench/adapters/grep_agent.py`) follows the plain-files

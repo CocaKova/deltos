@@ -37,6 +37,13 @@ AUTO_DEFAULT = False  # [learn] auto unset: chats are learned by hand (`deltos l
 WAIT_POLL, WAIT_MAX = 30, 20 * 60   # --wait: look for idle every 30 s, give up after 20 min
 
 
+PROMPT_DEFAULT = "v2"   # [learn] prompt: v1 is the benchmark's reading; v2 adds a working chat's rules
+
+
+def prompt_version(cfg: Config) -> str:
+    return str(cfg.learn.get("prompt", PROMPT_DEFAULT))
+
+
 def why_not(cfg: Config) -> str:
     """What learning still needs from deltos.toml ('' when nothing)."""
     if not cfg.llm.get("url"):
@@ -48,9 +55,13 @@ def why_not(cfg: Config) -> str:
     return ""
 
 
-def enabled(cfg: Config) -> bool:
-    """Whether chats are learned by themselves (the harness's trigger asks this)."""
-    return bool(cfg.learn.get("auto", AUTO_DEFAULT)) and not why_not(cfg)
+def enabled(cfg: Config, nightly: bool = False) -> bool:
+    """Whether chats are learned by themselves: [learn] auto, at every trigger (the harness's
+    at a session end and a gateway start, the nightly job's); [learn] nightly, only at the
+    nightly job's (nightly=True), for a store whose model may serve chats in the day only
+    (11-05: one local brain, night runs only)."""
+    on = bool(cfg.learn.get("auto", AUTO_DEFAULT)) or (nightly and bool(cfg.learn.get("nightly")))
+    return on and not why_not(cfg)
 
 
 def _dbs(home: Path) -> list[Path]:
@@ -95,7 +106,7 @@ def apply_units(stage: Path, units: list[dict], cfg: Config, say=print, busy=Non
     llm.configure(**cfg.llm)
     it = (_items.Items(_items.load(stage / "items.json"), asker=lambda evs: _items.ask(evs, llm.chat))
           if cfg.import_items else None)
-    m = notes.Migrator(stage, owner=cfg.owner, prompt=chats.chat_prompt(cfg.owner), chat=True, items=it, split=True)
+    m = notes.Migrator(stage, owner=cfg.owner, prompt=chats.chat_prompt(cfg.owner, prompt_version(cfg)), chat=True, items=it, split=True)
     if it is not None:
         m._said = notes.load_said(stage / "items-said.json")
     done, t0 = 0, time.time()
@@ -105,7 +116,8 @@ def apply_units(stage: Path, units: list[dict], cfg: Config, say=print, busy=Non
             try:
                 for i, piece in enumerate(u["pieces"]):
                     st = m.session(u["note"], u["day"], piece, u["day"])
-                    rows.append({**st, "chunk": i, "of": u["of"], "upto": u["upto"], "kind": "chat"})
+                    rows.append({**st, "chunk": i, "of": u["of"], "upto": u["upto"], "kind": "chat",
+                                 **({"chain": u["chain"]} if u.get("chain") else {})})
                     texts.append({"note": u["note"], "chunk": i, "text": piece, "upto": u["upto"]})
             except Exception as e:
                 _append(stage / "migrate-errors.jsonl", [{"note": u["note"], "day": u["day"], "error": repr(e)[:200],
@@ -155,7 +167,7 @@ def _live_rows(root: Path) -> list[dict]:
 
 
 def sweep(root=None, wait: bool = False, days: int | None = None, max_units: int | None = None,
-          no_idle: bool = False, dry_run: bool = False, say=print) -> int:
+          no_idle: bool = False, dry_run: bool = False, say=print, nightly: bool = False) -> int:
     """Learn the finished chats not learned yet. wait: what every automatic trigger passes
     (the harness at a session end and at gateway start, the nightly after its import); it
     needs [learn] auto and waits up to 20 min for the agent to go idle. A run by hand
@@ -166,8 +178,9 @@ def sweep(root=None, wait: bool = False, days: int | None = None, max_units: int
     chats must not be learned twice."""
     cfg = Config.load(root)
     why = why_not(cfg)
-    if not why and wait and not enabled(cfg):
-        why = "learning is off ([learn] auto = false): `deltos learn` runs it by hand"
+    if not why and wait and not enabled(cfg, nightly):
+        why = ("learning is off ([learn] auto = false): `deltos learn` runs it by hand" if not cfg.learn.get("nightly")
+               else "learning runs only in the nightly job ([learn] nightly = true)")
     if why:
         say(why)
         return 0
@@ -182,7 +195,7 @@ def sweep(root=None, wait: bool = False, days: int | None = None, max_units: int
     stats: dict = {}
     days, cap = days or int(cfg.learn.get("days", 2)), max_units or int(cfg.learn.get("max_units", 20))
     skip = cfg.hermes.get("skip_ids") or None
-    us = chats.units(home, _live_rows(cfg.root), time.time(), days=days, skip_ids=skip, stats=stats)
+    us = chats.units(home, _live_rows(cfg.root), time.time(), days=days, skip_ids=skip, stats=stats, owner=cfg.owner)
     n, us = len(us), us[:cap]
     seen = ", ".join(f"{k} {v}" for k, v in sorted(stats.items()) if k not in ("seen", "units"))
     say(f"{len(us)} chats to learn" + (f" ({n - len(us)} more wait for the next sweep)" if n > len(us) else "")
@@ -194,10 +207,10 @@ def sweep(root=None, wait: bool = False, days: int | None = None, max_units: int
             say(f"{u['note']}\t{u['day']}\t{sum(len(p) for p in u['pieces'])} chars\t{u['of']} piece(s)")
         return 0
     from . import health, runs
-    prompt = hashlib.sha1(chats.chat_prompt(cfg.owner).encode()).hexdigest()
+    prompt = hashlib.sha1(chats.chat_prompt(cfg.owner, prompt_version(cfg)).encode()).hexdigest()
 
     def work(stage: Path) -> int:
-        fresh = chats.units(home, _live_rows(stage), time.time(), days=days, skip_ids=skip)[:cap]
+        fresh = chats.units(home, _live_rows(stage), time.time(), days=days, skip_ids=skip, owner=cfg.owner)[:cap]
         gone = len({u["note"] for u in us} - {u["note"] for u in fresh})
         if gone:
             say(f"{gone} of these chats were learned by another run meanwhile")
@@ -216,9 +229,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max", type=int, default=None, help="chats per sweep ([learn] max_units, 20)")
     ap.add_argument("--dry-run", action="store_true", help="list the units; no model, nothing written")
     ap.add_argument("--no-idle", action="store_true", help="don't stop between chats when the agent wakes up")
+    ap.add_argument("--nightly", action="store_true", help="the nightly job's sweep: with --wait, runs with "
+                    "[learn] auto or [learn] nightly")
     a = ap.parse_args(argv)
     return sweep(a.root, wait=a.wait, days=a.days, max_units=a.max, no_idle=a.no_idle, dry_run=a.dry_run,
-                 say=lambda s: print(s, flush=True))
+                 say=lambda s: print(s, flush=True), nightly=a.nightly)
 
 
 if __name__ == "__main__":

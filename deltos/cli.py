@@ -3,7 +3,14 @@
   deltos context <message>          the memory block for a message (what a harness injects per turn)
   deltos recall <query>             same, with more pages
   deltos show <thing> [--history | --as-of YYYY-MM-DD]
-  deltos remember <thing> <attribute> <value> [--since YYYY-MM-DD] [--correction]   (source: hand)
+  deltos remember <thing> <attribute> <value> [--since YYYY-MM-DD] [--correction] [--check HOW]
+                                    (source: hand); --check = you just saw the value, this way
+  deltos view [<thing> | on YYYY-MM-DD <thing> | changes [DAYS] | due [N]]
+                                    the store for a person to read: how much it holds and what it has
+                                    not confirmed; one thing with what each value was before; a day
+  deltos demo <folder>              a small made-up store in a new folder, to try all of this on
+  deltos checks [-n N] [--stats [DAYS]]   what is due for a look (deltos/checks.py); --stats = how often
+                                    the looks found memory wrong
   deltos name <thing> [other names...] [--kind K] [--remove NAME ...] [--merge]
   deltos search <text>              exact text across pages
   deltos read <ref>
@@ -50,9 +57,17 @@ def main(argv: list[str] | None = None) -> int:
     for a in ("thing", "attribute", "value"):
         p.add_argument(a)
     p.add_argument("--since", default=""); p.add_argument("--correction", action="store_true")
+    p.add_argument("--check", default="", help="how you just saw the value (a command, a file and key, a page)")
+    sub.add_parser("view", help="the store for a person to read (deltos/view.py); `deltos view help`"
+                   ).add_argument("what", nargs="*")
+    p = sub.add_parser("checks", help="what is due for a look; --stats: how often looks found memory wrong")
+    p.add_argument("-n", type=int, default=20)
+    p.add_argument("--stats", type=int, nargs="?", const=90, default=0, metavar="DAYS")
     p = sub.add_parser("name"); p.add_argument("thing"); p.add_argument("names", nargs="*")
     p.add_argument("--kind", default=""); p.add_argument("--remove", nargs="*", default=[])
     p.add_argument("--merge", action="store_true", help="the names are separate profiles of this thing: join them")
+    p.add_argument("--title", default="", help="make this one of its names the thing's own name (the old one stays "
+                   "another name; --remove it to free it)")
     p = sub.add_parser("forget", help="delete a thing, or one entry with --attribute (undo: restore)")
     p.add_argument("thing"); p.add_argument("--attribute", default=""); p.add_argument("--reason", default="asked at the CLI")
     sub.add_parser("restore", help="undo the latest forget of a thing").add_argument("thing")
@@ -63,6 +78,8 @@ def main(argv: list[str] | None = None) -> int:
     dp.add_argument("--fix", action="store_true")
     dp.add_argument("--review", type=int, nargs="?", const=30, default=0,
                     help="the N most suspect entries with newer page evidence, tab-separated")
+    p = sub.add_parser("receipts", help="receipts that say none of their value; --drop takes them off")
+    p.add_argument("--drop", action="store_true"); p.add_argument("--reason", default="the words say none of the value")
     sub.add_parser("sessions").add_argument("--days", type=int, default=2)
     p = sub.add_parser("import"); p.add_argument("--limit", type=int, default=0)
     p.add_argument("--full", action="store_true", help="the full prompt instead of the lean one")
@@ -77,6 +94,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--max", type=int, default=None, help="chats per sweep ([learn] max_units, 20)")
     p.add_argument("--dry-run", action="store_true", help="list the units; no model, nothing written")
     p.add_argument("--no-idle", action="store_true", help="don't stop between chats when the agent wakes up")
+    p.add_argument("--nightly", action="store_true", help="the nightly job's sweep ([learn] auto or nightly)")
     sub.add_parser("runs").add_argument("-n", type=int, default=10)
     p = sub.add_parser("run"); p.add_argument("action", choices=["show", "promote", "discard", "undo"])
     p.add_argument("id"); p.add_argument("--no-hold", action="store_true",
@@ -84,7 +102,12 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("status").add_argument("--line", action="store_true", help="one line (the nightly log)")
     sub.add_parser("serve")
     sub.add_parser("hook").add_argument("harness", choices=["claude-code"])
+    sub.add_parser("demo", help="write a small made-up store into a new folder, to try deltos on"
+                   ).add_argument("folder")
     a = ap.parse_args(argv)
+    if a.cmd == "demo":   # before any store is opened: it makes its own, and touches no other
+        from .demo import main as demo
+        return demo([a.folder])
     # Who writes: you at `deltos remember`; the agent behind `deltos serve` otherwise.
     m = Memory(a.root, agent=a.agent or {"remember": HAND, "serve": "agent"}.get(a.cmd, ""))
 
@@ -96,9 +119,25 @@ def main(argv: list[str] | None = None) -> int:
             print(m.call(tool, {key: " ".join(a.text)}))
         elif a.cmd == "show":
             print(m.call("memory_show", {"thing": a.thing, "history": a.history, "as_of": a.as_of}))
+        elif a.cmd == "remember" and a.check:   # a person's look: whether or not agents get checks
+            print(m.store().remember(a.thing, a.attribute, a.value, since=a.since, source=m.agent,
+                                     correction=a.correction, check=a.check))
         elif a.cmd == "remember":
             print(m.call("remember", {"thing": a.thing, "attribute": a.attribute, "value": a.value,
                                       "since": a.since, "correction": a.correction}))
+        elif a.cmd == "view":
+            from .view import View, command
+            print(command(View.of(m), " ".join(a.what)))
+        elif a.cmd == "checks":
+            from .checks import due, render_due, render_stats, stats
+            s = m.store()
+            print(render_stats(stats(s.root, s.today, a.stats)) if a.stats else render_due(due(s.root, s.today, a.n)))
+        elif a.cmd == "name" and a.title:
+            s = m.store()
+            print(s.retitle(a.thing, a.title))
+            if a.names or a.remove or a.kind:
+                print(m.call("name_thing", {"thing": a.title, "other_names": a.names, "kind": a.kind,
+                                            "remove_names": a.remove, "merge": a.merge}))
         elif a.cmd == "name":
             print(m.call("name_thing", {"thing": a.thing, "other_names": a.names, "kind": a.kind,
                                         "remove_names": a.remove, "merge": a.merge}))
@@ -124,6 +163,12 @@ def main(argv: list[str] | None = None) -> int:
                                                          "newer_evidence")))
             else:
                 print(doctor(m.root, fix=a.fix))
+        elif a.cmd == "receipts":
+            from .doctor import things_of, unsaid_receipts
+            s = m.store()
+            for name, at in unsaid_receipts(things_of(m.root)):
+                print(s.unsay(name, at.name, a.reason, source=a.agent or HAND) if a.drop
+                      else f"{name}\t{at.name}\t{at.value}\t{at.said[1]}\t{at.said[0]}")
         elif a.cmd == "sessions":
             from .sources import hermes
             today, n = datetime.date.today(), 0
@@ -137,7 +182,7 @@ def main(argv: list[str] | None = None) -> int:
             return _import(m, a)
         elif a.cmd == "learn":
             from . import learn
-            argv = (["--root", a.root] if a.root else []) + [f"--{k}" for k in ("wait", "dry-run", "no-idle")
+            argv = (["--root", a.root] if a.root else []) + [f"--{k}" for k in ("wait", "dry-run", "no-idle", "nightly")
                                                              if getattr(a, k.replace("-", "_"))]
             for k in ("days", "max"):
                 if getattr(a, k) is not None:

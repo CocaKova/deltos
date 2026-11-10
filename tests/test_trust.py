@@ -2,6 +2,8 @@
 an agent's against a note import's, unless the news is dated after it) and
 time travel (what memory holds as true on a day)."""
 import io
+import os
+import subprocess
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -100,6 +102,38 @@ class TrustTest(unittest.TestCase):
         st = m.session("memory@b", "2026-05-04", "", git_mode=True, replay={"raw": "Tamsin | location | Dock B | -"})
         self.assertEqual((st.get("held"), st["facts"]), (None, 1))
         self.assertEqual(self.attr().value, "Dock B")
+
+    def test_an_undated_line_counts_from_the_commit_before_it(self):
+        # A nightly commit on 05-02 carries what was written on 05-01, after or before
+        # Ava set the value that day: undated, its lines are not news dated after it.
+        repo = self.root / "wiki"
+        repo.mkdir()
+        env = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@x", "GIT_COMMITTER_NAME": "t",
+               "GIT_COMMITTER_EMAIL": "t@x", "PATH": os.environ["PATH"], "HOME": self.d.name}
+        subprocess.run(["git", "init", "-q", str(repo)], check=True, env=env)
+        for day, text in (("2026-05-01", "Tamsin sits in Bay 3.\n"), ("2026-05-02", "Tamsin sits in Bay 3, rack 2.\n")):
+            (repo / "tamsin.md").write_text(text)
+            when = {"GIT_AUTHOR_DATE": f"{day}T05:00:00", "GIT_COMMITTER_DATE": f"{day}T05:00:00"}
+            for cmd in (["add", "."], ["commit", "-qm", day]):
+                subprocess.run(["git", "-C", str(repo), *cmd], check=True, env={**env, **when})
+        jobs = notes.git_jobs([f"{repo}:HEAD:wiki"], [])
+        self.assertEqual([(j[1], j[6]) for j in jobs], [("2026-05-01", ""), ("2026-05-02", "2026-05-01")])
+        self.s.remember("Tamsin", "location", "Bay 3", source="Ava")
+        self.s.remember("Tamsin", "host", "box-1", source="Ava")
+        m = notes.Migrator(self.root)
+        st = m.session("wiki@b", "2026-05-02", "", git_mode=True, earliest="2026-05-01",
+                       replay={"raw": "Tamsin | location | Bay 3 rack 2 | -"})
+        self.assertEqual((st.get("held"), st["facts"], st["earliest"]), (1, 0, "2026-05-01"))
+        self.assertIn("not changed: Bay 3 stays, set by Ava on 2026-05-01", st["refusals"][0])
+        st = m.session("wiki@b", "2026-05-02", "", git_mode=True, replay=st)   # the logged row holds it again
+        self.assertEqual((st.get("held"), self.attr().value), (1, "Bay 3"))
+        # A line the text dates after it is news; so is any line of a commit whose window opens after it.
+        st = m.session("wiki@b", "2026-05-02", "", git_mode=True, earliest="2026-05-01",
+                       replay={"raw": "Tamsin | location | Bay 3 rack 2 | 2026-05-02"})
+        self.assertEqual((st.get("held"), self.attr().value), (None, "Bay 3 rack 2"))
+        st = m.session("wiki@c", "2026-05-03", "", git_mode=True, earliest="2026-05-02",
+                       replay={"raw": "Tamsin | host | box-2 | -"})
+        self.assertEqual((st.get("held"), Store(self.root).find("Tamsin").attrs["host"].value), (None, "box-2"))
 
 
 class AsOfTest(unittest.TestCase):

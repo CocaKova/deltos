@@ -28,7 +28,7 @@ from .. import ground
 from .. import items as _items
 from ..llm import chat, cut_off, thinking, thinking_stays_on
 from ..recall import FIRST_PERSON, STOP, _stem
-from ..store import (KINDS, Store, _attr_key, _key, attribute_problem, base_name, strip_window, trust_hold,
+from ..store import (KINDS, Store, _attr_key, _key, attribute_problem, base_name, strip_window, trust_hold, look_hold,
                      value_problem)
 
 MAX_CHARS = 9000
@@ -217,7 +217,10 @@ def _chunks(text: str, header: str = "") -> list[str]:
 
 def _git_jobs(repo: Path, commit: str, prefix: str, skip: list[str], since: str = ""):
     """Each commit's added lines, grouped per commit and packed into chunks: the
-    day a line appeared is the day memory learned it, so dates come for free."""
+    day a line appeared is the day memory learned it, so dates come for free.
+    With each piece, the day of the commit before it ("" for the first): the
+    lines were written some time after that one, not all on their commit's day
+    (a nightly commit carries yesterday's edits)."""
     out = subprocess.run(["git", "-C", str(repo), "log", "--reverse", "-p", "--no-color", "--unified=0",
                           "--format=@@COMMIT %h %cs", commit, "--", "*.md"],
                          capture_output=True, text=True, errors="replace").stdout
@@ -234,20 +237,21 @@ def _git_jobs(repo: Path, commit: str, prefix: str, skip: list[str], since: str 
             if not body.strip() or re.match(r"^\s*(updated|modified|ingested_at|date|originSessionId|node_type|---)\b", body):
                 continue
             per.setdefault((day, sha), {}).setdefault(fname, []).append(body)
-    for day, sha in order:
+    for n, (day, sha) in enumerate(order):
         if day < since:
             continue
+        earliest = order[n - 1][0] if n else ""
         files = per.get((day, sha), {})
         text, i = "", 0
         for fname, lines in files.items():
             block = f"--- {prefix}/{fname}\n" + "\n".join(lines) + "\n"
             for piece in _chunks(block, f"--- {prefix}/{fname} (continued)\n"):
                 if text and len(text) + len(piece) > MAX_CHARS:
-                    yield day, f"{prefix}@{sha}", i, text
+                    yield day, f"{prefix}@{sha}", i, text, earliest
                     text, i = "", i + 1
                 text += piece
         if text:
-            yield day, f"{prefix}@{sha}", i, text
+            yield day, f"{prefix}@{sha}", i, text, earliest
 
 
 FULL_PROMPT = {"passing": '- A value mentioned in passing (a recap, an index line, "was X before") is not news: give it\n'
@@ -291,6 +295,19 @@ VALUE_KINDS = {"status", "state", "setting", "settings", "version", "latest rele
 # Kind words that name one kind of thing ("server" for a machine kept as "Machine").
 KIND_KIN = [{"machine", "server", "host", "computer", "box", "node", "workstation", "laptop", "desktop", "vm"},
             {"repo", "repository", "codebase"}, {"app", "application"}, {"person", "people", "human", "user"}]
+
+# Words a name can end in that only say what kind of thing it is.
+KIND_WORDS = KINDS | {"app", "application", "service", "server", "project"}
+
+
+def without_kind(key: str) -> str:
+    """"steam launcher plugin" -> "steam launcher": a name key with the kind words
+    it ends in left off, as a text says it; '' when it ends in none."""
+    words = key.split()
+    core = list(words)
+    while len(core) > 1 and core[-1] in KIND_WORDS:
+        core.pop()
+    return " ".join(core) if len(core) < len(words) else ""
 
 
 def _other_kind(a: str, b: str) -> bool:
@@ -510,7 +527,7 @@ def _plan(content: str, capped: bool) -> tuple[list[list[str]], dict]:
 
 # Counts a split session adds up from its halves.
 SUMMED = ("prompt_tokens", "completion_tokens", "facts", "things", "bad", "repeats", "refused", "held", "duplicates",
-          "conflicts", "repaired", "restated", "events", "followed_up", "ungrounded", "copied")
+          "conflicts", "repaired", "restated", "events", "followed_up", "ungrounded", "copied", "relayed", "echoed")
 
 
 def _halves(text: str) -> list[str]:
@@ -605,6 +622,18 @@ class Migrator:
                     n = len(re.findall(rf"(?<![a-z0-9]){re.escape(key)}(?![a-z0-9])", tl))
                     if n:
                         hits[sl] = hits.get(sl, 0) + n
+            # A name the text says without its kind word ("Steam launcher v0.2.0" for the
+            # "steam-launcher plugin") is that thing when no other thing has the shorter
+            # name. 10-29: the model never saw the plugin and made "Steam launcher" beside
+            # it. Shown, not merged: the text may mean another thing of that name. Two words
+            # at least: one alone is mostly a plain word ("memory tool", "verify script").
+            for key, sl in s.by_name.items():
+                core = without_kind(key)
+                if sl in hits or " " not in core or core in s.by_name:
+                    continue
+                n = len(re.findall(rf"(?<![a-z0-9]){re.escape(core)}(?![a-z0-9])", tl))
+                if n:
+                    hits[sl] = n
             mine = s.by_name.get(_key(self.owner)) if self.owner and FIRST_PERSON.search(text) else None
             if mine:
                 hits[mine] = max(hits.values(), default=0) + 1
@@ -647,7 +676,7 @@ class Migrator:
         return keep
 
     def session(self, name: str, day: str, text: str, created: str = "", git_mode: bool = False,
-                replay: dict | None = None, redo_repair: bool = False, _depth: int = 0,
+                replay: dict | None = None, redo_repair: bool = False, earliest: str = "", _depth: int = 0,
                 _thinking: bool = False) -> dict:
         """One model call, then the store. `replay` = a logged session: apply
         its recorded output again, no model (tests store/import changes on the
@@ -655,7 +684,11 @@ class Migrator:
         model looped, or the text held more facts than the budget; or an empty
         answer after reasoning: the budget went to the thought) keeps what it said
         and the text is asked again in halves, with twice the budget when it was
-        thinking, logged under "subs" so a replay applies them too."""
+        thinking, logged under "subs" so a replay applies them too.
+        `earliest`: the first day the text could have been written, when that is
+        before `day` (a commit's lines: the day of the commit before it); logged,
+        so a replay holds what the run held."""
+        earliest = earliest or (replay or {}).get("earliest", "")
         off = {**thinking(False), **self.sample} if replay is None else {}
         # A server that can't turn thinking off spends part of the budget on the thought.
         budget = self.max_tokens * (3 if replay is None and thinking_stays_on() else 1) * (2 if _thinking else 1)
@@ -687,6 +720,8 @@ class Migrator:
               "completion_tokens": usage.get("completion_tokens", 0), "facts": 0, "things": 0, "bad": 0,
               "repeats": 0, "refused": 0, "capped": capped}
         st["call_tokens"] = usage.get("completion_tokens", 0)
+        if earliest and earliest < day:
+            st["earliest"] = earliest
         if cut:
             st["cut_off"] = cut   # "length" or "thinking": stopped before it was done, never "no facts"
         if usage.get("finish_reason"):
@@ -704,7 +739,7 @@ class Migrator:
             st["loop"] = loop   # the most one line was said
         lines, plan = _plan(st["raw"], capped and cut != "repeat")   # a stopped answer ends on a whole line
         st.update(plan)
-        refused = self._apply(lines, st, day, created, text, name)
+        refused = self._apply(lines, st, day, created, text, name, earliest)
         # Lines the store refused get one more try, with its reasons.
         if replay is not None and not redo_repair:
             # The logged repair answered the lines refused back then; when the
@@ -716,7 +751,7 @@ class Migrator:
             st["completion_tokens"] += usage.get("completion_tokens", 0)
         if st.get("repair_raw"):
             before = st["facts"]
-            self._apply(self._repair_lines(st["repair_raw"], refused, st), st, day, created, text, name)
+            self._apply(self._repair_lines(st["repair_raw"], refused, st), st, day, created, text, name, earliest)
             st["repaired"] = st["facts"] - before
         # Names only: some answers register every thing ("= ..." lines) and stop
         # without one fact (Flash-Next and GLM both, 10-14). Ask once for the facts.
@@ -734,7 +769,7 @@ class Migrator:
         if st.get("followup_raw"):
             st["names_only"] = names
             before = st["facts"]
-            self._apply(_plan(st["followup_raw"], False)[0], st, day, created, text, name)
+            self._apply(_plan(st["followup_raw"], False)[0], st, day, created, text, name, earliest)
             st["followed_up"] = st["facts"] - before
         # The missed pass: an answer that finished gets one more turn for what it left out.
         if replay is not None:
@@ -751,7 +786,7 @@ class Migrator:
         if st.get("missed_raw"):
             before = st["facts"]
             self._apply(_plan(st["missed_raw"], st.get("missed_cut") not in (None, "", "repeat"))[0],
-                        st, day, created, text, name)
+                        st, day, created, text, name, earliest)
             st["missed_added"] = st["facts"] - before
         # The cut. A replay applies the logged halves; a live call asks for them.
         if replay is not None:
@@ -769,7 +804,8 @@ class Migrator:
         subs = []
         for piece in pieces:
             sub = self.session(name, day, piece["raw_text"], created, git_mode,
-                               replay=piece if replay is not None else None, redo_repair=redo_repair, _depth=_depth + 1,
+                               replay=piece if replay is not None else None, redo_repair=redo_repair,
+                               earliest=earliest, _depth=_depth + 1,
                                _thinking=_thinking or bool(reasoning))
             subs.append(sub)
             for k in SUMMED:
@@ -781,7 +817,7 @@ class Migrator:
         return st
 
     def _apply(self, lines: list[list[str]], st: dict, day: str, created: str, text: str = "",
-               name: str = "") -> list[tuple[str, str]]:
+               name: str = "", earliest: str = "") -> list[tuple[str, str]]:
         """Apply planned lines to the store; returns the lines it refused, with why.
         text and name are this session's own (several sessions run at once)."""
         refused = []
@@ -799,6 +835,21 @@ class Migrator:
                 if ok.get(id(p)) and ground.stated(p[2], ref) and not ground.stated(p[2], text, day):
                     ok[id(p)] = False
                     st["copied"] = st.get("copied", 0) + 1
+            # Nor is a value only another agent wrote in the user's seat (a relay), or only the
+            # assistant said: the chat rule checks numbers only, so a worded value from either
+            # passed it ("GoDaddy sign-out state: signed out", the assistant's mid-task word).
+            # 11-06, the first nightly's logged output replayed: of the 83 graded lines it
+            # wrote, the reader's authors and this rule keep 15 (all 22 momentary states
+            # gone); the gate's LongMemEval suite: 0 fixed, 0 regressed.
+            said = ground.said_by_user(text)
+            for p in lines:
+                if ok.get(id(p)) and not ground.stated(p[2], said, day):
+                    if ground.stated(p[2], ground.relayed(text)):
+                        ok[id(p)] = False
+                        st["relayed"] = st.get("relayed", 0) + 1
+                    elif ground.stated(p[2], ground.assistant_said(text)):
+                        ok[id(p)] = False
+                        st["echoed"] = st.get("echoed", 0) + 1
         with self.lock:   # one store, several sessions
             s = self.store
             s.today = day
@@ -948,14 +999,24 @@ class Migrator:
                             fix = False
                             st["unflagged"] = st.get("unflagged", 0) + 1
                         since = parts[3] if dated else (created or day)
+                        # A line the text gives no date for was written some time from the
+                        # unit's earliest day on, so it is news after a day only when that
+                        # earliest day is. 10-28: a nightly commit dated the agent's 10-27 todo
+                        # line 10-28, and its shorter restatement replaced the value the agent
+                        # had checked on 10-27; the dated lines beside it were held.
+                        told = since if dated or not earliest else min(since, earliest)
                         held = (a is not None and not _same(parts[2], a.value) and _key(parts[2]) != _key(a.value)
                                 and not any(_key(parts[2]) == _key(x.value) for x in a.also)
-                                and (fix or since >= a.since) and trust_hold(a, since, "", False))
+                                and (fix or since >= a.since) and trust_hold(a, told, "", False))
                         if held:
                             # Trust order: a value a person or agent set (or confirmed) stands
                             # against a note that isn't dated after it. Not a refusal to repair.
                             st["held"] = st.get("held", 0) + 1
                             st.setdefault("refusals", []).append(f"{ln[:160]} -> not changed: {a.value} stays, {held}")
+                            if look_hold(a, "", False) and told > max(a.since, a.confirmed or ""):
+                                # News after the look: kept beside the value, and the entry is due.
+                                if s.dispute(parts[0], parts[1], parts[2], told):
+                                    st["disputed"] = st.get("disputed", 0) + 1
                             continue
                         another = bool(self.items is not None and a is not None and not fix
                                        and self._another(t, a, parts, since, text, name))
@@ -968,8 +1029,12 @@ class Migrator:
                         if not r.startswith("not ") and text:
                             # A receipt: the sentence this value was read from (a value
                             # said again keeps the receipt it has). From a note, the words
-                            # around the line that states it, at most SAID_CHARS of them.
-                            words = (ground.receipt(text, parts[2]) if g == "note"
+                            # around the line that states it about this thing (ground.quote),
+                            # at most SAID_CHARS of them.
+                            item, clause = (ground.quote(self._names(s, parts[0], lines), parts[2], text)
+                                            if g == "note" else ("", ""))
+                            words = ((item and ground.receipt(item, parts[2], near=clause)
+                                      or ground.receipt(text, parts[2])) if g == "note"
                                      else _items.evidence(text, parts[2], parts[1]))
                             if words:
                                 s.receipt(parts[0], parts[1], parts[2], words, day, keep=": still " in r)
@@ -995,6 +1060,15 @@ class Migrator:
                     st.setdefault("exceptions", []).append(f"{ln[:120]} -> {e!r}"[:300])
         return refused
 
+
+    @staticmethod
+    def _names(s: Store, thing: str, lines: list[list[str]]) -> list[str]:
+        """A thing's names for finding where a note speaks of it: as the line wrote it, as
+        memory has it (name and aliases), and the names this unit's "=" line gave it."""
+        t, k = s.find(thing), _key(base_name(thing))
+        given = [x for p in lines if p[0].startswith("=") and len(p) >= 2 and _key(base_name(p[0].lstrip("= "))) == k
+                 for x in [p[0].lstrip("= ").strip(), *p[1].split(";")] if x.strip(" -")]
+        return [thing, *given] + ([t.name, *t.aliases] if t else [])
 
     def _another(self, t, a, parts, since: str, text: str, name: str) -> bool:
         """Would this line move a different value into the trail? Then ask the
@@ -1053,15 +1127,17 @@ def replay(log: Path, out: Path, texts=None):
 
 
 def git_jobs(specs: list[str], skip: list[str], since: str = "", done: set | None = None) -> list[tuple]:
-    """Sessions from note repos: specs are "repo:commit:label" (commit may be HEAD)."""
+    """Sessions from note repos: specs are "repo:commit:label" (commit may be HEAD).
+    Each is (day, day, note, piece, text, of, earliest): earliest is the day its
+    lines could first have been written (_git_jobs)."""
     jobs = []
     for spec in specs:
         repo, commit, prefix = spec.rsplit(":", 2)
         found = list(_git_jobs(Path(repo).expanduser(), commit, prefix, skip, since))
-        of = Counter(name for _, name, _, _ in found)
-        for day, name, i, text in found:
+        of = Counter(name for _, name, _, _, _ in found)
+        for day, name, i, text, earliest in found:
             if (name, i) not in (done or set()) and (name, None) not in (done or set()):
-                jobs.append((day, day, name, i, text, of[name]))
+                jobs.append((day, day, name, i, text, of[name], earliest))
     return sorted(jobs)
 
 
@@ -1187,10 +1263,11 @@ def run(out: Path, jobs: list[tuple], workers: int = 2, git_mode: bool = True, l
     say(f"{len(jobs)} sessions")
 
     def go(job):
-        created, day, name, i, text, *of = job   # of: how many pieces the note has
+        created, day, name, i, text, *rest = job
+        of, earliest = rest[:1], rest[1] if len(rest) > 1 else ""   # of: how many pieces the note has
         for attempt in range(OUTAGE_TRIES):
             try:
-                st = m.session(name, day, text, created, git_mode=git_mode)
+                st = m.session(name, day, text, created, git_mode=git_mode, earliest=earliest)
                 break
             except Exception as e:
                 # Overnight the model can restart or get shed; wait it out rather

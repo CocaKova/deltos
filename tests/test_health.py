@@ -228,9 +228,23 @@ class StoreDeltaTest(unittest.TestCase):
         os.utime(q, ns=(q.stat().st_atime_ns, q.stat().st_mtime_ns + 10 ** 9))
 
     def test_two_tiny_stores(self):
-        with mock.patch.object(health, "_lint_total", return_value=None):
+        with mock.patch.object(health, "_lint_total", return_value=None), \
+                mock.patch.object(health, "_link_delta", return_value={}):
             d = health.store_delta(self.base, self.after)
         self.assertEqual(d, {"new_things": 2, "new_thin": 1, "changed_profiles": 1})
+
+    def test_link_delta(self):
+        # deltos/links.py: an entry whose value names another thing; added and removed by a run
+        from deltos.store import Store
+        b, a = Path(self.d.name) / "lb", Path(self.d.name) / "la"
+        for root in (b, a):
+            s = Store(root, today="2026-05-01")
+            s.name("Calder", [], "machine")
+            s.name("Brisk", [], "machine")
+            s.name("Gristle", [], "service")
+            s.remember("Gristle", "host", "Brisk", since="2026-04-01")
+        Store(a, today="2026-05-02").remember("Gristle", "host", "Calder", since="2026-05-02")
+        self.assertEqual(health._link_delta(b, a), {"links_added": 1, "links_removed": 1})
 
     def test_lint_delta_only_from_a_lint_that_answers_in_shape(self):
         fake = types.ModuleType("deltos.lint")
