@@ -45,7 +45,7 @@ class SurfaceTest(unittest.TestCase):
         self.assertIn("not recorded", self.m.call("remember", {"thing": "Nobody", "attribute": "host", "value": "x"}))
         with self.assertRaises(Refused):
             self.m.call("page_edit", {"ref": "missing", "new_text": "x"})
-        self.assertEqual(self.m.call("page_search", {"text": "anything"}), "(no matches)")
+        self.assertTrue(self.m.call("page_search", {"text": "anything"}).startswith("(no matches)"))
 
     def test_remember_another_keeps_both_current(self):
         self.m.call("name_thing", {"thing": "Sam", "kind": "person"})

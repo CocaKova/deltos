@@ -74,12 +74,13 @@ ON = WHERE | {"part of"}   # a link that says one thing is where another is, or 
 MOVE_DAYS = 30
 
 
-def moves(root: Path, today: str) -> dict[str, tuple[str, str, str]]:
+def moves(root: Path, today: str, recall=None) -> dict[str, tuple[str, str, str]]:
     """Things whose where-entry changed in the last MOVE_DAYS, and what depends on them:
-    {dependent profile: (moved thing, its label, the day)}; the nearest move wins."""
+    {dependent profile: (moved thing, its label, the day)}; the nearest move wins.
+    recall: a Recall already open on root (recall shows the move on the dependent's entries)."""
     from .recall import Recall
     out: dict[str, tuple[str, str, str]] = {}
-    r = None
+    r = recall
     for p in sorted((root / "notes").glob("*.md")):
         if p.name.startswith("log-") or p.name.endswith(("-history.md", "-extra.md")):
             continue
@@ -92,6 +93,12 @@ def moves(root: Path, today: str) -> dict[str, tuple[str, str, str]]:
                     if lk.exact and lk.key in ON and (dep not in out or out[dep][2] < a.since):
                         out[dep] = (t.name, a.name, a.since)
     return out
+
+
+def moved_entry(label: str, seen: str, mv: tuple[str, str, str]) -> bool:
+    """An entry a move may have made wrong: where the thing is (or a label that drifts),
+    not seen since the thing it depends on moved."""
+    return (drifts(label) or label.lower() in ON) and seen < mv[2]
 
 
 def due(root: Path, today: str = "", n: int = 20, min_days: int = MIN_DAYS) -> list[dict]:
@@ -115,7 +122,7 @@ def due(root: Path, today: str = "", n: int = 20, min_days: int = MIN_DAYS) -> l
         for k, a in t.attrs.items():
             seen = max(filter(None, [a.since, a.confirmed]), default="")
             mv = moved.get(f"notes/{p.name}")
-            mv = mv if mv and (drifts(a.name) or k in ON) and seen < mv[2] else None
+            mv = mv if mv and moved_entry(a.name, seen, mv) else None
             if a.value.lower() == RETIRED or k == "kind" or not (a.check or a.other or mv or drifts(a.name)
                                                                   or t.volatile.get(k) == "high"):
                 continue

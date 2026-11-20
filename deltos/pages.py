@@ -27,6 +27,9 @@ SKIP = ("*.bak*", "ARCHIVE-*", "MEMORY.md")   # rg also skips hidden dirs (.tras
 TOP_LINES = 3     # lines shown per page in a top() result
 LINE_CHARS = 300
 SEARCH_PER_PAGE = 3   # page_search lines per page (40 in all)
+SECTION_DATE = re.compile(r"^(#{2,3}) [^\n]{0,24}?\b((?:20\d\d-)?\d\d-\d\d)\b")   # a dated section head
+LOG_SECTIONS = 3        # dated sections that make a page a log (Pages.latest_section)...
+SNAPSHOT_OVERLAP = 0.4  # ...and the word overlap of consecutive sections that makes it a snapshot
 # Previews of chat pages (DELTOS_PREVIEW=1; opt-in until both models are scored).
 # 10-16: 71% of preview lines were the assistant's advice ("keep me updated on your
 # appointments") while the person's facts are in their own lines, and a chat turn
@@ -256,8 +259,18 @@ class Pages:
         if not text.strip():
             raise PageError("search text is empty.")
         rows = self._rg(["-F", "-e", text.strip()])
+        head, words = "", []
         if not rows:
-            return "(no matches)"
+            # Not the exact text: the lines that say all its words, in any form ("restart
+            # quarry gateway" finds "restarted the Quarry gateway"), so a miss isn't a
+            # re-search with other words. A real miss says so.
+            rows, words = self._all_words(text)
+            if not rows:
+                return (f"(no matches) No page says {text.strip()!r}"
+                        + (f", and no line has all of {', '.join(words)} in any form" if len(words) > 1 else "")
+                        + ". Pages don't hold it; memory_recall looks by thing.")
+            head = (f"No page says {text.strip()!r} exactly. Lines with all of its words "
+                    f"({', '.join(words)}, any form), newest page first:\n")
         dates = {p: _date(p) for p in {r[0] for r in rows}}
         rows.sort(key=lambda r: (dates[r[0]], -r[1]), reverse=True)
         # A common word filled all 40 lines from the newest few pages, and an
@@ -271,18 +284,72 @@ class Pages:
             if len(shown) < limit and per.get(p, 0) < cap:
                 shown.append((p, t))
                 per[p] = per.get(p, 0) + 1
-        out = [f"[{self.ref(p)} · {dates[p]}] {_window(t, {text.strip().lower(): 1.0})}" for p, t in shown]
+        hl = {text.strip().lower(): 1.0} if not head else {w: 1.0 for w in words}
+        out = [f"[{self.ref(p)} · {dates[p]}] {_window(t, hl)}" for p, t in shown]
         # Name where the rest is, so page_read can open it: a page cut short
         # with how many lines it has left, and pages not shown at all.
         total = {p: sum(1 for r in rows if r[0] == p) for p in pages}
         more = [f"{self.ref(p)} (+{total[p] - per.get(p, 0)})" for p in pages if total[p] > per.get(p, 0)]
         if more:
             out.append(f"... {len(rows) - len(shown)} more lines, in: {', '.join(more[:20])}" + (" ..." if len(more) > 20 else ""))
-        return "\n".join(out)
+        return head + "\n".join(out)
+
+    def _all_words(self, text: str) -> tuple[list[tuple[Path, int, str]], list[str]]:
+        """Lines that hold every word of text (3+ letters, no stop words), each as its stem
+        ("restarted" / "restart"), and those stems. One word that is the whole text: its stem."""
+        from .recall import _stem
+        words = [w for w in re.findall(r"[a-z0-9][a-z0-9._-]{2,}", text.lower()) if w not in STOP]
+        stems = list(dict.fromkeys(_stem(w) for w in words))
+        if not stems or (len(stems) == 1 and stems[0] == text.strip().lower()):
+            return [], stems
+        rows = self._rg(["-F"] + [x for w in stems for x in ("-e", w)])
+        return [r for r in rows if all(w in r[2].lower() for w in stems)], stems
+
+    # -- what a page says now (the per-turn block) --------------------------------------
+
+    @staticmethod
+    def latest_section(path: Path) -> tuple[int, int] | None:
+        """For a snapshot page, the lines of its newest section: (first, last); else None.
+        A snapshot page grows by dated sections ("## 2026-11-20", "## Week of 2026-11-16":
+        at least LOG_SECTIONS of them) that each restate the whole list (consecutive
+        sections share SNAPSHOT_OVERLAP of their words or more): the older ones are
+        history, so in the per-turn block the page says what it says now. 11-20: a daily
+        to-do page, 78 days in one file (overlap 0.65), was in 18% of blocks through items
+        repeated from earlier days. A page whose dated sections add new facts (a project's
+        log, 0.10-0.22 on 20 such pages) is not one: its older sections still hold."""
+        lines = path.read_text(errors="replace").splitlines()
+        heads = [(i, m) for i, ln in enumerate(lines, 1) if (m := SECTION_DATE.match(ln))]
+        if not heads:
+            return None
+        level = min(len(m.group(1)) for _, m in heads)
+        heads = [(i, m) for i, m in heads if len(m.group(1)) == level]
+        if len(heads) < LOG_SECTIONS:
+            return None
+        day = lambda m: m.group(2) if len(m.group(2)) == 10 else "0000-" + m.group(2)
+        secs = []
+        for i, m in heads:
+            end = next((j - 1 for j in range(i + 1, len(lines) + 1) if lines[j - 1].startswith("#")
+                        and len(lines[j - 1]) - len(lines[j - 1].lstrip("#")) <= level), len(lines))
+            words = set(re.findall(r"[a-z]{4,}", " ".join(lines[i:end]).lower()))
+            secs.append((day(m), i, end, words))
+        secs.sort(key=lambda x: x[0], reverse=True)
+        near = secs[:4]
+        share = [len(x[3] & y[3]) / max(1, len(x[3] | y[3])) for x, y in zip(near, near[1:])]
+        if sum(share) / len(share) < SNAPSHOT_OVERLAP:
+            return None
+        return near[0][1], near[0][2]
+
+    @staticmethod
+    def _first_head(path: Path) -> int:
+        """The line of a page's first dated head (what is above it: title, intro)."""
+        for i, ln in enumerate(path.read_text(errors="replace").splitlines(), 1):
+            if SECTION_DATE.match(ln):
+                return i
+        return 0
 
     def top(self, question: str, n: int = 3, skip_terms: tuple[str, ...] = (),
             min_cover: int = 1, extra_terms: dict[str, float] | None = None,
-            names: list[str] | None = None) -> list[tuple[str, str, list[str]]]:
+            names: list[str] | None = None, current: bool = False) -> list[tuple[str, str, list[str]]]:
         """Pages that match the most (and rarest) words of a question:
         [(ref, date, best lines)], the date being the page's newest (its own, or
         the newest dated entry among the lines that matched). Brain-free ranking,
@@ -294,7 +361,10 @@ class Pages:
         page still needs the question's own words, min_cover of them.
         names: names of things the question is about that it doesn't say itself (a
         role word reached them through links, or another of their names). A name
-        weighs like a question word and counts as one toward min_cover."""
+        weighs like a question word and counts as one toward min_cover.
+        current: the per-turn block: what pages say now (latest_section). 11-20: pages a
+        folder's index no longer links were tried out of the block and lost the answer to 3
+        live questions (an index trimmed for length still has true pages outside it)."""
         terms = query_terms(question, skip_terms)
         named = sorted({x.lower().strip() for x in names or [] if len(x.strip()) >= 3} - set(terms))
         terms = terms + named
@@ -304,6 +374,11 @@ class Pages:
                  if w not in terms and w not in STOP and w not in skip_terms}
         every = sorted(set(terms) | set(extra))
         rows = self._rg(["-F"] + [x for t in every for x in ("-e", t)])
+        if current:
+            span = {p: self.latest_section(p) for p in {r[0] for r in rows}}
+            above = {p: self._first_head(p) for p in span if span[p]}
+            rows = [r for r in rows if span[r[0]] is None or span[r[0]][0] <= r[1] <= span[r[0]][1]
+                    or r[1] < above[r[0]]]
         per: dict[Path, dict[int, set[str]]] = {}
         heads: dict[Path, set[int]] = {}
         line_of: dict[tuple[Path, int], str] = {}

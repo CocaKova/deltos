@@ -239,6 +239,13 @@ keeps how to look, under its line:
   `memory_checks`, and a `check:` line shows in the block only under a line
   marked "not confirmed in N weeks" (`[recall] doubt_days`). Off (the
   default), the store still keeps check lines and the CLI still works.
+- With `[seen] on = true`, a harness may hand memory each result of the agent's
+  tools. When the call looked at a thing (it names it, or it ran on the thing
+  `[seen] here` names) and the result gives another number for a current entry
+  of that thing, the agent is told what memory holds, once per chat; memory
+  writes nothing itself. Each such note is a row in `seen/<YYYY-MM>.jsonl` (time,
+  a short hash of the chat's id, and per entry the thing, the label and what the
+  number stood beside): never a value or the result's text.
 - A note never overturns a look. An import line that disagrees with a value a
   person or agent saw (the entry has a `check:` line) is kept beside it, not over
   it, whatever the line's date:

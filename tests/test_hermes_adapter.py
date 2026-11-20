@@ -282,6 +282,84 @@ class HermesAdapterTest(unittest.TestCase):
                 self.assertLogs(adapter.logger, "WARNING"):
             self.p.on_session_end([])
 
+    # -- [seen]: memory reads the results of the agent's tools -------------------------
+
+    def _seeing(self, on: bool = True, extra: str = ""):
+        m = Memory(self.root, agent="Ava")
+        m.call("remember", {"thing": "Box-7", "attribute": "kernel version", "value": "6.1.0"})
+        toml = self.root / "deltos.toml"
+        toml.write_text(toml.read_text() + (f'\n[seen]\non = true\nhere = "Box-7"\n' if on else "") + extra)
+        p = self.held = adapter.DeltosProvider()   # the table holds providers weakly: keep this one alive
+        p.initialize(session_id="t1", platform="tui")
+        return p
+
+    def _run(self, result, tool="terminal", sid="t1", args=None):
+        ran = []
+        out = adapter.after_tool(tool_name=tool, args=args or {"command": "uname -r"},
+                                 next_call=lambda a: ran.append(a) or result, session_id=sid, turn_id="x")
+        self.assertEqual(len(ran), 1)   # the tool ran once, with its arguments
+        return out
+
+    def test_a_tool_result_that_shows_another_number_ends_with_the_note(self):
+        self._seeing()
+        out = json.loads(self._run(json.dumps({"output": "kernel version 6.8.0", "exit_code": 0})))
+        self.assertEqual((out["output"], out["exit_code"]), ("kernel version 6.8.0", 0))
+        self.assertIn("- Box-7 · Kernel version: 6.1.0", out["memory"])
+        # once per chat; another chat of the same provider is told again
+        self.assertEqual(self._run("kernel version 6.8.0"), "kernel version 6.8.0")
+        other = adapter.DeltosProvider()
+        other.initialize(session_id="t2")
+        text = self._run("kernel version 6.8.0", sid="t2")
+        self.assertTrue(text.startswith("kernel version 6.8.0\n\n[memory] "))
+
+    def test_results_memory_does_not_read(self):
+        p = self._seeing()
+        same, moved = "kernel version 6.1.0", "kernel version 6.8.0"
+        self.assertEqual(self._run(same), same)                              # it agrees
+        self.assertEqual(self._run(moved, tool="memory_show"), moved)        # deltos's own tool
+        self.assertEqual(self._run(moved, tool="skill_view"), moved)         # the agent's bookkeeping
+        self.assertEqual(self._run(moved, tool="kanban_show"), moved)
+        self.assertEqual(self._run(moved, sid="someone-else"), moved)        # a chat with no deltos provider
+        self.assertEqual(self._run({"output": moved}), {"output": moved})    # not text
+        self.assertEqual(self._run(""), "")
+        self.assertIn("[memory]", self._run(moved))                          # and none of those used it up
+        self.assertIs(adapter._sessions().by_id["t1"](), p)
+
+    def test_seen_is_off_unless_switched_on(self):
+        self._seeing(on=False)
+        self.assertEqual(self._run("kernel version 6.8.0"), "kernel version 6.8.0")
+
+    def test_a_cron_run_with_no_block_gets_no_note(self):
+        self._seeing(extra='\n[hermes]\ncron_block = "off"\n')
+        cron = adapter.DeltosProvider()
+        cron.initialize(session_id="c9", platform="cron")
+        self.assertEqual(self._run("kernel version 6.8.0", sid="c9"), "kernel version 6.8.0")
+        self.assertIn("[memory]", self._run("kernel version 6.8.0", sid="t1"))
+
+    def test_a_failure_reading_leaves_the_result_and_a_failing_tool_still_fails(self):
+        self._seeing()
+        with mock.patch.object(Memory, "seen", side_effect=OSError("disk gone")):
+            self.assertEqual(self._run("kernel version 6.8.0"), "kernel version 6.8.0")
+
+        def boom(a):
+            raise KeyError("tool broke")
+        with self.assertRaises(KeyError):
+            adapter.after_tool(tool_name="terminal", args={}, next_call=boom, session_id="t1")
+
+    def test_a_switched_session_keeps_its_provider(self):
+        p = self._seeing()
+        p.on_session_switch("t1-next")
+        self.assertIn("[memory]", self._run("kernel version 6.8.0", sid="t1-next"))
+
+    def test_register_adds_the_middleware_and_survives_a_hermes_without_it(self):
+        ctx = mock.MagicMock()
+        adapter.register(ctx)
+        ctx.register_middleware.assert_called_once_with("tool_execution", adapter.after_tool)
+        ctx = mock.MagicMock()
+        ctx.register_middleware.side_effect = AttributeError("no middleware")
+        adapter.register(ctx)
+        ctx.register_memory_provider.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -22,7 +22,7 @@ import { jsx, jsxs } from 'react/jsx-runtime'
 
 const ID = 'deltos'
 /** Kept in step with dashboard/plugin_api.py, dashboard/manifest.json and plugin.yaml (a test checks). */
-const PLUGIN_VERSION = '0.2.0'
+const PLUGIN_VERSION = '0.3.0'
 const ROUTE = '/deltos'
 /** The summary strip and the "Changed" filter both look one week back. */
 const WEEK = 7

@@ -51,6 +51,11 @@ A new store starts with the "not confirmed" note at 21 days and checks on
 (`deltos.toml` in the memory folder; edit it freely). A store you already have is
 left exactly as it is.
 
+One more switch is off until you turn it on: `[seen] on = true` in that file.
+With it, when a command the agent runs for some other reason shows a version or
+a port that memory has differently, the agent is told what memory holds and can
+correct it on the spot.
+
 ## What you get
 
 **In every turn.** The memory block for the message, built from the files in well

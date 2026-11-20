@@ -1,9 +1,12 @@
 name: deltos
 label: Deltos
-version: "0.2.0"
+version: "0.3.0"
 description: "Memory that knows what is true now, what it was before, and when it has not checked lately. Dated facts per thing in plain markdown: no embeddings, no index server, no model on the read path."
 author: CocaKova
 requires_hermes: ">=0.22.5"
 # The memory provider gives the agent its tools (named in README.md); register() adds none itself.
 provides_tools: []
 provides_hooks: []
+# With [seen] on, memory reads what the agent's tools return (deltos/seen.py). Off by default.
+provides_middleware:
+  - tool_execution

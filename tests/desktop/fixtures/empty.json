@@ -1,7 +1,7 @@
 {
  "/health": {
   "ok": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "root": "~/deltos-demo",
   "today": "2026-11-10",
   "things": 0

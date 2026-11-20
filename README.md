@@ -279,13 +279,23 @@ The 37 held-out misses, each checked against the memory the reader actually used
   first night on a live store wrote 98 lines from 12 chats, about one in five
   worth keeping (most came from chats where another agent, not a person, was
   doing the talking), and the run was undone. The fixes that followed write 15
-  lines where the first night's rules wrote 83 on a replay, and have not been
-  graded on new chats. Until they pass, `[learn] auto` stays off, and every sweep
-  is a staged run you can undo.
+  lines where the first night's rules wrote 83 on a replay of that night. On a
+  fresh week of chats they did worse, not better: 9 of 67 lines worth keeping
+  (13%), against 22 of 71 (31%) for the old prompt. Most of the bad lines are
+  one-off instructions from another agent's briefs, kept as if they were facts
+  about the person. Until a version passes, `[learn] auto` stays off, and every
+  sweep is a staged run you can undo.
 - **One prompt example to neutralize.** The import prompt's worked example names
   the author's own app. A refusal message's example name, which the model copied
   into 11 of the 15,867 memory-building outputs, is now a made-up one; that swap
   wasn't scored on two models first, against this project's own rule.
+- **Three tool texts in 0.3.0 scored on the gate only.** `remember` now states
+  its limits up front (a value of at most 10 words; what a setting and a status
+  are), since 53 of one agent's 188 saves in a month were refused first for
+  breaking them. Its `check` field says that what a person said, or what a note
+  says, is not a check. `memory_recall` says "what points at X" walks the links.
+  All three passed the gate with no change; none was scored on a second model,
+  against this project's own rule.
 - **The agent's own save tool keeping a second item.** The import's items check
   keeps "another one" beside the first; the agent's `remember` tool still
   replaces it. An `another` option is being added (`DELTOS_REMEMBER_ANOTHER=1`,
@@ -343,9 +353,19 @@ A profile entry:
 - **Receipts.** The import keeps the sentence a current value was read from
   under it (`said: "..."`), so you can see why memory believes it.
 
+- **Write receipts.** A write's answer says what memory knows about it: a new
+  label beside one the thing already has that may hold the same fact ("Setting
+  MTU" next to "Setting qsfp MTU"), and a value that says what happened
+  ("restarted") under a label for how the thing is now. A receipt never refuses.
+
 **The read path** finds the things a message names (or describes), takes their
 entries and one hop of links (older values only when the question asks about the
-past), adds the best-matching pages and fits the block to a budget.
+past), adds the best-matching pages and fits the block to a budget. A page that
+grows by dated sections, each restating the whole list (a daily to-do), counts
+only its newest section there; a search still sees every day. A search for exact
+text that finds nothing falls back to the lines holding all its words in any
+form, and a real miss says so; a name memory doesn't know comes back with the
+nearest names it does.
 
 **Reading links** (`[recall] links = true`; off by default until the reader is
 scored on two models). The block shows a link from both ends: what runs on a
@@ -353,7 +373,10 @@ machine, who owns what, who is someone's partner. A role word goes through the
 owner's own links ("my grandma", "the machines I own", "my clients"). It also
 shows what depends on a thing two links away, the chain between two things the
 question puts together (marked as worked out, not stored), and a linked thing
-that was retired, or changed after the entry pointing at it was set. Pages
+that was retired, or changed after the entry pointing at it was set. An entry
+whose thing runs on (or is part of) a thing that moved since it was last seen
+says so where it is read: `Host: nas (since 2026-08-09; vault-1 it depends on
+changed host 2026-10-26)`. Pages
 about a thing reached that way are found by its names. A write's receipt says
 what the value links to and which names in it memory doesn't know yet. Lint
 lists links that are unusual for their label, or point at a thing that was
@@ -394,6 +417,51 @@ measured error on live state: how often a look found the value had changed, per
 label. A note never overturns a look: an import line that disagrees with a value
 someone saw is kept beside it (`said otherwise`, above), and the entry goes to
 the top of what is due.
+
+`[checks] limits = true` (off by default) also tells the agent when not to look:
+an entry seen lately is used as it stands, and a thing that one or two tries do
+not reach is answered from memory, as unconfirmed. In one-message chats with a
+real agent on one local model, three each way: asked for a port confirmed that
+week, the agent went looking anyway in 3 of 3 chats without it (3 to 4 tool
+calls, 54 to 112 s) and in none with it (29 to 55 s); asked whether a service it
+could not reach was still live, it made 10 to 15 calls without it and 6 to 10
+with it, and said "unconfirmed" either way.
+
+**Seen: what the agent's own tools show** (`[seen] on = true`; off by default).
+An agent at work runs commands for other reasons, and their output often shows
+that something memory holds has moved: a status line with a newer version, a
+system summary with a newer OS. Asked nothing about it, the agent says nothing,
+and memory stays wrong. With this on, memory reads each tool result. When the
+call looked at a thing memory knows (one the call names, or the machine the tools
+run on) and the output gives another number for one of its entries, the result
+ends with what memory holds:
+
+```
+[memory] On what this touched, memory holds:
+- Orchard · Version: 3.5.0 (since 2026-06-01; not confirmed in 5 months)
+If this output shows another value for the same thing, `remember` the new value, ...
+```
+
+The agent decides; memory writes nothing by itself. An entry is told once per
+chat. An output that agrees gets nothing, and neither does a thing named only in
+an output (a listing is about none of them). It reads numbers (a version, a port,
+`vps-3`, a count), since without a model memory can tell that two numbers differ
+and not that two phrases do; a status word or an owner is still the checks' job.
+`[seen] here` names the thing the tools run on (the Hermes plugin uses the host
+name). Each note is a row in `seen/<YYYY-MM>.jsonl`: things and labels, never
+text. It needs a harness that hands memory its tools' results; the Hermes plugin
+does, and over MCP alone nothing calls it.
+
+Measured on one local model, so read it as a first result. One-message chats with
+a real agent: asked to write and run a system summary on a machine whose Python
+version memory had wrong, the agent corrected the entry in 0 of 3 chats without
+this and 8 of 8 with it; asked what stood out in a slow service's status, it
+corrected the stale version in 0 of 3 and 8 of 8. With memory already right there
+was no note and nothing written, 5 of 5. The new value is sometimes written longer
+than the old one (`3.12.3 (system /usr/bin/python3)`). On two weeks of one agent's
+real tool results (4,216), 3.7% ended with a note, a median of two in a chat that
+got any, and reading a result took a median of 5 ms. `python3 -m bench.checkloop
+--parts passing --arms on,seen` is the same question on a made-up world.
 
 The file format is specified in [deltos/SPEC.md](deltos/SPEC.md).
 
@@ -527,6 +595,16 @@ doubt_days = 21                      # a current entry that drifts (status, vers
 on = true                            # agents get `remember`'s `check` and the `memory_checks` tool.
                                      # false (default): the store still keeps check lines, and
                                      # `deltos checks` still works
+limits = true                        # the agent is also told when not to look: an entry seen lately is
+                                     # used as it stands; a thing one or two tries do not reach is
+                                     # answered from memory, as unconfirmed. false (default)
+
+[seen]
+on = true                            # memory reads what the agent's tools return, and a result that shows
+                                     # another number for an entry ends with what memory holds.
+                                     # false (default)
+here = "Box-7"                       # the thing the tools run on, by a name memory has for it
+                                     # (default: what the adapter knows; Hermes: the host name)
 
 [pages]
 write = "~/notes"                    # documents the agent may edit

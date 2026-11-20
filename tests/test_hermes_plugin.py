@@ -301,11 +301,12 @@ class CliTest(Base):
 class ManifestTest(unittest.TestCase):
     def test_plugin_yaml_declares_what_register_registers(self):
         # Hermes' validator compares these with what register() registers through the context:
-        # no tools (the memory provider hands the agent its own) and no hooks. The README names
-        # every tool the agent gets.
+        # no tools (the memory provider hands the agent its own), no hooks, and the one middleware
+        # that reads a tool's result ([seen]). The README names every tool the agent gets.
         text = (PLUGIN / "plugin.yaml").read_text()
         self.assertEqual(yaml_list(text, "provides_tools"), [])
         self.assertEqual(yaml_list(text, "provides_hooks"), [])
+        self.assertEqual(yaml_list(text, "provides_middleware"), ["tool_execution"])
         readme = (PLUGIN / "README.md").read_text()
         for t in tools_for("plain", True):
             self.assertIn(f"`{t['name']}`", readme)

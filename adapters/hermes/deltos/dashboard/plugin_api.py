@@ -19,7 +19,7 @@ router = APIRouter()
 
 # Kept in step with plugin.yaml and desktop/plugin.js (a test checks all three):
 # the pane compares it with its own to spot a backend still running old code.
-PLUGIN_VERSION = "0.2.0"
+PLUGIN_VERSION = "0.3.0"
 
 PLUGIN = Path(__file__).resolve().parent.parent
 MAX_DAYS = 3650

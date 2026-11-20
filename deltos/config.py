@@ -34,6 +34,18 @@ $DELTOS_ROOT or ~/deltos. Every key is optional:
     on = true                            # agents get remember's `check` (how they just saw a value) and the
                                          # memory_checks tool (what is due for a look); blocks show a `check:`
                                          # line under a "not confirmed" one; unset = off ($DELTOS_CHECKS wins)
+    limits = true                        # the instructions also say when not to look: a line without the "not
+                                         # confirmed" mark is used as it stands, and a thing one or two tries do
+                                         # not reach is answered from memory, as unconfirmed; unset = off
+                                         # ($DELTOS_CHECK_LIMITS wins)
+
+    [seen]                               # deltos/seen.py: memory reads what the agent's tools return
+    on = true                            # when a tool result shows another number (a version, a port) for a thing
+                                         # the call named, or for the place the tools run, the agent is told what
+                                         # memory holds on it, once per chat. Needs a harness that hands memory its
+                                         # tool results (the Hermes adapter does); unset = off ($DELTOS_SEEN wins)
+    here = "This machine"                # the thing the agent's tools run on, by a name memory knows; unset = the
+                                         # adapter's guess (the host name)
 
     [tools]
     descriptions = "when"                # tool descriptions that also say WHEN to use each tool (remember: the
@@ -113,7 +125,8 @@ class Config:
     learn: dict = field(default_factory=dict)    # chat learning ([learn]: auto, days, max_units)
     recall: dict = field(default_factory=dict)   # reading ([recall]: doubt_days, cues)
     tools: dict = field(default_factory=dict)    # what the agent is given ([tools]: descriptions)
-    checks: dict = field(default_factory=dict)   # looking again ([checks]: on)
+    checks: dict = field(default_factory=dict)   # looking again ([checks]: on, limits)
+    seen: dict = field(default_factory=dict)     # reading tool results ([seen]: on, here)
     llm_key_env: str = "DELTOS_LLM_KEY"          # the variable [llm] key_env names (the key itself: llm["key"])
 
     @classmethod
@@ -144,6 +157,7 @@ class Config:
             recall=dict(d.get("recall", {})),
             tools=dict(d.get("tools", {})),
             checks=dict(d.get("checks", {})),
+            seen=dict(d.get("seen", {})),
             llm_key_env=key_env,
             llm={"url": llm.get("url", ""), "model": llm.get("model", ""), "key": key,
                  **{k: dict(llm[k]) for k in ("extra", "thinking_off", "thinking_on") if llm.get(k)},

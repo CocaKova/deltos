@@ -43,7 +43,7 @@ class PagesTest(unittest.TestCase):
         with self.assertRaisesRegex(PageError, "exactly one"):
             self.p.edit(ref, "x", "not there")
         self.p.forget(ref)
-        self.assertEqual(self.p.search("vm-7"), "(no matches)")
+        self.assertTrue(self.p.search("vm-7").startswith("(no matches)"))
         self.assertTrue((self.tmp / "pages/.trash" / ref).exists())
         with self.assertRaisesRegex(PageError, "structural"):
             self.p.forget("index.md")

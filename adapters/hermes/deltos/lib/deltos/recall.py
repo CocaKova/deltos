@@ -15,6 +15,7 @@ import datetime
 import gzip
 import os
 import re
+from bisect import bisect_right
 from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
@@ -463,6 +464,7 @@ class Recall:
         # Live-verified: post-restart" matching "verified" and "restart".
         self.dormant = {p for p, ln in self.status_line.items() if dormant(_value(ln))}
         self._graph = None
+        self._moves = None   # deltos/checks.py moves, read on first use (moved)
         self._build_index()
 
     @property
@@ -494,6 +496,31 @@ class Recall:
         if age < DOUBT_DAYS or churn < DOUBT_CHURN or later < DOUBT_LATER:
             return ""
         return f" [may be outdated: unconfirmed {age} days; {later} later changes on this thing]"
+
+    def moved(self, prof: str, line: str) -> str:
+        """The current line with "; <thing> it depends on changed <label> <day>" in its
+        (since ...) when what it runs on or is part of moved after this entry was last
+        seen (deltos/checks.py moves). The same signal the due list gives, at the moment
+        the entry is read: a recall must not hand over the old host as if nothing moved."""
+        if not self.links_on:
+            return line
+        if self._moves is None:
+            from .checks import moves
+            try:
+                self._moves = moves(self.root, self.today or datetime.date.today().isoformat(), recall=self)
+            except Exception:
+                self._moves = {}
+        mv = self._moves.get(prof)
+        when = re.search(r"\(since (\d{4}-\d\d-\d\d)[^)]*\)", line) if mv else None
+        if not when:
+            return line
+        from .checks import moved_entry
+        lab = line.split(":**")[0].removeprefix("- **").strip()
+        seen = max([when.group(1)] + re.findall(r"confirmed (\d{4}-\d\d-\d\d)", when.group(0)))
+        if lab.lower().startswith("setting ") or not moved_entry(lab, seen, mv) \
+                or _value(line).lower() == mv[0].lower():
+            return line   # "Runs on: Calder" names the moved thing: it is still right
+        return line[:when.end() - 1] + f"; {mv[0]} it depends on changed {mv[1].lower()} {mv[2]}" + line[when.end() - 1:]
 
     def unconfirmed(self, line: str) -> str:
         """The current line with "; not confirmed in N weeks" in its (since ...) when
@@ -575,13 +602,12 @@ class Recall:
         starts = [i for i in range(len(ql)) if edge(i - 1)]
         ends = [j for j in range(1, len(ql) + 1) if edge(j)]
         found = {}
+        # Each start with the ends after it, up to the longest name: walking every end for
+        # every start took ~20 ms on a 4k text, 3x this (11-11: the output of a tool, deltos/seen.py).
+        after = lambda i: ends[bisect_right(ends, i):bisect_right(ends, i + self._longest)]
         for index in self._index:   # full names first; short names only when none
             for i in starts:
-                for j in ends:
-                    if j <= i:
-                        continue
-                    if j - i > self._longest:
-                        break
+                for j in after(i):
                     for gi, n, plain in index.get(ql[i:j], ()):
                         if gi in skip:
                             continue
@@ -596,11 +622,7 @@ class Recall:
             # of null"), so an exact name keeps its place ("Breeze TTS" = Breeze + TTS).
             exact = [(v[0], v[2]) for v in found.values()]
             for i in starts:
-                for j in ends:
-                    if j <= i:
-                        continue
-                    if j - i > self._longest:
-                        break
+                for j in after(i):
                     for gi, n, plain in self._compact.get(ql[i:j].translate(_SEPS), ()):
                         if gi in skip or gi in found or any(i < e and s < j for s, e in exact):
                             continue
@@ -991,7 +1013,7 @@ class Recall:
                 if j and x.startswith("  - check: ") and not (self.checks_on and "; not confirmed in " in head):
                     continue   # how to look: shown only where the reader may need to look
                 if j == 0:
-                    head = self.unconfirmed(x.rstrip())
+                    head = self.moved(prof, self.unconfirmed(x.rstrip()))
                 out.append((prof, d, head + self.doubt(prof, x) if j == 0 else x.rstrip()))
                 if j == 0 and self.links_on:
                     asked_b = any(_same_word(t, w) for t in terms for w in lab_words(b))

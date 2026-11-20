@@ -24,6 +24,12 @@ and the things and pages shown; never message text). When a session ends or a
 gateway starts, `python3 -m deltos.learn --wait` is started in the background
 if learning is on (deltos.learn decides; it waits until the agent is idle). Its
 model key comes from Hermes' own lookup for the active profile (_profile_key).
+
+With [seen] on, memory also reads what the agent's tools return (deltos/seen.py): a
+`tool_execution` middleware lets the tool run as it would, and when its result shows
+another number for a thing the call named (or for this machine), the result ends with
+a short `[memory]` note of what memory holds. Each entry once per chat; a failure
+leaves the result as it was.
 """
 from __future__ import annotations
 
@@ -35,10 +41,13 @@ import json
 import logging
 import os
 import re
+import socket
 import subprocess
 import sys
 import threading
 import time
+import types
+import weakref
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -91,6 +100,17 @@ COMMAND_HELP = "what memory holds, one thing's history, what changed, what is du
 CRON_NOTICE = re.compile(r"\A\s*\[IMPORTANT: .*?\](?:\s*\n\n|\s*\Z)", re.S)
 PROFILE = re.compile(r"^Profile entries \[([^ \]·]+)")
 PAGE = re.compile(r"^\[([^\]·\n]+?) · ")
+
+# Tools whose result is no look at the world (the agent's own notes, plans and messages):
+# memory does not read them. Deltos's own tools are left out by name (Memory.tools).
+NOT_WORLD = {"skill_view", "skill_manage", "skills_list", "session_search", "clarify", "todo", "tool_search",
+             "tool_describe", "patch", "write_file", "delegate_task", "send_message", "cronjob", "memory"}
+NOT_WORLD_PREFIX = ("kanban_",)
+SEEN_SESSIONS = 256    # chats whose told entries are kept (the least recent is dropped)
+try:
+    HERE = socket.gethostname()   # the machine the tools run on, unless [seen] here names it
+except OSError:
+    HERE = ""
 
 _kick_lock = threading.Lock()
 _last_kick: float | None = None   # time.monotonic() of this process's last learn start
@@ -146,9 +166,65 @@ def _profile_key(env: dict, name: str) -> None:
         env.pop(name, None)
 
 
+def _sessions():
+    """session id -> its provider, one table for the process. Hermes builds a provider per
+    agent and may load this file more than once, while a middleware is registered for all
+    of them: whichever copy is called finds the chat's own provider here."""
+    mod = sys.modules.get("deltos_plugin_sessions")
+    if mod is None:
+        mod = types.ModuleType("deltos_plugin_sessions")
+        mod.lock, mod.by_id = threading.Lock(), OrderedDict()
+        mod = sys.modules.setdefault("deltos_plugin_sessions", mod)
+    return mod
+
+
+def _claim(session_id: str, provider) -> None:
+    if not session_id:
+        return
+    t = _sessions()
+    with t.lock:
+        t.by_id[session_id] = weakref.ref(provider)
+        t.by_id.move_to_end(session_id)
+        while len(t.by_id) > 4 * SEEN_SESSIONS:
+            t.by_id.popitem(last=False)
+
+
+def after_tool(tool_name: str = "", args=None, next_call=None, **context):
+    """Hermes `tool_execution` middleware: the tool runs as it would, then the chat's
+    memory reads its result (DeltosProvider.seen). A chat with no deltos provider, and
+    any failure here, gets the result untouched."""
+    result = next_call(args)
+    try:
+        sid = str(context.get("session_id") or "")
+        t = _sessions()
+        with t.lock:
+            ref = t.by_id.get(sid)
+        provider = ref() if ref else None
+        if provider is not None:
+            return provider.seen(tool_name, args, result, sid)
+    except Exception as exc:
+        logger.debug("deltos did not read the result of %s: %s", tool_name, exc)
+    return result
+
+
+def _with_note(result: str, note: str) -> str:
+    """The result with memory's note at its end: as a "memory" key when the result is a
+    JSON object (what reads it as JSON still can), else as text after it."""
+    if result.lstrip().startswith("{"):
+        try:
+            d = json.loads(result)
+            if isinstance(d, dict) and "memory" not in d:
+                return json.dumps({**d, "memory": note}, ensure_ascii=False)
+        except ValueError:
+            pass
+    return result.rstrip("\n") + "\n\n" + note
+
+
 class DeltosProvider(MemoryProvider):
     def __init__(self):
         self._lock = threading.Lock()
+        self._seen_lock = threading.Lock()   # one tool result read at a time (tools may run side by side)
+        self._shown: OrderedDict[str, set] = OrderedDict()   # session id -> entries a note already told it
         self._memory = None
         self._takes_previous = False
         self._sid = ""
@@ -245,6 +321,7 @@ class DeltosProvider(MemoryProvider):
         # Hermes builds one provider per agent and says what runs it: a scheduled job
         # comes as platform / agent_context "cron" ([hermes] cron_block decides its block).
         self._cron = "cron" in (kwargs.get("agent_context"), kwargs.get("platform"))
+        _claim(session_id, self)
         logger.info("deltos memory ready (root=%s, lib=%s)", self._m().root, SRC)
         self._kick("startup")   # sessions that ended while no gateway ran
 
@@ -318,6 +395,30 @@ class DeltosProvider(MemoryProvider):
         except Exception as exc:
             logger.debug("deltos read log not written: %s", exc)
 
+    def seen(self, tool_name: str, args, result, session_id: str = ""):
+        """A tool's result, with memory's note at its end when it shows another number for
+        a thing memory holds (deltos/seen.py; [seen] on). Read: the results of tools that
+        look at the world, as text. Not read: deltos's own tools, the agent's bookkeeping
+        (NOT_WORLD), a cron run whose block is off, anything that is not text."""
+        if not isinstance(result, str) or not result.strip():
+            return result
+        m = self._m()
+        if not getattr(m, "seeing", False):   # off, or a deltos library older than this plugin
+            return result
+        if tool_name in NOT_WORLD or tool_name.startswith(NOT_WORLD_PREFIX) \
+                or tool_name in {t["name"] for t in m.tools}:
+            return result
+        if self._cron and str(m.config.hermes.get("cron_block", "full")).lower() == "off":
+            return result
+        sid = session_id or self._sid
+        with self._seen_lock:
+            shown = self._shown.setdefault(sid, set())
+            self._shown.move_to_end(sid)
+            while len(self._shown) > SEEN_SESSIONS:
+                self._shown.popitem(last=False)
+            note = m.seen(args if args is not None else "", result, here=HERE, shown=shown, session=sid)
+        return _with_note(result, note) if note else result
+
     def system_prompt_block(self) -> str:
         m = self._m()
         extra = _extra_block(os.environ.get("DELTOS_EXTRA_BLOCK") or m.config.hermes.get("extra_block", ""))
@@ -330,6 +431,7 @@ class DeltosProvider(MemoryProvider):
             with self._lock:
                 self._last.pop(self._sid, None)
         self._sid = new_session_id
+        _claim(new_session_id, self)
 
     def on_session_end(self, messages: List[Dict[str, Any]]) -> None:
         self._kick("session end")   # deltos.learn reads the chat from state.db, not from these
@@ -410,3 +512,7 @@ def register(ctx) -> None:
                              args_hint="[thing | on <date> <thing> | changes [days] | due [n] | help]")
     except Exception as exc:
         logger.debug("/deltos not registered: %s", exc)
+    try:   # [seen]: memory reads tool results; a Hermes without middleware still gets the rest
+        ctx.register_middleware("tool_execution", after_tool)
+    except Exception as exc:
+        logger.debug("deltos tool-result middleware not registered: %s", exc)

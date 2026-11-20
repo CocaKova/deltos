@@ -11,7 +11,10 @@ in the configured folders (pages.py). Everything is markdown on disk.
 from __future__ import annotations
 
 import datetime
+import hashlib
+import json
 import os
+import re
 import time
 from pathlib import Path
 
@@ -64,8 +67,10 @@ def remember_tool(another: bool, check: bool = False) -> dict:
     if another:
         text += ("Another one of the same kind that doesn't replace the first (a second client, trip, pet, "
                  "course): another: true keeps both current. ")
-    text += ("Value = the value only, short. A config key goes under 'setting <key>'. A status is a state in "
-             "a few words (live, paused, released).")
+    from .store import MAX_VALUE_WORDS
+    text += (f"Value = the value only, at most {MAX_VALUE_WORDS} words; the why goes in a page. A config key goes under "
+             "'setting <key>' with its short value; counts, timings and what a run did go in a page. A status is a "
+             "state in 1-4 words without numbers or paths (live, paused, released).")
     props = {"thing": S, "attribute": S, "value": S,
              "since": {"type": "string", "description": "YYYY-MM-DD the value became true; omit for today"},
              "correction": {"type": "boolean", "description": "true only if the previous value was a mistake and never true"}}
@@ -75,7 +80,8 @@ def remember_tool(another: bool, check: bool = False) -> dict:
     if check:
         props["check"] = {"type": "string", "description": "only when you just saw this value yourself: how, in a few "
                           "words (a command, a file and key, a page). Memory keeps it so the next look is quick; the "
-                          "same value confirms the entry, another replaces it"}
+                          "same value confirms the entry, another replaces it. What a person told you, or what "
+                          "memory or a note says, is not a check: leave check out then"}
     return _fn("remember", text, props, ["thing", "attribute", "value"])
 
 
@@ -99,7 +105,8 @@ SHOW_AS_OF = os.environ.get("DELTOS_SHOW_AS_OF", "") == "1"
 
 TOOLS = [
     _fn("memory_recall", "Search memory: facts on the things a query names, plus matching pages. Use other words "
-        "or the thing's other names when the first search misses.", {"query": S}, ["query"]),
+        "or the thing's other names when the first search misses. \"What points at X\" walks the links to X (what "
+        "runs on it, what breaks if it moves); name two things to get the chain between them.", {"query": S}, ["query"]),
     show_tool(SHOW_AS_OF),
     remember_tool(REMEMBER_ANOTHER),
     _fn("name_thing", "Register a thing, or other names people use for that same thing. What it has or uses "
@@ -226,6 +233,19 @@ LINKING_ON = ("A value that is another thing's name links the two (host, runs on
 CHECKING = ("\n- Live state drifts. A line marked \"not confirmed\" may be out of date, and a `check:` under it says how\n"
             "  to look. When it matters, look with your own tools (read-only), then `remember` what you saw with\n"
             "  `check` = how you looked. `memory_checks` lists what is due for a look.")
+# When not to look ([checks] limits; 11-10, six everyday chats three times each): asked a port
+# memory had confirmed that week, the agent went looking anyway in 2 of 3 chats, and asked about a
+# service it could not reach it tried for up to 4 minutes before answering.
+CHECK_LIMITS = (" A line without that mark was seen\n"
+                "  recently: use it as it stands. If one or two tries do not reach the thing, stop: answer from memory\n"
+                "  and say it is unconfirmed.")
+
+# What the agent's own tools show ([seen] on, deltos/seen.py): the harness puts the note after
+# the tool's result; what to do with it is said here, where instructions are trusted (a note
+# inside a tool result is data, and some harnesses fence tool results as untrusted).
+SEEING = ("\n- A tool result may end with a `[memory]` note: what memory holds on a thing that output touched. When\n"
+          "  the output shows another value for that same thing, `remember` the new value, as short as the one it\n"
+          "  replaces{how}; when it is about something else, leave it.")
 
 # What a fact is, besides live state (11-05). Two long client sessions wrote ten checked facts
 # (a URL answering 200, a token working, a price looked up) and none of what was decided in them
@@ -256,7 +276,7 @@ value that is true now, with the date it became true, and a "was:" trail of olde
   forget it): `forget` it with a reason. It is undoable (`memory_restore`); a big or linked thing needs the
   user to have asked for it. Deleting for good is the user's call (`deltos purge <thing>`): never remove
   memory files yourself.
-- `remember` only takes names memory knows. A new thing, or another name for a known one: `name_thing` first.{deciding}{checking}
+- `remember` only takes names memory knows. A new thing, or another name for a known one: `name_thing` first.{deciding}{checking}{seeing}
 
 **Pages** — documents for anything longer than a fact: how-tos, decisions, write-ups.{folders}
 - `page_search` = exact text across all pages; `page_read` = a whole page.
@@ -295,6 +315,9 @@ class Memory:
                                or str(self.config.tools.get("descriptions", "plain")), self.checks)
         self.cues = _switch("DELTOS_CUES", self.config.recall.get("cues"))   # deltos/cues.py; off by default
         self.decisions = _switch("DELTOS_DECISIONS", self.config.tools.get("decisions"), default=True)   # DECIDING
+        self.check_limits = self.checks and _switch("DELTOS_CHECK_LIMITS", self.config.checks.get("limits"))
+        # deltos/seen.py: what memory holds on a thing a tool result shows another number for; off by default
+        self.seeing = _switch("DELTOS_SEEN", self.config.seen.get("on"))
 
     # -- the parts ------------------------------------------------------------
 
@@ -378,7 +401,7 @@ class Memory:
         page_q = message if len(message) <= PAGE_QUERY_CHARS else \
             message[:PAGE_QUERY_CHARS] + "\n" + ", ".join(g[0] for g in things)
         hits = self.pages().top(page_q, pages, min_cover=1 if sure else 2, extra_terms=extra,
-                                names=names) if pages else []
+                                names=names, current=loose < MAX_LINES) if pages else []
         if hits:   # each page labelled with its age: "[ref · 2026-07-10 · 3 months old]"
             today = self.today or datetime.date.today().isoformat()
             olds = [age(d, today) for _, d, _ in hits]
@@ -433,9 +456,40 @@ class Memory:
         return INSTRUCTIONS.format(whose=f"{c.owner}'s" if c.owner else "your user's", who=c.owner or "the user",
                                    folders=folders, readonly=readonly, reading=READING,
                                    linking=LINKING_ON if self.links else LINKING_OFF,
-                                   checking=CHECKING if self.checks else "",
+                                   checking=(CHECKING + (CHECK_LIMITS if self.check_limits else "")) if self.checks else "",
+                                   seeing=SEEING.format(how=" (`check` = how you looked)" if self.checks else "")
+                                   if self.seeing else "",
                                    deciding=DECIDING.format(who=c.owner or "the user") if self.decisions else "",
                                    chatwork=CHAT_WORK[self.decisions])
+
+    # -- what the agent's tools show (deltos/seen.py; [seen] on) -----------------------
+
+    def seen(self, call, output, here: str = "", shown: set | None = None, session: str = "") -> str:
+        """The note for the harness to put after a tool's result, or "": what memory holds on
+        the things that call looked at whose number moved. `call`: the tool's arguments (a dict,
+        their JSON or plain text); `output`: its result; `here`: a name of the thing the tools
+        run on ([seen] here wins); `shown`: the chat's own set, so each entry is told once.
+        Each note is one row in <root>/seen/<YYYY-MM>.jsonl: things and labels, never text."""
+        if not self.seeing:
+            return ""
+        from . import seen as _seen
+        t = time.monotonic()
+        held = _seen.seen(self.recall(), call, output,
+                          here=str(self.config.seen.get("here") or here or ""), shown=shown)
+        if not held:
+            return ""
+        try:
+            d = self.root / "seen"
+            d.mkdir(exist_ok=True)
+            now = datetime.datetime.now().isoformat(timespec="seconds")
+            row = {"at": now, "s": hashlib.sha1(session.encode()).hexdigest()[:8] if session else "",
+                   "ms": round((time.monotonic() - t) * 1000),
+                   "held": [{"thing": h.thing, "label": h.label, "by": h.by} for h in held]}
+            with open(d / f"{now[:7]}.jsonl", "a") as fh:
+                fh.write(json.dumps(row) + "\n")
+        except OSError:
+            pass
+        return _seen.note(held, self.checks)
 
     # -- receipts about links (deltos/links.py; links on) ----------------------------
 
@@ -451,6 +505,53 @@ class Memory:
                 + (f"; {', '.join(new)} {'is' if len(new) == 1 else 'are'} not in memory: name_thing "
                    f"{'it' if len(new) == 1 else 'them'} and this value links to {'it' if len(new) == 1 else 'them'}"
                    if new else ""))
+
+    def _nearest(self, name: str) -> str:
+        """For a name memory has no thing for: the names nearest it (a typo, a name said
+        another way), so the miss isn't answered with whichever thing comes to mind."""
+        import difflib
+        r = self.recall()
+        names = {n: r.title(p) for n, p in r.profile_of.items()}
+        want = name.strip().lower()
+        words = [w for w in re.findall(r"[a-z0-9]+", want) if len(w) > 2]
+        hits = difflib.get_close_matches(want, list(names), n=5, cutoff=0.7)
+        hits += [n for n in names if words and all(w in n for w in words) and n not in hits]
+        titles = list(dict.fromkeys(names[n] for n in hits))[:3]
+        return (f". Nearest names in memory: {', '.join(titles)} (memory_show one if it's the same thing)"
+                if titles else ". No name in memory is close to it.")
+
+    # -- receipts about the label and the kind of entry just written ---------------------
+
+    def _labels(self, thing: str) -> dict[str, str]:
+        """The thing's labels before a write: {label: current value}."""
+        t = self.store().find(thing)
+        return {a.name: a.value for a in t.attrs.values()} if t else {}
+
+    def _label_receipt(self, attribute: str, had: dict[str, str]) -> str:
+        """A label new on this thing, beside labels it already has that may hold the same
+        fact ("Setting MTU" next to "Setting qsfp mtu"): name them, so the writer can keep one
+        fact under one label. The write stands; same words or a near spelling is all it reads."""
+        if not had or any(a.lower() == attribute.strip().lower() for a in had):
+            return ""
+        near = near_labels(attribute, had)
+        if not near:
+            return ""
+        shown = ", ".join(f"{a} ({_short(had[a])})" for a in near)
+        return (f"; new label on this thing, which already has {shown}: if it is the same fact, "
+                f"remember it under that label and forget this one")
+
+    def _event_receipt(self, thing: str, attribute: str, value: str) -> str:
+        """A value that says what happened ("shipped", "restarted") on a label for how the thing
+        is now: the next question about its state gets an event. Said, not refused."""
+        from .entrytypes import entry_type, drifts, EVENT_STATUS
+        t = self.store().find(thing)
+        kind = next((a.value for k, a in t.attrs.items() if k == "kind"), "") if t else ""
+        if not (EVENT_STATUS.match(value.strip()) and (drifts(attribute) or attribute.strip().lower() == "status"
+                                                       or entry_type(attribute, value, kind) == "event")):
+            return ""
+        return (f"; note: {value.strip()!r} says what happened, not how {thing} is now: if it is "
+                f"the current state, fine; else remember the state it left (live, stopped, released) "
+                f"and keep the event in a page or the daily log")
 
     def _unit_receipt(self, thing: str, attribute: str) -> str:
         """A product's fact (price, release date) just written on one unit of it: say
@@ -490,8 +591,10 @@ class Memory:
             if tool == "memory_show":
                 if str(a.get("as_of") or "").strip():
                     return self.store().as_of(need("thing"), str(a["as_of"]).strip())
-                return self.store().show(need("thing"), history=bool(a.get("history")))
+                out = self.store().show(need("thing"), history=bool(a.get("history")))
+                return out + self._nearest(need("thing")) if out.startswith("nothing known about") else out
             if tool == "remember":
+                had = self._labels(need("thing"))
                 out = self.store().remember(need("thing"), need("attribute"), need("value"),
                                             since=str(a.get("since") or ""), source=self.agent,
                                             correction=bool(a.get("correction")), another=bool(a.get("another")),
@@ -499,7 +602,9 @@ class Memory:
                 if out.startswith("not "):
                     return out
                 return (out + (self._link_receipt(need("thing"), need("value")) if self.links else "")
-                        + self._unit_receipt(need("thing"), need("attribute")))
+                        + self._unit_receipt(need("thing"), need("attribute"))
+                        + self._label_receipt(need("attribute"), had)
+                        + self._event_receipt(need("thing"), need("attribute"), need("value")))
             if tool == "name_thing":
                 names = a.get("other_names") or []
                 names = [n for n in names.split(",") if n.strip()] if isinstance(names, str) else list(names)
@@ -539,3 +644,27 @@ class Memory:
         except PageError as e:
             raise Refused(str(e)) from e
         raise Refused(f"Unknown tool: {tool}")
+
+
+def _short(v: str, n: int = 40) -> str:
+    import re as _re
+    v = _re.sub(r"\s*\((since|confirmed)[^()]*\)\s*$", "", v).strip()
+    return v if len(v) <= n else v[:n - 1] + "…"
+
+
+def near_labels(attribute: str, labels, limit: int = 3) -> list[str]:
+    """Labels that may hold the same fact as `attribute`: one's words are all in the other
+    ("MTU" / "qsfp MTU"; past "setting"), or one spells the other nearly. Two labels that
+    only share a word ("tool-call-parser" / "reasoning-parser") are two facts."""
+    import difflib
+    import re as _re
+    words = lambda x: {w for w in _re.findall(r"[a-z0-9]+", x.lower().removeprefix("setting ")) if len(w) > 1}
+    mine = words(attribute)
+    plain = attribute.lower().removeprefix("setting ").strip()
+    out = []
+    for a in labels:
+        theirs = words(a)
+        other = a.lower().removeprefix("setting ").strip()
+        if (mine and theirs and (mine <= theirs or theirs <= mine)) or difflib.SequenceMatcher(None, plain, other).ratio() >= 0.8:
+            out.append(a)
+    return out[:limit]

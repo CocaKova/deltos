@@ -39,6 +39,14 @@ The plugin gives a **new** store two settings in `<root>/deltos.toml`:
 the agent's checks; see the main README). A store that already has notes or a
 `deltos.toml` is left as it is.
 
+`[seen] on = true` in the same file (off by default) lets memory read what the
+agent's tools return: a result that shows another number for something memory
+holds ends with a short `[memory]` note, and the agent decides whether to
+`remember` it (see "Seen" in the main README). Set `here` beside it to the name
+memory has for the machine Hermes runs on; without it the host name is used. The
+note is added by a `tool_execution` middleware, after any other plugin has had
+the result, and the agent's own memory tools are never read.
+
 Where the memory folder comes from, first match:
 
 | Source | What it is |
